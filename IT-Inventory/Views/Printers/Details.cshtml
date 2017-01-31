@@ -1,0 +1,68 @@
+﻿@model IT_Inventory.Models.Printer
+
+@{
+    ViewBag.Title = "Подробно";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<div>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Ip)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Ip)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Department.Office)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Department.Office.Id)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Department)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Department.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Place)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Place)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Cartridges)
+        </dt>
+
+        <dd>
+            @foreach (var item in Model.Cartridges.OrderBy(c => c.Name))
+            {
+                @Html.ActionLink(item.Name, "Edit", "Items", new { id = item.Id }, null)
+                <br />
+            }
+        </dd>
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Редактировать", "Edit", new { id = Model.Id }) |
+    @Html.ActionLink("Назад к списку", null, null, null, new { href = Request.UrlReferrer })
+</p>

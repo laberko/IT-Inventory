@@ -1,0 +1,63 @@
+﻿@model IEnumerable<IT_Inventory.Models.History>
+
+@{
+    ViewBag.Title = "История действий";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Date)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Item)
+        </th>
+
+        <th>
+            @Html.DisplayNameFor(model => model.Recieved)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Quantity)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.WhoGave)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.WhoTook)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Date)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Item.Name)
+        </td>
+
+        <td>
+            @if (item.Recieved)
+            {
+                @Html.DisplayFor(modelItem => item.Recieved)
+            }
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Quantity)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.WhoGave.FullName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.WhoTook.FullName)
+        </td>
+
+        <td>
+            @Html.ActionLink("Удалить", "Delete", new {id = item.Id})
+        </td>
+    </tr>
+}
+</table>

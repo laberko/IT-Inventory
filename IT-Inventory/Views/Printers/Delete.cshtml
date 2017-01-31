@@ -1,0 +1,48 @@
+﻿@model IT_Inventory.Models.Printer
+
+@{
+    ViewBag.Title = "Удалить";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<h3>Вы действительно хотите удалить @Model.Name?</h3>
+<div>
+    <hr />
+    <dl class="dl-horizontal">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <dt>
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Department)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Department.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Place)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Place)
+        </dd>
+
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Удалить" class="btn btn-default" /> |
+            @Html.ActionLink("Назад к списку", null, null, null, new { href = Request.UrlReferrer })
+        </div>
+    }
+</div>

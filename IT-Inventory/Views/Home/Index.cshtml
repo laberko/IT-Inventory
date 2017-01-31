@@ -1,0 +1,40 @@
+﻿@{
+    ViewBag.Title = "Инвентаризация";
+}
+
+<div class="jumbotron">
+    <h1>@ViewBag.Title</h1>
+    <p class="lead">Сайт Департамента Информационных Технологий.</p>
+    @Html.ActionLink("Всё оборудование", "Index", "Items", null, new { @class = "btn btn-primary" })
+    @Html.ActionLink("Всe принтеры", "Index", "Printers", null, new { @class = "btn btn-primary" })
+    @Html.ActionLink("Вся история", "Index", "Histories", null, new { @class = "btn btn-primary" })
+    @Html.ActionLink("Выдачи за 30 дней", "Grant", "Histories", new { days = 30 }, new { @class = "btn btn-primary" })
+    @Html.ActionLink("Приход за 30 дней", "Recieve", "Histories", new { days = 30 }, new { @class = "btn btn-primary" })
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <h2>Оборудование</h2>
+        @foreach (var type in StaticData.GetTypes())
+        {
+            <p>@Html.ActionLink(type.Name, "Index", "Items", new { id = type.Id }, null)</p>
+        }
+        <p>@Html.ActionLink("История выдачи", "Grant", "Histories")</p>
+        <p>@Html.ActionLink("История прихода", "Recieve", "Histories")</p>
+    </div>
+    <div class="col-md-4">
+        <h2>Принтеры</h2>
+        @foreach (var office in StaticData.GetOffices())
+        {
+            <p>@Html.ActionLink(office.Name, "Index", "Printers", new { officeId = office.Id }, null)</p>
+        }
+    </div>
+    <div class="col-md-4">
+        <h2>Справочники</h2>
+        <p>@Html.ActionLink("Офисы", "Index", "Offices")</p>
+        <p>@Html.ActionLink("Департаменты", "Index", "Departments")</p>
+        <p>@Html.ActionLink("Сотрудники (обновить)", "Index", "People")</p>
+        <p>@Html.ActionLink("Характеристики оборудования", "Index", "ItemAttributes")</p>
+        <p>@Html.ActionLink("Типы оборудования", "Index", "ItemTypes")</p>
+    </div>
+</div>

@@ -1,0 +1,90 @@
+﻿@using IT_Inventory.Models
+@using IT_Inventory.ViewModels
+@model IEnumerable<Printer>
+
+@{
+    if (ViewBag.Office == "")
+    {
+        ViewBag.Title = "Все принтеры";
+    }
+    else
+    {
+        ViewBag.Title = "Принтеры (" + ViewBag.Office + ")";
+    }
+}
+
+<h2>@ViewBag.Title</h2>
+
+<p>
+    @if (ViewBag.Office == "")
+    {
+        foreach (var office in StaticData.GetOffices())
+        {
+            @Html.ActionLink(office.Name, "Index", new {officeId = office.Id}, new {@class = "btn btn-primary btn-lg"})
+        }
+    }
+    else
+    {
+        @Html.ActionLink("Все принтеры", "Index", null, new { @class = "btn btn-primary btn-lg" })
+    }
+    @Html.ActionLink("Добавить принтер", "Create", null, new {@class = "btn btn-default btn-lg"})
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Ip)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Department)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Place)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Cartridges)
+        </th>
+
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Ip)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Department.Name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Place)
+        </td>
+        <td>
+            <table>
+                <tr>
+                    @foreach (var cartridge in item.Cartridges)
+                    {
+                        <td style="background-color: @cartridge.AttributeValues.FirstOrDefault(a => a.Attribute.Id == 2).Value">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                        <td>&nbsp;&nbsp;@Html.ActionLink(cartridge.Quantity.ToString(), "Details", "Items", new { id = cartridge.Id }, null)&nbsp;&nbsp;</td>
+                    }
+                </tr>
+            </table>
+        </td>
+        <td>
+            @Html.ActionLink("Редактировать", "Edit", new { id=item.Id }) |
+            @Html.ActionLink("Подробно", "Details", new {id = item.Id}) |
+            @if (!string.IsNullOrEmpty(item.Ip))
+            {
+                @Html.ActionLink("Управлять", "Manage", new { ip = item.Ip } , new { target = "_blank" })@: |
+            }
+            @Html.ActionLink("Удалить", "Delete", new { id = item.Id })
+        </td>
+    </tr>
+}
+
+</table>

@@ -1,0 +1,55 @@
+﻿@model IEnumerable<IT_Inventory.Models.Person>
+
+@{
+    ViewBag.Title = "Сотрудники";
+}
+
+<h2>@ViewBag.Title </h2>
+<hr />
+<h3>Департамент ИТ:</h3>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.FullName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.AccountName)
+        </th>
+
+    </tr>
+    @foreach (var item in Model.Where(i => i.IsItUser))
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.FullName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AccountName)
+            </td>
+        </tr>
+    }
+</table>
+<hr />
+<h3>Остальные сотрудники (Санкт-Петербург):</h3>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.FullName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.AccountName)
+        </th>
+
+    </tr>
+    @foreach (var item in Model.Where(i => !i.IsItUser))
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.FullName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AccountName)
+            </td>
+        </tr>
+    }
+</table>

@@ -1,0 +1,70 @@
+﻿@model IEnumerable<IT_Inventory.Models.Item>
+
+@{
+    ViewBag.Title = "Командировочные ноутбуки";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<p>
+    @Html.ActionLink("Всё оборудование", "Index", null, new { @class = "btn btn-primary btn-lg", href = "/Items/Index" })
+    @Html.ActionLink("Добавить", "Create", new {id = 8}, new {@class = "btn btn-default btn-lg"})
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Name)
+        </th>
+        <th>
+            Кому выдан
+        </th>
+        @if (Model.FirstOrDefault() != null)
+        {
+            foreach (var attribute in Model.FirstOrDefault().ItemType.Attributes)
+            {
+                <th>
+                    @Html.DisplayName(attribute.Name)
+                </th>
+            }
+        }
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr style="@(item.Quantity == 0 ? "color:red" : "")">
+        <td>
+            @item.Name
+        </td>
+        <td>
+            @if (item.Quantity == 0 && item.Histories.Any(h => !h.Recieved))
+            {
+                @item.Histories.Where(h => !h.Recieved).OrderByDescending(h => h.Date).FirstOrDefault().WhoTook.FullName
+            }
+            else
+            {
+                @Html.Label("В наличии")
+            }
+        </td>
+        @if (Model.FirstOrDefault() != null)
+        {
+            foreach (var attribute in Model.FirstOrDefault().ItemType.Attributes)
+            {
+                <td>
+                    @if (item.AttributeValues.FirstOrDefault(a => a.Attribute == attribute) != null)
+                    {
+                        @item.AttributeValues.FirstOrDefault(a => a.Attribute == attribute).Value
+                    }
+                </td>
+            }
+        }
+
+        <td>
+            @(item.Quantity != 0 ? Html.ActionLink("Выдать ", "Grant", new {id = item.Id}) : Html.ActionLink("Вернуть", "RecieveOneNotebook", new {id = item.Id}))
+            |
+            @Html.ActionLink("История", "Index", "Histories", new {id = item.Id}, null) |
+            @Html.ActionLink("Редактировать", "Edit", new {id = item.Id}) |
+            @Html.ActionLink("Удалить", "Delete", new {id = item.Id})
+        </td>
+    </tr>
+}
+</table>
