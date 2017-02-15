@@ -17,18 +17,21 @@ namespace IT_Inventory.Controllers
         // GET: Printers
         public async Task<ActionResult> Index(int? officeId)
         {
+            var printers = new List<Printer>();
             if (officeId == null)
             {
+                printers = await _db.Printers.OrderBy(p => p.Name).ToListAsync();
                 ViewBag.Office = "";
-                return View(await _db.Printers.ToListAsync());
+                ViewBag.Count = printers.Count.ToString();
+                return View(printers);
             }
             var office = _db.Offices.FirstOrDefault(o => o.Id == officeId);
             if (office == null)
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            var printers = new List<Printer>();
             foreach(var dep in _db.Departments.Where(d => d.Office.Id == office.Id))
-                printers.AddRange(_db.Printers.Where(printer => printer.Department.Id == dep.Id));
+                printers.AddRange(_db.Printers.Where(printer => printer.Department.Id == dep.Id).OrderBy(p => p.Name));
             ViewBag.Office = office.Name;
+            ViewBag.Count = printers.Count.ToString();
             return View(printers);
         }
 
@@ -62,7 +65,7 @@ namespace IT_Inventory.Controllers
         {
             if (!ModelState.IsValid)
                 return View(printer);
-            if (!string.IsNullOrEmpty(printer.Ip) && !StaticData.CheckIp(printer.Ip))
+            if (!string.IsNullOrEmpty(printer.Ip) && !StaticData.IsIp(printer.Ip))
             {
                 ModelState.AddModelError(string.Empty, "Неправильный IP-адрес: " + printer.Ip + "!");
                 return View(printer);
@@ -116,7 +119,7 @@ namespace IT_Inventory.Controllers
         {
             if (!ModelState.IsValid)
                 return View(printer);
-            if (!string.IsNullOrEmpty(printer.Ip) && !StaticData.CheckIp(printer.Ip))
+            if (!string.IsNullOrEmpty(printer.Ip) && !StaticData.IsIp(printer.Ip))
             {
                 ModelState.AddModelError(string.Empty, "Неправильный IP-адрес: " + printer.Ip + "!");
                 return View(printer);
@@ -176,11 +179,11 @@ namespace IT_Inventory.Controllers
         public async Task<ActionResult> DeleteConfirmed(int id)
         {
             var printer = await _db.Printers.FindAsync(id);
-            if (!User.IsInRole(@"RIVS\InventoryAdmin"))
-            {
-                ModelState.AddModelError(string.Empty, "У Вас нет прав на удаление! Обратитесь к системному администратору!");
-                return View(printer);
-            }
+            //if (!User.IsInRole(@"RIVS\InventoryAdmin"))
+            //{
+            //    ModelState.AddModelError(string.Empty, "У Вас нет прав на удаление! Обратитесь к системному администратору!");
+            //    return View(printer);
+            //}
             _db.Printers.Remove(printer);
             await _db.SaveChangesAsync();
             return RedirectToAction("Index");

@@ -16,6 +16,10 @@ namespace IT_Inventory.ViewModels
 
         [Display(Name = "Количество")]
         public int Quantity { get; set; }
+
+        [Display(Name = "Минимум")]
+        public int MinQuantity { get; set; }
+
         public string ItemTypeName { get; set; }
         public int ItemTypeId { get; set; }
 

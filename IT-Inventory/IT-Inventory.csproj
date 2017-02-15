@@ -151,6 +151,10 @@
     <Compile Include="Migrations\201701231248029_28.Designer.cs">
       <DependentUpon>201701231248029_28.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201702091034445_6.cs" />
+    <Compile Include="Migrations\201702091034445_6.Designer.cs">
+      <DependentUpon>201702091034445_6.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Item.cs" />
     <Compile Include="Models\Printer.cs" />
@@ -273,11 +277,13 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
-    <None Include="Project_Readme.html" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201701231248029_28.resx">
       <DependentUpon>201701231248029_28.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201702091034445_6.resx">
+      <DependentUpon>201702091034445_6.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

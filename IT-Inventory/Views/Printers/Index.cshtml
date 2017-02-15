@@ -1,5 +1,4 @@
 ﻿@using IT_Inventory.Models
-@using IT_Inventory.ViewModels
 @model IEnumerable<Printer>
 
 @{
@@ -14,20 +13,23 @@
 }
 
 <h2>@ViewBag.Title</h2>
+<h4>Количество: @ViewBag.Count</h4>
 
 <p>
     @if (ViewBag.Office == "")
     {
         foreach (var office in StaticData.GetOffices())
         {
-            @Html.ActionLink(office.Name, "Index", new {officeId = office.Id}, new {@class = "btn btn-primary btn-lg"})
+            @Html.ActionLink(office.Name, "Index", new {officeId = office.Id}, new {@class = "btn btn-primary"})
         }
     }
     else
     {
-        @Html.ActionLink("Все принтеры", "Index", null, new { @class = "btn btn-primary btn-lg" })
+        @Html.ActionLink("Все принтеры", "Index", null, new { @class = "btn btn-primary" })
     }
-    @Html.ActionLink("Добавить принтер", "Create", null, new {@class = "btn btn-default btn-lg"})
+    @Html.ActionLink("Добавить принтер", "Create", null, new {@class = "btn btn-default"})
+    @Html.ActionLink("Добавить картридж", "Create", "Items", new { id = 11 }, new { @class = "btn btn-default" })
+    @Html.ActionLink("Все картриджи", "Index", "Items", new { id = 11 }, new { @class = "btn btn-default" })
 </p>
 <table class="table">
     <tr>
@@ -51,7 +53,7 @@
     </tr>
 
 @foreach (var item in Model) {
-    <tr>
+    <tr style="@(StaticData.IsCartridgesOver(item.Id) ? "color:red" : "")">
         <td>
             @Html.DisplayFor(modelItem => item.Name)
         </td>
@@ -67,15 +69,23 @@
         <td>
             <table>
                 <tr>
-                    @foreach (var cartridge in item.Cartridges)
+                    @foreach (var cartridge in item.Cartridges.Where(c => c.AttributeValues.FirstOrDefault(a => a.Attribute.Id == 2) != null).OrderBy(c => c.AttributeValues.FirstOrDefault(a => a.Attribute.Id == 2).Value))
                     {
-                        <td style="background-color: @cartridge.AttributeValues.FirstOrDefault(a => a.Attribute.Id == 2).Value">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-                        <td>&nbsp;&nbsp;@Html.ActionLink(cartridge.Quantity.ToString(), "Details", "Items", new { id = cartridge.Id }, null)&nbsp;&nbsp;</td>
+                        @*<font color=@cartridge.AttributeValues.FirstOrDefault(a => a.Attribute.Id == 2).Value>&nbsp; &#11044 &nbsp;</font>
+                        <font size="4">@Html.ActionLink(cartridge.Quantity.ToString(), "Grant", "Items", new { id = cartridge.Id }, new { style = cartridge.Quantity <= cartridge.MinQuantity ? "color:red" : "" })</font>*@
+
+
+                        <td>
+                            <font color=@cartridge.AttributeValues.FirstOrDefault(a => a.Attribute.Id == 2).Value>&#11044</font>
+                        </td>
+                        <td>
+                            &nbsp;&nbsp;<font size="4">@Html.ActionLink(cartridge.Quantity.ToString(), "Grant", "Items", new {id = cartridge.Id}, new { style = cartridge.Quantity <= cartridge.MinQuantity ? "color:red" : ""})</font>&nbsp;&nbsp;
+                        </td>
                     }
                 </tr>
             </table>
         </td>
-        <td>
+        <td style="color:black">
             @Html.ActionLink("Редактировать", "Edit", new { id=item.Id }) |
             @Html.ActionLink("Подробно", "Details", new {id = item.Id}) |
             @if (!string.IsNullOrEmpty(item.Ip))

@@ -56,7 +56,7 @@
         <dd>
             @foreach (var item in Model.Cartridges.OrderBy(c => c.Name))
             {
-                @Html.ActionLink(item.Name, "Edit", "Items", new { id = item.Id }, null)
+                @Html.ActionLink(item.Name, "Details", "Items", new { id = item.Id }, null)
                 <br />
             }
         </dd>

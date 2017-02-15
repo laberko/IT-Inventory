@@ -5,6 +5,11 @@
 }
 
 <h2>@ViewBag.Title</h2>
+@if (!string.IsNullOrEmpty(ViewBag.MonthGrant))
+{
+    <h4>Выдано за 30 дней: @ViewBag.MonthGrant</h4>
+    <h4>Получено за 30 дней: @ViewBag.MonthRecieve</h4>
+}
 
 <table class="table">
     <tr>

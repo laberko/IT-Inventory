@@ -21,6 +21,9 @@ namespace IT_Inventory.Models
         [Display(Name = "Количество")]
         public int Quantity { get; set; }
 
+        [Display(Name = "Минимум")]
+        public int MinQuantity { get; set; }
+
         [Display(Name = "Тип")]
         public virtual ItemType ItemType { get; set; }
 

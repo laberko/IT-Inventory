@@ -33,6 +33,14 @@
             @Html.DisplayFor(model => model.Quantity)
         </dd>
 
+        <dt>
+            @Html.DisplayNameFor(model => model.MinQuantity)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MinQuantity)
+        </dd>
+
         @foreach (var attribute in Model.AttributeValues)
         {
             <dt>
@@ -42,6 +50,12 @@
             {
                 <dd style="background-color: @attribute.Value; width: 100px"></dd>
             }
+            if (attribute.Attribute.Id == 10)
+            {
+                <dd>
+                    @Html.ActionLink(attribute.Value, "GoToSite", new { url = attribute.Value }, new { target = "_blank" })
+                </dd>
+            }
             else
             {
                 <dd>
@@ -49,7 +63,19 @@
                 </dd>
             }
         }
-
+        @if (!string.IsNullOrEmpty(ViewBag.PrinterCount))
+        {
+            <dt>
+                Принтеры (@ViewBag.PrinterCount)
+            </dt>
+            <dd>
+                @foreach (var printer in StaticData.GetPrinters(Model.Id))
+                {
+                    @Html.ActionLink(printer.Name, "Details", "Printers", new { id = printer.Id }, null)
+                    <br />
+                }
+            </dd>
+        }
     </dl>
 </div>
 <p>

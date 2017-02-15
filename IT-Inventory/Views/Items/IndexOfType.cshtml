@@ -18,6 +18,12 @@
         <th>
             @Html.DisplayNameFor(model => model.Quantity)
         </th>
+        @if ((int) ViewBag.TypeId == 11)
+        {
+            <th>
+                Принтеры
+            </th>
+        }
         @if (Model.FirstOrDefault() != null)
         {
             foreach (var attribute in Model.FirstOrDefault().ItemType.Attributes)
@@ -27,38 +33,61 @@
                 </th>
             }
         }
+
         <th></th>
     </tr>
 
 @foreach (var item in Model)
 {
-    <tr style="@(item.Quantity == 0 ? "color:red" : "")">
+    <tr style="@(item.Quantity <= item.MinQuantity ? "color:red" : "")">
         <td>
             @item.Name
         </td>
         <td>
             @item.Quantity
         </td>
+        @if ((int)ViewBag.TypeId == 11)
+        {
+            <td>
+                @StaticData.CountPrinters(item.Id).ToString()
+            </td>
+        }
 
         @if (Model.FirstOrDefault() != null)
         {
             foreach (var attribute in Model.FirstOrDefault().ItemType.Attributes
                 .Where(attribute => item.AttributeValues.FirstOrDefault(a => a.Attribute == attribute) != null))
             {
-                if (attribute.Id == 2)
+                if (!string.IsNullOrEmpty(item.AttributeValues.FirstOrDefault(a => a.Attribute == attribute).Value))
                 {
-                    <td style="background-color:@item.AttributeValues.FirstOrDefault(a => a.Attribute == attribute).Value">
-                    </td>
+                    if (attribute.Id == 2)
+                    {
+                    @*<td style="background-color:@item.AttributeValues.FirstOrDefault(a => a.Attribute == attribute).Value">
+                    </td>*@
+                        <td>
+                            <font color=@item.AttributeValues.FirstOrDefault(a => a.Attribute == attribute).Value>&#11044</font>
+                        </td>
+                    }
+                    else if (attribute.Id == 10)
+                    {
+                        <td>
+                            @Html.ActionLink("Описание", "GoToSite", new {url = @item.AttributeValues.FirstOrDefault(a => a.Attribute == attribute).Value}, new {target = "_blank"})
+                        </td>
+                    }
+                    else
+                    {
+                        <td>
+                            @item.AttributeValues.FirstOrDefault(a => a.Attribute == attribute).Value
+                        </td>
+                    }
                 }
                 else
                 {
-                    <td>
-                        @item.AttributeValues.FirstOrDefault(a => a.Attribute == attribute).Value
-                    </td>
+                    <td></td>
                 }
             }
         }
-        <td>
+        <td style="color:black">
             @Html.ActionLink("Выдать", "Grant", new { id = item.Id }) |
             @Html.ActionLink("Принять", "Recieve", new { id = item.Id }) |
             @Html.ActionLink("История", "Index", "Histories", new { id = item.Id }, null) |

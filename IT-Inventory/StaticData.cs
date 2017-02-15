@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
@@ -77,31 +78,80 @@ namespace IT_Inventory
                 return person != null ? person.FullName : login;
             }
         }
-        public static bool CheckIp(string ipString)
+        public static bool IsIp(string ipString)
         {
             IPAddress address;
             return IPAddress.TryParse(ipString, out address);
         }
+        public static bool IsCartridgesOver(int printerId)
+        {
+            using (var db = new InventoryModel())
+            {
+                var printer = db.Printers.FirstOrDefault(p => p.Id == printerId);
+                return printer != null && printer.Cartridges.Any(cartridge => cartridge.Quantity <= cartridge.MinQuantity);
+            }
+        }
+        public static int CountPrinters(int cartridgeId)
+        {
+            using (var db = new InventoryModel())
+            {
+                return db.Printers.Count(p => p.Cartridges.FirstOrDefault(c => c.Id == cartridgeId) != null);
+            }
+        }
+        public static int CountGrant(int id, int days)
+        {
+            using (var db = new InventoryModel())
+            {
+                return Enumerable.Sum(db.Histories
+                    .Where(history => history.Recieved == false 
+                    && history.Item.Id == id 
+                    && DbFunctions.DiffDays(history.Date, DateTime.Now) <= days), 
+                    history => history.Quantity);
+            }
+        }
+        public static int CountRecieve(int id, int days)
+        {
+            using (var db = new InventoryModel())
+            {
+                return Enumerable.Sum(db.Histories
+                    .Where(history => history.Recieved
+                    && history.Item.Id == id
+                    && DbFunctions.DiffDays(history.Date, DateTime.Now) <= days),
+                    history => history.Quantity);
+            }
+        }
         public static IEnumerable<ItemType> GetTypes()
         {
-            List<ItemType> list;
             using (var db = new InventoryModel())
             {
                 //put "Прочее" to the end of list
-                list = db.ItemTypes.Where(t => t.Id != 10).OrderBy(t => t.Name).ToList();
+                var list = db.ItemTypes.Where(t => t.Id != 10).OrderBy(t => t.Name).ToList();
                 list.Add(db.ItemTypes.FirstOrDefault(t => t.Id == 10));
+                return list;
             }
-            return list;
         }
         public static IEnumerable<Office> GetOffices()
         {
-            var offices = new List<Office>();
             using (var db = new InventoryModel())
             {
-                offices.Add(db.Offices.FirstOrDefault(o => o.Id == 1));
+                var offices = new List<Office>
+                {
+                    //Zheleznovodskaya first
+                    db.Offices.FirstOrDefault(o => o.Id == 1)
+                };
                 offices.AddRange(db.Offices.Where(o => o.Id != 1).OrderBy(o => o.Name));
+                return offices;
             }
-            return offices;
+        }
+        public static IEnumerable<Printer> GetPrinters(int cartridgeId)
+        {
+            using (var db = new InventoryModel())
+            {
+                return (from printer in db.Printers
+                        from cartridge in printer.Cartridges
+                        where cartridge.Id == cartridgeId
+                        select printer).OrderBy(p => p.Name).ToList();
+            }
         }
         public static IEnumerable<SelectListItem> SelectOffices()
         {
@@ -131,19 +181,21 @@ namespace IT_Inventory
         }
         public static IEnumerable<SelectListItem> SelectAttributes()
         {
-            List<ItemAttribute> attributes;
             using (var db = new InventoryModel())
-                attributes = db.ItemAttributes.OrderBy(a => a.Name).ToList();
-            return new SelectList(attributes, "Id", "Name");
+            {
+                var attributes = db.ItemAttributes.OrderBy(a => a.Name).ToList();
+                return new SelectList(attributes, "Id", "Name");
+            }
         }
         public static IEnumerable<SelectListItem> SelectUsers(bool isInIt)
         {
-            List<Person> people;
             using (var db = new InventoryModel())
-                people = isInIt
+            {
+                var people = isInIt
                     ? db.Persons.Where(p => p.IsItUser).OrderBy(p => p.FullName).ToList()
                     : db.Persons.OrderBy(p => p.FullName).ToList();
-            return new SelectList(people, "Id", "FullName");
+                return new SelectList(people, "Id", "FullName");
+            }
         }
     }
 }

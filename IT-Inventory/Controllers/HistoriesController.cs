@@ -16,9 +16,12 @@ namespace IT_Inventory.Controllers
         // GET: Histories/5     - history for all or an item
         public async Task<ActionResult> Index(int? id)
         {
-            return id == null 
-                ? View(await _db.Histories.OrderByDescending(h => h.Date).ToListAsync()) 
-                : View(await _db.Histories.Where(h => h.Item.Id == id).OrderByDescending(h => h.Date).ToListAsync());
+            if (id == null)
+                return View(await _db.Histories.OrderByDescending(h => h.Date).ToListAsync());
+            //ViewBag.MonthGrant = _db.Histories.Count(h => h.Item.Id == id && h.Recieved == false && DbFunctions.DiffDays(h.Date, DateTime.Now) <= 30).ToString();
+            ViewBag.MonthGrant = StaticData.CountGrant((int) id, 30).ToString();
+            ViewBag.MonthRecieve = StaticData.CountRecieve((int) id, 30).ToString();
+            return View(await _db.Histories.Where(h => h.Item.Id == id).OrderByDescending(h => h.Date).ToListAsync());
         }
 
         // GET: Histories/Recieve/X       - recieve history for all time or for X days
