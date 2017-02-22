@@ -62,26 +62,50 @@ namespace IT_Inventory
                     }
                 }
                 //remove non-existing users from db
-                var dbUsers = db.Persons.ToList();
-                var nonExisting = dbUsers.Where(user => adUsers.FirstOrDefault(p => p.AccountName == user.AccountName) == null);
+                var nonExisting = new List<Person>();
+                foreach (var person in db.Persons)
+                {
+                    if (!adUsers.Any(u => u.AccountName == person.AccountName))
+                        nonExisting.Add(person);
+                }
+
                 db.Persons.RemoveRange(nonExisting);
                 await db.SaveChangesAsync();
             }
         }
-        public static string GetUserName(string login)
+        public static string GetUserName(this string login)
         {
             using (var db = new InventoryModel())
             {
-                //return login;
                 var accountName = login.Substring(5, login.Length - 5);
                 var person = db.Persons.FirstOrDefault(p => p.AccountName == accountName);
                 return person != null ? person.FullName : login;
             }
         }
+        public static string GetShortName(this string fullName)
+        {
+            if (string.IsNullOrEmpty(fullName))
+                return string.Empty;
+            var nameParts = (fullName.Split(' '));
+            var shortName = string.Empty;
+            for (var i = 0; i < nameParts.Length; i++)
+            {
+                if (i == 0)
+                    shortName = nameParts[i];
+                else
+                    shortName = shortName + " " + nameParts[i].First() + ".";
+            }
+            return shortName;
+        }
         public static bool IsIp(string ipString)
         {
             IPAddress address;
             return IPAddress.TryParse(ipString, out address);
+        }
+        public static bool IsNumber(string value)
+        {
+            int number;
+            return int.TryParse(value, out number);
         }
         public static bool IsCartridgesOver(int printerId)
         {
@@ -196,6 +220,27 @@ namespace IT_Inventory
                     : db.Persons.OrderBy(p => p.FullName).ToList();
                 return new SelectList(people, "Id", "FullName");
             }
+        }
+
+        public enum SupportUrgency
+        {
+            Urgent,
+            _1Hour,
+            _2Hours,
+            _4Hours,
+            Day
+        }
+
+        public enum SupportCategory
+        {
+            Software,
+            Hardware,
+            Printer,
+            Internet,
+            Mail,
+            Phone,
+            File,
+            Misc
         }
     }
 }

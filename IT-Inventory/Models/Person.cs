@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 
 namespace IT_Inventory.Models
@@ -16,5 +17,8 @@ namespace IT_Inventory.Models
 
         [Display(Name = "Сотрудник ДИТ")]
         public bool IsItUser { get; set; }
+
+        [NotMapped]
+        public string ShortName => FullName.GetShortName();
     }
 }

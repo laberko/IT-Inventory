@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Net;
 using System.Web.Mvc;
 using IT_Inventory.Models;
+using IT_Inventory.ViewModels;
 
 namespace IT_Inventory.Controllers
 {
@@ -14,14 +16,39 @@ namespace IT_Inventory.Controllers
         private readonly InventoryModel _db = new InventoryModel();
 
         // GET: Histories/5     - history for all or an item
-        public async Task<ActionResult> Index(int? id)
+        // id = item, peopleId = person
+        public async Task<ActionResult> Index(int? id, int? peopleId, int page = 1)
         {
+            List<History> items;
+            var model = new HistoryIndexViewModel();
             if (id == null)
-                return View(await _db.Histories.OrderByDescending(h => h.Date).ToListAsync());
-            //ViewBag.MonthGrant = _db.Histories.Count(h => h.Item.Id == id && h.Recieved == false && DbFunctions.DiffDays(h.Date, DateTime.Now) <= 30).ToString();
-            ViewBag.MonthGrant = StaticData.CountGrant((int) id, 30).ToString();
-            ViewBag.MonthRecieve = StaticData.CountRecieve((int) id, 30).ToString();
-            return View(await _db.Histories.Where(h => h.Item.Id == id).OrderByDescending(h => h.Date).ToListAsync());
+            {
+                //entire history
+                if (peopleId == null)
+                    items = await _db.Histories.OrderByDescending(h => h.Date).ToListAsync();
+                //history for a person
+                else
+                {
+                    items = await _db.Histories.Where(h => h.WhoTook.Id == peopleId).ToListAsync();
+                    model.PersonName = _db.Persons.Find(peopleId).FullName;
+                    model.GrantHistory = true;
+                }
+                model.MonthGrant = 0;
+                model.MonthRecieve = 0;
+            }
+            else
+            {
+                //history for an item
+                items = await _db.Histories.Where(h => h.Item.Id == id).OrderByDescending(h => h.Date).ToListAsync();
+                model.ItemName = _db.Items.Find(id).Name;
+                model.MonthGrant = StaticData.CountGrant((int) id, 30);
+                model.MonthRecieve = StaticData.CountRecieve((int) id, 30);
+                model.Id = id;
+            }
+            var pager = new Pager(items.Count, page, 18);
+            model.Histories = items.Skip((pager.CurrentPage - 1)*pager.PageSize).Take(pager.PageSize);
+            model.Pager = pager;
+            return View(model);
         }
 
         // GET: Histories/Recieve/X       - recieve history for all time or for X days

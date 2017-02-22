@@ -14,7 +14,7 @@ namespace IT_Inventory.Models
         [Key]
         public int Id { get; set; }
 
-        [Display(Name = "Название")]
+        [Display(Name = "Категория")]
         public string Name { get; set; }
 
         [Display(Name = "Характеристики")]

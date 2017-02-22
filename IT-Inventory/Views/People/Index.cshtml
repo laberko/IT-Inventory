@@ -1,23 +1,28 @@
-﻿@model IEnumerable<IT_Inventory.Models.Person>
+﻿@model IT_Inventory.ViewModels.PeopleIndexViewModel
 
 @{
     ViewBag.Title = "Сотрудники";
 }
 
 <h2>@ViewBag.Title </h2>
+
+@if (Model.IsRefreshed)
+{
+    <h3>Список сотрудников синхронизирован с Active Directory!</h3>
+}
 <hr />
 <h3>Департамент ИТ:</h3>
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.FullName)
+            @Html.DisplayNameFor(model => model.People.First().FullName)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.AccountName)
+            @Html.DisplayNameFor(model => model.People.First().AccountName)
         </th>
-
+        <th></th>
     </tr>
-    @foreach (var item in Model.Where(i => i.IsItUser))
+    @foreach (var item in Model.People.Where(i => i.IsItUser))
     {
         <tr>
             <td>
@@ -25,6 +30,9 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.AccountName)
+            </td>
+            <td>
+                @Html.ActionLink("История (выдано)", "Index", "Histories", new { peopleId = item.Id }, null)
             </td>
         </tr>
     }
@@ -34,14 +42,14 @@
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.FullName)
+            @Html.DisplayNameFor(model => model.People.First().FullName)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.AccountName)
+            @Html.DisplayNameFor(model => model.People.First().AccountName)
         </th>
-
+        <th></th>
     </tr>
-    @foreach (var item in Model.Where(i => !i.IsItUser))
+    @foreach (var item in Model.People.Where(i => !i.IsItUser))
     {
         <tr>
             <td>
@@ -49,6 +57,9 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.AccountName)
+            </td>
+            <td>
+                @Html.ActionLink("История (выдано)", "Index", "Histories", new { peopleId = item.Id }, null)
             </td>
         </tr>
     }

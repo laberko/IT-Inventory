@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-using System.Web;
+﻿using System.Data.Entity;
 
 namespace IT_Inventory.Models
 {
@@ -20,6 +16,7 @@ namespace IT_Inventory.Models
         public DbSet<ItemAttribute> ItemAttributes { get; set; }
         public DbSet<ItemAttributeValue> ItemAttributeValues { get; set; }
         public DbSet<ItemType> ItemTypes { get; set; }
+        public DbSet<SupportRequest> SupportRequests { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

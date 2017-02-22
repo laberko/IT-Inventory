@@ -155,9 +155,15 @@
     <Compile Include="Migrations\201702091034445_6.Designer.cs">
       <DependentUpon>201702091034445_6.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201702171358202_29.cs" />
+    <Compile Include="Migrations\201702171358202_29.Designer.cs">
+      <DependentUpon>201702171358202_29.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Item.cs" />
     <Compile Include="Models\Printer.cs" />
+    <Compile Include="Models\SupportRequest.cs" />
+    <Compile Include="Pager.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
@@ -170,13 +176,16 @@
     <Compile Include="Models\ItemAttribute.cs" />
     <Compile Include="Models\ItemAttributeValue.cs" />
     <Compile Include="Models\ItemType.cs" />
+    <Compile Include="ViewModels\HistoryIndexViewModel.cs" />
     <Compile Include="ViewModels\ItemAttributeValueViewModel.cs" />
+    <Compile Include="ViewModels\ItemIndexViewModel.cs" />
     <Compile Include="ViewModels\ItemViewModel.cs" />
     <Compile Include="ViewModels\ItemTypeViewModel.cs" />
     <Compile Include="ViewModels\OfficeViewModel.cs" />
     <Compile Include="Models\Office.cs" />
     <Compile Include="Models\Person.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewModels\PeopleIndexViewModel.cs" />
     <Compile Include="ViewModels\PrinterViewModel.cs" />
     <Compile Include="StaticData.cs" />
   </ItemGroup>
@@ -284,6 +293,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201702091034445_6.resx">
       <DependentUpon>201702091034445_6.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201702171358202_29.resx">
+      <DependentUpon>201702171358202_29.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

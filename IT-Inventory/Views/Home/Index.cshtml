@@ -4,18 +4,20 @@
 
 <div class="jumbotron">
     <h1>@ViewBag.Title</h1>
-    <p class="lead">Сайт Департамента Информационных Технологий.</p>
+    <p class="lead">Сайт Департамента Информационных Технологий</p>
     @Html.ActionLink("Всё оборудование", "Index", "Items", null, new { @class = "btn btn-primary" })
     @Html.ActionLink("Всe принтеры", "Index", "Printers", null, new { @class = "btn btn-primary" })
     @Html.ActionLink("Вся история", "Index", "Histories", null, new { @class = "btn btn-primary" })
+    @Html.ActionLink("Сотрудники", "Index", "People", null, new { @class = "btn btn-primary" })
     @Html.ActionLink("Расход за 30 дней", "Grant", "Histories", new { days = 30 }, new { @class = "btn btn-primary" })
     @Html.ActionLink("Приход за 30 дней", "Recieve", "Histories", new { days = 30 }, new { @class = "btn btn-primary" })
+    @Html.ActionLink("Нехватка", "Index", "Items", new { urgent = true }, new { @class = "btn btn-danger" })
 </div>
 
 <div class="row">
     <div class="col-md-4">
         <h2>Склад</h2>
-        @foreach (var type in StaticData.GetTypes())
+        @foreach (var type in StaticData.GetTypes().Where(t => t.Id != 11))
         {
             <p>@Html.ActionLink(type.Name, "Index", "Items", new { id = type.Id }, null)</p>
         }
@@ -32,7 +34,7 @@
         <h2>Справочники</h2>
         <p>@Html.ActionLink("Офисы", "Index", "Offices")</p>
         <p>@Html.ActionLink("Департаменты", "Index", "Departments")</p>
-        <p>@Html.ActionLink("Сотрудники (обновить)", "Index", "People")</p>
+        <p>@Html.ActionLink("Сотрудники (обновить)", "Index", "People", new { updateList = true }, null)</p>
         <p>@Html.ActionLink("Характеристики оборудования", "Index", "ItemAttributes")</p>
         <p>@Html.ActionLink("Типы оборудования", "Index", "ItemTypes")</p>
         <h2>История</h2>

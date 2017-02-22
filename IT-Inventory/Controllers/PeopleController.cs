@@ -13,10 +13,21 @@ namespace IT_Inventory.Controllers
         private readonly InventoryModel _db = new InventoryModel();
 
         // GET: People
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index(bool updateList = false)
         {
-            StaticData.RefreshUsers();
-            return View(await _db.Persons.OrderBy(p => p.FullName).ToListAsync());
+            var model = new PeopleIndexViewModel
+            {
+                People = await _db.Persons.OrderBy(p => p.FullName).ToListAsync()
+            };
+            //sync users table with AD
+            if (updateList)
+            {
+                StaticData.RefreshUsers();
+                model.IsRefreshed = true;
+            }
+            else
+                model.IsRefreshed = false;
+            return View(model);
         }
 
         protected override void Dispose(bool disposing)

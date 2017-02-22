@@ -1,32 +1,32 @@
-﻿@model IEnumerable<IT_Inventory.Models.Item>
+﻿@model IT_Inventory.ViewModels.ItemIndexViewModel
 
 @{
-    ViewBag.Title = ViewBag.TypeName;
+    ViewBag.Title = Model.Type.Name;
 }
 
 <h2>@ViewBag.Title</h2>
 
 <p>
     @Html.ActionLink("Всё оборудование", "Index", null, new { @class = "btn btn-primary btn-lg", href = "/Items/Index" })
-    @Html.ActionLink("Добавить " + (ViewBag.TypeName as string)?.ToLower(), "Create", new {id = (int) ViewBag.TypeId}, new {@class = "btn btn-default btn-lg"})
+    @Html.ActionLink("Добавить " + Model.Type.Name.ToLower(), "Create", new { id = Model.Type.Id }, new {@class = "btn btn-default btn-lg"})
 </p>
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.Name)
+            @Html.DisplayNameFor(model => model.Items.First().Name)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Quantity)
+            @Html.DisplayNameFor(model => model.Items.First().Quantity)
         </th>
-        @if ((int) ViewBag.TypeId == 11)
+        @if (Model.Type.Id == 11)
         {
             <th>
                 Принтеры
             </th>
         }
-        @if (Model.FirstOrDefault() != null)
+        @if (Model.Items.FirstOrDefault() != null)
         {
-            foreach (var attribute in Model.FirstOrDefault().ItemType.Attributes)
+            foreach (var attribute in Model.Items.FirstOrDefault().ItemType.Attributes)
             {
                 <th>
                     @Html.DisplayName(attribute.Name)
@@ -37,7 +37,7 @@
         <th></th>
     </tr>
 
-@foreach (var item in Model)
+@foreach (var item in Model.Items)
 {
     <tr style="@(item.Quantity <= item.MinQuantity ? "color:red" : "")">
         <td>
@@ -46,24 +46,22 @@
         <td>
             @item.Quantity
         </td>
-        @if ((int)ViewBag.TypeId == 11)
+        @if (Model.Type.Id == 11)
         {
             <td>
                 @StaticData.CountPrinters(item.Id).ToString()
             </td>
         }
 
-        @if (Model.FirstOrDefault() != null)
+        @if (Model.Items.FirstOrDefault() != null)
         {
-            foreach (var attribute in Model.FirstOrDefault().ItemType.Attributes
+            foreach (var attribute in Model.Items.FirstOrDefault().ItemType.Attributes
                 .Where(attribute => item.AttributeValues.FirstOrDefault(a => a.Attribute == attribute) != null))
             {
                 if (!string.IsNullOrEmpty(item.AttributeValues.FirstOrDefault(a => a.Attribute == attribute).Value))
                 {
                     if (attribute.Id == 2)
                     {
-                    @*<td style="background-color:@item.AttributeValues.FirstOrDefault(a => a.Attribute == attribute).Value">
-                    </td>*@
                         <td>
                             <font color=@item.AttributeValues.FirstOrDefault(a => a.Attribute == attribute).Value>&#11044</font>
                         </td>

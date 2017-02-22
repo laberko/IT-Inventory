@@ -6,6 +6,7 @@ using System.Net;
 using System.Web.Mvc;
 using IT_Inventory.Models;
 using IT_Inventory.ViewModels;
+using System.Collections.Generic;
 
 namespace IT_Inventory.Controllers
 {
@@ -15,23 +16,34 @@ namespace IT_Inventory.Controllers
         private readonly InventoryModel _db = new InventoryModel();
 
         // GET: Items
-        // list of all items (id==null) or items of specific type
-        public async Task<ActionResult> Index(int? id)
+        // list of all items (id==null) or items of specific type (id)
+        public async Task<ActionResult> Index(int? id, int page = 1, bool urgent = false)
         {
+            var model = new ItemIndexViewModel();
+
             switch (id)
             {
                 // all items
                 case null:
-                    return View(await _db.Items.OrderBy(i => i.ItemType.Name).ThenBy(i => i.Name).ToListAsync());
+                    var items = new List<Item>();
+                    if (urgent == false)
+                        items = await _db.Items.OrderBy(i => i.ItemType.Name).ThenBy(i => i.Name).ToListAsync();
+                    else
+                        items = await _db.Items.Where(i => i.Quantity <= i.MinQuantity).OrderBy(i => i.ItemType.Name).ThenBy(i => i.Name).ToListAsync();
+                    var pager = new Pager(items.Count, page, 16);
+                    model.Items = items.Skip((pager.CurrentPage - 1) * pager.PageSize).Take(pager.PageSize);
+                    model.Pager = pager;
+                    model.IsUrgent = urgent;
+                    return View(model);
                 // trip notebooks
                 case 8:
-                    return View("IndexOfNotebook", await _db.Items.Where(i => i.ItemType.Id == id).OrderBy(i => i.Name).ToListAsync());
+                    model.Items = await _db.Items.Where(i => i.ItemType.Id == id).OrderBy(i => i.Name).ToListAsync();
+                    return View("IndexOfNotebook", model);
                 // items of type
                 default:
-                    var type = await _db.ItemTypes.FindAsync(id);
-                    ViewBag.TypeName = type.Name;
-                    ViewBag.TypeId = type.Id;
-                    return View("IndexOfType", await _db.Items.Where(i => i.ItemType.Id == id).OrderBy(i => i.Name).ToListAsync());
+                    model.Items = await _db.Items.Where(i => i.ItemType.Id == id).OrderBy(i => i.Name).ToListAsync();
+                    model.Type = await _db.ItemTypes.FindAsync(id);
+                    return View("IndexOfType", model);
             }
         }
 
@@ -81,7 +93,8 @@ namespace IT_Inventory.Controllers
                 {
                     AttributeId = attribute.Id,
                     Name = attribute.Name,
-                    Value = string.Empty
+                    Value = string.Empty,
+                    IsNumber = attribute.IsNumber
                 });
             return View(itemModel);
         }
@@ -102,18 +115,18 @@ namespace IT_Inventory.Controllers
                 ModelState.AddModelError(string.Empty, "Неправильное количество (" + item.Quantity + ")!");
                 return View(item);
             }
-            if (item.MinQuantity < 0)
+            if (item.MinQuantity < -1)
             {
                 // return view with error message
                 ModelState.AddModelError(string.Empty, "Неправильное количество (" + item.MinQuantity + ")!");
                 return View(item);
             }
-            if (_db.Items.FirstOrDefault(i => i.Name == item.Name) != null)
-            {
-                // return view with error message
-                ModelState.AddModelError(string.Empty, "Элемент с таким именем уже существует в базе (" + item.Name + ")!");
-                return View(item);
-            }
+            //if (_db.Items.FirstOrDefault(i => i.Name == item.Name) != null)
+            //{
+            //    // return view with error message
+            //    ModelState.AddModelError(string.Empty, "Элемент с таким именем уже существует в базе (" + item.Name + ")!");
+            //    return View(item);
+            //}
             // create new model item
             var newItem = new Item
             {
@@ -139,6 +152,12 @@ namespace IT_Inventory.Controllers
             // create attribute values from attribute viewmodels
             foreach (var attributeValue in item.AttributeValues)
             {
+                if (attributeValue.IsNumber && !StaticData.IsNumber(attributeValue.Value))
+                {
+                    // return view with error message
+                    ModelState.AddModelError(string.Empty, attributeValue.Name +  " не может быть " + attributeValue.Value + "!");
+                    return View(item);
+                }
                 var newValue = new ItemAttributeValue
                 {
                     Attribute = await _db.ItemAttributes.FindAsync(attributeValue.AttributeId),
@@ -188,7 +207,8 @@ namespace IT_Inventory.Controllers
                         Id = null,
                         Name = attribute.Name,
                         Value = string.Empty,
-                        AttributeId = attribute.Id
+                        AttributeId = attribute.Id,
+                        IsNumber = attribute.IsNumber
                     });
                 }
                 else
@@ -199,7 +219,8 @@ namespace IT_Inventory.Controllers
                         Id = existingAttributeValue.Id,
                         Name = existingAttributeValue.Attribute.Name,
                         Value = existingAttributeValue.Value,
-                        AttributeId = attribute.Id
+                        AttributeId = attribute.Id,
+                        IsNumber = attribute.IsNumber
                     });
                 }
             }
@@ -222,7 +243,7 @@ namespace IT_Inventory.Controllers
                 ModelState.AddModelError(string.Empty, "Неправильное количество (" + item.Quantity + ")!");
                 return View(item);
             }
-            if (item.MinQuantity < 0)
+            if (item.MinQuantity < -1)
             {
                 // return view with error message
                 ModelState.AddModelError(string.Empty, "Неправильное количество (" + item.MinQuantity + ")!");
@@ -239,6 +260,12 @@ namespace IT_Inventory.Controllers
             // modify existing or create new attribute values
             foreach (var attributeValue in item.AttributeValues)
             {
+                if (attributeValue.IsNumber && !StaticData.IsNumber(attributeValue.Value))
+                {
+                    // return view with error message
+                    ModelState.AddModelError(string.Empty, attributeValue.Name + " не может быть " + attributeValue.Value + "!");
+                    return View(item);
+                }
                 var editValue = await _db.ItemAttributeValues.FindAsync(attributeValue.Id);
                 // new attribute-value pair
                 if (editValue == null)
@@ -323,15 +350,19 @@ namespace IT_Inventory.Controllers
         // GET: Items/RecieveOne/5
         // trip notebooks comeback
         // increase notebook item quantity by 1
-        public ActionResult RecieveOneNotebook(int? id)
+        public async Task<ActionResult> RecieveOneNotebook(int? id)
         {
             if (id == null)
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             var item = _db.Items.Find(id);
             item.Quantity++;
             _db.Entry(item).State = EntityState.Modified;
-            _db.SaveChanges();
-            return View("IndexOfNotebook", _db.Items.Where(i => i.ItemType.Id == 8).OrderBy(i => i.Name).ToList());
+            await _db.SaveChangesAsync();
+            var model = new ItemIndexViewModel
+            {
+                Items = await _db.Items.Where(i => i.ItemType.Id == id).OrderBy(i => i.Name).ToListAsync()
+            };
+            return View("IndexOfNotebook", model);
         }
 
         // GET: Items/Grant/5

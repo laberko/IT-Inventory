@@ -38,10 +38,10 @@
             @Html.DisplayFor(modelItem => item.Quantity)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.WhoGave.FullName)
+            @Html.DisplayFor(modelItem => item.WhoGave.ShortName)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.WhoTook.FullName)
+            @Html.DisplayFor(modelItem => item.WhoTook.ShortName)
         </td>
         <td>
             @Html.ActionLink("Удалить", "Delete", new {id = item.Id})

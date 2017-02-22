@@ -16,6 +16,7 @@
         <hr />
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
         @Html.HiddenFor(model => model.Id)
+        @Html.HiddenFor(model => model.ItemTypeName)
         @Html.HiddenFor(model => model.ItemTypeId)
 
         <div class="form-group">
@@ -46,6 +47,8 @@
         {
             <div class="form-group">
                 @Html.HiddenFor(model => model.AttributeValues[i].Id)
+                @Html.HiddenFor(model => model.AttributeValues[i].Name)
+                @Html.HiddenFor(model => model.AttributeValues[i].IsNumber)
                 @Html.HiddenFor(model => model.AttributeValues[i].AttributeId)
                 @Html.Label(Model.AttributeValues[i].Name, htmlAttributes: new { @class = "control-label col-md-2" })
                 <div class="col-md-10">

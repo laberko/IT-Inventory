@@ -1,4 +1,4 @@
-﻿@model IEnumerable<IT_Inventory.Models.Item>
+﻿@model IT_Inventory.ViewModels.ItemIndexViewModel
 
 @{
     ViewBag.Title = "Оборудование";
@@ -10,39 +10,72 @@
     {
         @Html.ActionLink(type.Name, "Index", new { id = type.Id }, new { @class = "btn btn-primary" })
     }
-        <table class="table">
-        <tr>
+<table class="table">
+    <tr>
         <th>
-                @Html.DisplayNameFor(model => model.ItemType)
-            </th>
+            @Html.DisplayNameFor(model => model.Items.First().ItemType.Name)
+        </th>
         <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
+            @Html.DisplayNameFor(model => model.Items.First().Name)
+        </th>
         <th>
-                @Html.DisplayNameFor(model => model.Quantity)
-            </th>
+            @Html.DisplayNameFor(model => model.Items.First().Quantity)
+        </th>
         <th></th>
+    </tr>
+    @foreach (var item in Model.Items)
+    {
+        <tr style="@(item.Quantity <= item.MinQuantity && !Model.IsUrgent ? "color:red" : "")">
+            <td>
+                @Html.DisplayFor(modelItem => item.ItemType.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Quantity)
+            </td>
+            <td style="color: black">
+                @Html.ActionLink("Выдать", "Grant", new {id = item.Id}) |
+                @Html.ActionLink("Принять", "Recieve", new {id = item.Id}) |
+                @Html.ActionLink("История", "Index", "Histories", new {id = item.Id}, null) |
+                @Html.ActionLink("Редактировать", "Edit", new {id = item.Id}) |
+                @Html.ActionLink("Подробно", "Details", new {id = item.Id}) |
+                @Html.ActionLink("Удалить", "Delete", new {id = item.Id})
+            </td>
         </tr>
-        @foreach (var item in Model)
+    }
+</table>
+
+<!-- pager -->
+@if (Model.Pager != null && Model.Pager.EndPage > 1)
+{
+    <ul class="pagination">
+        @if (Model.Pager.CurrentPage > 1)
         {
-        <tr style="@(item.Quantity <= item.MinQuantity ? "color:red" : "")">
-        <td>
-                    @Html.DisplayFor(modelItem => item.ItemType.Name)
-                </td>
-        <td>
-                    @Html.DisplayFor(modelItem => item.Name)
-                </td>
-        <td>
-                    @Html.DisplayFor(modelItem => item.Quantity)
-                </td>
-        <td style="color:black">
-                    @Html.ActionLink("Выдать", "Grant", new { id = item.Id }) |
-                    @Html.ActionLink("Принять", "Recieve", new { id = item.Id }) |
-                    @Html.ActionLink("История", "Index", "Histories", new { id = item.Id }, null) |
-                    @Html.ActionLink("Редактировать", "Edit", new { id = item.Id }) |
-                    @Html.ActionLink("Подробно", "Details", new { id = item.Id }) |
-                    @Html.ActionLink("Удалить", "Delete", new { id = item.Id })
-                </td>
-            </tr>
+            <li>
+                @Html.ActionLink("Первая", "Index", new { page = 1 })
+            </li>
+            <li>
+                @Html.ActionLink("Предыдущая", "Index", new { page = Model.Pager.CurrentPage - 1 })
+            </li>
         }
-    </table>
+
+        @for (var pageNum = Model.Pager.StartPage; pageNum <= Model.Pager.EndPage; pageNum++)
+        {
+            <li class="@(pageNum == Model.Pager.CurrentPage ? "active" : "")">
+                @Html.ActionLink(pageNum.ToString(), "Index", new { page = pageNum, urgent = Model.IsUrgent })
+            </li>
+        }
+
+        @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
+        {
+            <li>
+                @Html.ActionLink("Следующая", "Index", new { page = Model.Pager.CurrentPage + 1 })
+            </li>
+            <li>
+                @Html.ActionLink("Последняя", "Index", new { page = Model.Pager.TotalPages })
+            </li>
+        }
+    </ul>
+}

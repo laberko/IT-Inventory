@@ -1,68 +1,131 @@
-﻿@model IEnumerable<IT_Inventory.Models.History>
+﻿@model IT_Inventory.ViewModels.HistoryIndexViewModel
 
 @{
-    ViewBag.Title = "История действий";
+    ViewBag.Title = Model.GrantHistory ? "История выданного оборудования" : "История действий";
 }
 
 <h2>@ViewBag.Title</h2>
-@if (!string.IsNullOrEmpty(ViewBag.MonthGrant))
+
+@if (!string.IsNullOrEmpty(Model.ItemName))
 {
-    <h4>Выдано за 30 дней: @ViewBag.MonthGrant</h4>
-    <h4>Получено за 30 дней: @ViewBag.MonthRecieve</h4>
+    <h4>@Model.ItemName</h4>
+}
+@if (!string.IsNullOrEmpty(Model.PersonName))
+{
+    <h4>@Model.PersonName</h4>
+}
+@if (Model.MonthGrant > 0)
+{
+    <h4>Выдано за 30 дней: @Model.MonthGrant</h4>
+}
+@if (Model.MonthRecieve > 0)
+{
+    <h4>Получено за 30 дней: @Model.MonthRecieve</h4>
 }
 
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.Date)
+            @Html.DisplayNameFor(model => model.Histories.First().Date)
+        </th>
+        @if (string.IsNullOrEmpty(Model.ItemName))
+        {
+            <th>
+                @Html.DisplayNameFor(model => model.Histories.First().Item)
+            </th>
+        }
+        @if (!Model.GrantHistory)
+        {
+            <th>
+                @Html.DisplayNameFor(model => model.Histories.First().Recieved)
+            </th>
+        }
+        <th>
+            @Html.DisplayNameFor(model => model.Histories.First().Quantity)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Item)
+            @Html.DisplayNameFor(model => model.Histories.First().WhoGave)
         </th>
-
-        <th>
-            @Html.DisplayNameFor(model => model.Recieved)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Quantity)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.WhoGave)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.WhoTook)
-        </th>
+        @if (string.IsNullOrEmpty(Model.PersonName))
+        {
+            <th>
+                @Html.DisplayNameFor(model => model.Histories.First().WhoTook)
+            </th>
+        }
         <th></th>
     </tr>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Date)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Item.Name)
-        </td>
-
-        <td>
-            @if (item.Recieved)
+    @foreach (var item in Model.Histories)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Date)
+            </td>
+            @if (string.IsNullOrEmpty(Model.ItemName))
             {
-                @Html.DisplayFor(modelItem => item.Recieved)
+                <td>
+                    @Html.DisplayFor(modelItem => item.Item.Name)
+                </td>
             }
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Quantity)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.WhoGave.FullName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.WhoTook.FullName)
-        </td>
-
-        <td>
-            @Html.ActionLink("Удалить", "Delete", new {id = item.Id})
-        </td>
-    </tr>
-}
+            @if (!Model.GrantHistory)
+            {
+                <td>
+                    @if (item.Recieved)
+                    {
+                        @Html.DisplayFor(modelItem => item.Recieved)
+                    }
+                </td>
+            }
+            <td>
+                @Html.DisplayFor(modelItem => item.Quantity)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.WhoGave.ShortName)
+            </td>
+            @if (string.IsNullOrEmpty(Model.PersonName))
+            {
+                <td>
+                    @Html.DisplayFor(modelItem => item.WhoTook.ShortName)
+                </td>
+            }
+            <td>
+                @Html.ActionLink("Удалить", "Delete", new {id = item.Id})
+            </td>
+        </tr>
+    }
 </table>
+
+
+
+<!-- pager -->
+@if (Model.Pager != null && Model.Pager.EndPage > 1)
+{
+    <ul class="pagination">
+        @if (Model.Pager.CurrentPage > 1)
+        {
+            <li>
+                @Html.ActionLink("Первая", "Index", new { id = Model.Id, page = 1 })
+            </li>
+            <li>
+                @Html.ActionLink("Предыдущая", "Index", new { id = Model.Id, page = Model.Pager.CurrentPage - 1 })
+            </li>
+        }
+
+        @for (var pageNum = Model.Pager.StartPage; pageNum <= Model.Pager.EndPage; pageNum++)
+        {
+            <li class="@(pageNum == Model.Pager.CurrentPage ? "active" : "")">
+                @Html.ActionLink(pageNum.ToString(), "Index", new { id = Model.Id, page = pageNum })
+            </li>    
+        }
+
+        @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
+        {
+            <li>
+                @Html.ActionLink("Следующая", "Index", new { id = Model.Id, page = Model.Pager.CurrentPage + 1 })
+            </li>
+            <li>
+                @Html.ActionLink("Последняя", "Index", new { id = Model.Id, page = Model.Pager.TotalPages })
+            </li>
+        }
+    </ul>
+}

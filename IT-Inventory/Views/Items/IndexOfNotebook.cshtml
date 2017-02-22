@@ -1,4 +1,4 @@
-﻿@model IEnumerable<IT_Inventory.Models.Item>
+﻿@model IT_Inventory.ViewModels.ItemIndexViewModel
 
 @{
     ViewBag.Title = "Командировочные ноутбуки";
@@ -13,14 +13,14 @@
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.Name)
+            @Html.DisplayNameFor(model => model.Items.First().Name)
         </th>
         <th>
             Кому выдан
         </th>
-        @if (Model.FirstOrDefault() != null)
+        @if (Model.Items.FirstOrDefault() != null)
         {
-            foreach (var attribute in Model.FirstOrDefault().ItemType.Attributes)
+            foreach (var attribute in Model.Items.FirstOrDefault().ItemType.Attributes)
             {
                 <th>
                     @Html.DisplayName(attribute.Name)
@@ -30,7 +30,7 @@
         <th></th>
     </tr>
 
-@foreach (var item in Model) {
+@foreach (var item in Model.Items) {
     <tr style="@(item.Quantity == 0 ? "color:red" : "")">
         <td>
             @item.Name
@@ -38,16 +38,16 @@
         <td>
             @if (item.Quantity == 0 && item.Histories.Any(h => !h.Recieved))
             {
-                @item.Histories.Where(h => !h.Recieved).OrderByDescending(h => h.Date).FirstOrDefault().WhoTook.FullName
+                @item.Histories.Where(h => !h.Recieved).OrderByDescending(h => h.Date).FirstOrDefault().WhoTook.ShortName
             }
             else
             {
                 @Html.Label("В наличии")
             }
         </td>
-        @if (Model.FirstOrDefault() != null)
+        @if (Model.Items.FirstOrDefault() != null)
         {
-            foreach (var attribute in Model.FirstOrDefault().ItemType.Attributes)
+            foreach (var attribute in Model.Items.FirstOrDefault().ItemType.Attributes)
             {
                 <td>
                     @if (item.AttributeValues.FirstOrDefault(a => a.Attribute == attribute) != null)
@@ -57,7 +57,6 @@
                 </td>
             }
         }
-
         <td>
             @(item.Quantity != 0 ? Html.ActionLink("Выдать ", "Grant", new {id = item.Id}) : Html.ActionLink("Вернуть", "RecieveOneNotebook", new {id = item.Id}))
             |
