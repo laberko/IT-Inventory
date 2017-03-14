@@ -86,7 +86,10 @@
             }
         }
         <td style="color:black">
-            @Html.ActionLink("Выдать", "Grant", new { id = item.Id }) |
+        @if (item.Quantity > 0)
+        {
+            @Html.ActionLink("Выдать", "Grant", new { id = item.Id }) @: |
+        }
             @Html.ActionLink("Принять", "Recieve", new { id = item.Id }) |
             @Html.ActionLink("История", "Index", "Histories", new { id = item.Id }, null) |
             @Html.ActionLink("Редактировать", "Edit", new { id = item.Id }) |

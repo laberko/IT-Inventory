@@ -35,7 +35,7 @@
         <td>
             @item.Name
         </td>
-        <td>
+        <td white-space: nowrap>
             @if (item.Quantity == 0 && item.Histories.Any(h => !h.Recieved))
             {
                 @item.Histories.Where(h => !h.Recieved).OrderByDescending(h => h.Date).FirstOrDefault().WhoTook.ShortName
@@ -49,7 +49,7 @@
         {
             foreach (var attribute in Model.Items.FirstOrDefault().ItemType.Attributes)
             {
-                <td>
+                <td white-space: nowrap>
                     @if (item.AttributeValues.FirstOrDefault(a => a.Attribute == attribute) != null)
                     {
                         @item.AttributeValues.FirstOrDefault(a => a.Attribute == attribute).Value
@@ -57,7 +57,7 @@
                 </td>
             }
         }
-        <td>
+        <td style="color:black">
             @(item.Quantity != 0 ? Html.ActionLink("Выдать ", "Grant", new {id = item.Id}) : Html.ActionLink("Вернуть", "RecieveOneNotebook", new {id = item.Id}))
             |
             @Html.ActionLink("История", "Index", "Histories", new {id = item.Id}, null) |

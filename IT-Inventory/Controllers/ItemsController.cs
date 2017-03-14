@@ -37,7 +37,7 @@ namespace IT_Inventory.Controllers
                     return View(model);
                 // trip notebooks
                 case 8:
-                    model.Items = await _db.Items.Where(i => i.ItemType.Id == id).OrderBy(i => i.Name).ToListAsync();
+                    model.Items = await _db.Items.Where(i => i.ItemType.Id == id).OrderBy(i => i.AttributeValues.FirstOrDefault(a => a.Attribute.Id == 8).Value).ToListAsync();
                     return View("IndexOfNotebook", model);
                 // items of type
                 default:
@@ -127,7 +127,14 @@ namespace IT_Inventory.Controllers
             //    ModelState.AddModelError(string.Empty, "Элемент с таким именем уже существует в базе (" + item.Name + ")!");
             //    return View(item);
             //}
+
             // create new model item
+            // if trip notebook:
+            if (item.ItemTypeId == 8)
+            {
+                item.Quantity = 1;
+                item.MinQuantity = 0;
+            }
             var newItem = new Item
             {
                 Name = item.Name,
@@ -358,11 +365,11 @@ namespace IT_Inventory.Controllers
             item.Quantity++;
             _db.Entry(item).State = EntityState.Modified;
             await _db.SaveChangesAsync();
-            var model = new ItemIndexViewModel
-            {
-                Items = await _db.Items.Where(i => i.ItemType.Id == id).OrderBy(i => i.Name).ToListAsync()
-            };
-            return View("IndexOfNotebook", model);
+            //var model = new ItemIndexViewModel
+            //{
+            //    Items = await _db.Items.Where(i => i.ItemType.Id == id).OrderBy(i => i.Name).ToListAsync()
+            //};
+            return RedirectToAction("Index", new { id = 8 } );
         }
 
         // GET: Items/Grant/5
@@ -381,7 +388,8 @@ namespace IT_Inventory.Controllers
             {
                 Id = (int)id,
                 Name = item.Name,
-                Quantity = 1
+                Quantity = 1,
+                ItemTypeId = item.ItemType.Id
             };
             return View(itemModel);
         }
@@ -399,6 +407,9 @@ namespace IT_Inventory.Controllers
             var editItem = await _db.Items.FindAsync(item.Id);
             if (editItem == null)
                 return HttpNotFound();
+            //if trip notebook
+            if (item.ItemTypeId == 8)
+                item.Quantity = 1;
             // check if we give more than we have
             if (editItem.Quantity < item.Quantity)
             {

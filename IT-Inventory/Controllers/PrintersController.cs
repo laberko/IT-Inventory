@@ -29,10 +29,10 @@ namespace IT_Inventory.Controllers
             if (office == null)
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             foreach(var dep in _db.Departments.Where(d => d.Office.Id == office.Id))
-                printers.AddRange(_db.Printers.Where(printer => printer.Department.Id == dep.Id).OrderBy(p => p.Name));
+                printers.AddRange(_db.Printers.Where(printer => printer.Department.Id == dep.Id));
             ViewBag.Office = office.Name;
             ViewBag.Count = printers.Count.ToString();
-            return View(printers);
+            return View(printers.OrderBy(p => p.Name));
         }
 
         // GET: Printers/Details/5
