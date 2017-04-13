@@ -12,37 +12,42 @@
     @Scripts.Render("~/bundles/modernizr")
 </head>
 <body>
+@if (User.IsInRole(@"RIVS\IT-Dep"))
+{
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                @Html.ActionLink("Инвентаризация", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
-            </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("Склад", "Index", "Items", null, new { @href = "/Items/Index" })</li>
-                    <li>@Html.ActionLink("Принтеры", "Index", "Printers", null, new { @href = "/Printers/Index" })</li>
-                    <li>@Html.ActionLink("История", "Index", "Histories", null, new { @href = "/Histories/Index" })</li>
-                    <li>@Html.ActionLink("Сотрудники", "Index", "People", null, new { @href = "/People/Index" })</li>
-                </ul>
-                <p class="nav navbar-text navbar-right">Здравствуйте, @User.Identity.Name.GetUserName()!</p>
-            </div>
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    @Html.ActionLink("Инвентаризация", "Index", "Home", new {area = ""}, new {@class = "navbar-brand"})
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li>@Html.ActionLink("Склад", "Index", "Items", null, new {@href = "/Items/Index"})</li>
+                        <li>@Html.ActionLink("Принтеры", "Index", "Printers", null, new {@href = "/Printers/Index"})</li>
+                        <li>@Html.ActionLink("История", "Index", "Histories", null, new {@href = "/Histories/Index"})</li>
+                        <li>@Html.ActionLink("Техподдержка", "Index", "SupportRequests", null, new { @href = "/SupportRequests/Index" })</li>
+                        <li>@Html.ActionLink("Сотрудники", "Index", "People", null, new {@href = "/People/Index"})</li>
+                        <li>@Html.ActionLink("Компьютеры", "Index", "Computers", null, new { @href = "/Computers/Index" })</li>
+                    </ul>
+                    <p class="nav navbar-text navbar-right">Здравствуйте, @User.Identity.Name.GetUserName()!</p>
+                </div>
         </div>
     </div>
-    <div class="container body-content">
-        @RenderBody()
-        <hr />
-        <footer>
-            <p>&copy; @DateTime.Now.Year – Департамент ИТ</p>
-        </footer>
-    </div>
+}
+<div class="container body-content">
+    @RenderBody()
+    <hr/>
+    <footer>
+        <p>&copy; @DateTime.Now.Year – Департамент ИТ</p>
+    </footer>
+</div>
 
-    @Scripts.Render("~/bundles/jquery")
-    @Scripts.Render("~/bundles/bootstrap")
-    @RenderSection("scripts", required: false)
+@Scripts.Render("~/bundles/jquery")
+@Scripts.Render("~/bundles/bootstrap")
+@RenderSection("scripts", required: false)
 </body>
 </html>

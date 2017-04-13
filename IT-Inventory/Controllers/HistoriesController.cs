@@ -29,7 +29,7 @@ namespace IT_Inventory.Controllers
                 //history for a person
                 else
                 {
-                    items = await _db.Histories.Where(h => h.WhoTook.Id == peopleId).ToListAsync();
+                    items = await _db.Histories.Where(h => h.WhoTook.Id == peopleId).OrderByDescending(h => h.Date).ToListAsync();
                     model.PersonName = _db.Persons.Find(peopleId).FullName;
                     model.GrantHistory = true;
                 }
@@ -41,7 +41,7 @@ namespace IT_Inventory.Controllers
                 //history for an item
                 items = await _db.Histories.Where(h => h.Item.Id == id).OrderByDescending(h => h.Date).ToListAsync();
                 model.ItemName = _db.Items.Find(id).Name;
-                model.MonthGrant = StaticData.CountGrant((int) id, 30);
+                model.MonthGrant = StaticData.CountItemGrant((int) id, 30);
                 model.MonthRecieve = StaticData.CountRecieve((int) id, 30);
                 model.Id = id;
             }

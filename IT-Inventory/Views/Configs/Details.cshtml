@@ -1,0 +1,109 @@
+﻿@model Report
+
+@{
+    ViewBag.Title = "Отчет о конфигурации";
+}
+
+<h1>Конфигурация @Model.CompName (@Model.UserName)</h1>
+
+<div>
+    @foreach (var page in Model.Page)
+    {
+        if (page.Group != null || page.Device != null)
+        {
+        <h1>@page.MenuTitle</h1>
+        <h2>@page.Title</h2>
+        }
+
+        @*if (page.Item != null)
+        {
+            <table class="table">
+                @foreach (var item in page.Item)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Title)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Value)
+                        </td>
+                    </tr>
+                }
+             </table>
+         }*@
+
+        if(page.Group != null)
+        {
+            foreach(var group in page.Group)
+            {
+                <h3>@group.Title</h3>
+                if (group.Item != null)
+                {
+                    <table class="table">
+                        @foreach (var item in group.Item)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Title)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Value)
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                }
+            }
+        }
+
+        if(page.Device != null)
+        {
+            foreach(var device in page.Device)
+            {
+                <h3>@device.Title</h3>
+                if (device.Item != null)
+                {
+                    <table class="table">
+                        @foreach (var item in device.Item)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Title)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.Value)
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                }
+                if(device.Group != null)
+                {
+                    foreach(var group in device.Group)
+                    {
+                        <h4>@group.Title</h4>
+                        if (group.Item != null)
+                        {
+                            <table class="table">
+                                @foreach(var item in group.Item)
+                                {
+                                <tr>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Title)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Value)
+                                    </td>
+                                </tr>
+                                }
+                            </table>
+                        }
+                    }
+                }
+            }
+        }
+    }
+</div>
+<p>
+    @Html.ActionLink("Назад к списку", "Index")
+</p>

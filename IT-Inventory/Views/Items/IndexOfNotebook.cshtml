@@ -18,9 +18,12 @@
         <th>
             Кому выдан
         </th>
+        <th>
+            ОС
+        </th>
         @if (Model.Items.FirstOrDefault() != null)
         {
-            foreach (var attribute in Model.Items.FirstOrDefault().ItemType.Attributes)
+            foreach (var attribute in Model.Items.FirstOrDefault().ItemType.Attributes.Where(a => a.Id != 14))
             {
                 <th>
                     @Html.DisplayName(attribute.Name)
@@ -45,9 +48,15 @@
                 @Html.Label("В наличии")
             }
         </td>
+        <td>
+            @if (item.AttributeValues.FirstOrDefault(a => a.Attribute.Id == 14) != null)
+            {
+                @item.AttributeValues.FirstOrDefault(a => a.Attribute.Id == 14).Value
+            }
+        </td>
         @if (Model.Items.FirstOrDefault() != null)
         {
-            foreach (var attribute in Model.Items.FirstOrDefault().ItemType.Attributes)
+            foreach (var attribute in Model.Items.FirstOrDefault().ItemType.Attributes.Where(a => a.Id != 14))
             {
                 <td white-space: nowrap>
                     @if (item.AttributeValues.FirstOrDefault(a => a.Attribute == attribute) != null)

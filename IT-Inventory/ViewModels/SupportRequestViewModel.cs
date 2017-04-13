@@ -1,11 +1,10 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using IT_Inventory.Models;
 
-namespace IT_Inventory.Models
+namespace IT_Inventory.ViewModels
 {
-    public class SupportRequest
+    public class SupportRequestViewModel
     {
-        [Key]
         public int Id { get; set; }
 
         [Display(Name = "Текст")]
@@ -15,9 +14,9 @@ namespace IT_Inventory.Models
         public string Comment { get; set; }
 
         [Display(Name = "Оценка")]
-        public int Mark { get; set; }
+        public string Mark { get; set; }
 
-        [Display(Name = "Отзыв")]
+        [Display(Name = "Отзыв о выполнении")]
         public string FeedBack { get; set; }
 
         [Display(Name = "Срочность")]
@@ -29,50 +28,36 @@ namespace IT_Inventory.Models
         [Display(Name = "Состояние")]
         public int State { get; set; }
 
-        [Display(Name = "Создана")]
-        public DateTime CreationTime { get; set; }
-
-        [Display(Name = "Принята")]
-        public DateTime? StartTime { get; set; }
-
-        [Display(Name = "Завершена")]
-        public DateTime? FinishTime { get; set; }
-
         [Display(Name = "Установлено ПО")]
         public string SoftwareInstalled { get; set; }
 
         [Display(Name = "Восстановлено ПО")]
-
         public string SoftwareRepaired { get; set; }
 
         [Display(Name = "Обновлено ПО")]
-
         public string SoftwareUpdated { get; set; }
 
         [Display(Name = "Удалено ПО")]
-
         public string SoftwareRemoved { get; set; }
 
         [Display(Name = "Установлено оборудование")]
-
         public string HardwareInstalled { get; set; }
 
         [Display(Name = "Заменено оборудование")]
-
         public string HardwareReplaced { get; set; }
 
         [Display(Name = "Другие действия")]
-
         public string OtherActions { get; set; }
 
         [Display(Name = "Пользователь")]
-        public virtual Person From { get; set; }
+        public Person From { get; set; }
 
         [Display(Name = "Исполнитель")]
-        public virtual Person To { get; set; }
+        public int ToId { get; set; }
 
         [Display(Name = "Компьютер")]
+        public Computer FromComputer { get; set; }
 
-        public virtual Computer FromComputer { get; set; }
+        public bool EditByIt { get; set; }
     }
 }

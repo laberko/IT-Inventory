@@ -135,6 +135,8 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Controllers\ComputersController.cs" />
+    <Compile Include="Controllers\ConfigsController.cs" />
     <Compile Include="Controllers\DepartmentsController.cs" />
     <Compile Include="Controllers\HistoriesController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -144,6 +146,7 @@
     <Compile Include="Controllers\OfficesController.cs" />
     <Compile Include="Controllers\PeopleController.cs" />
     <Compile Include="Controllers\PrintersController.cs" />
+    <Compile Include="Controllers\SupportRequestsController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -159,7 +162,28 @@
     <Compile Include="Migrations\201702171358202_29.Designer.cs">
       <DependentUpon>201702171358202_29.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201703311009390_30.cs" />
+    <Compile Include="Migrations\201703311009390_30.Designer.cs">
+      <DependentUpon>201703311009390_30.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201703311012528_31.cs" />
+    <Compile Include="Migrations\201703311012528_31.Designer.cs">
+      <DependentUpon>201703311012528_31.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201704061420408_32.cs" />
+    <Compile Include="Migrations\201704061420408_32.Designer.cs">
+      <DependentUpon>201704061420408_32.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201704101529045_33.cs" />
+    <Compile Include="Migrations\201704101529045_33.Designer.cs">
+      <DependentUpon>201704101529045_33.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201704101659549_34.cs" />
+    <Compile Include="Migrations\201704101659549_34.Designer.cs">
+      <DependentUpon>201704101659549_34.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Models\Computer.cs" />
     <Compile Include="Models\Item.cs" />
     <Compile Include="Models\Printer.cs" />
     <Compile Include="Models\SupportRequest.cs" />
@@ -169,6 +193,8 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="ViewModels\ComputerIndexViewModel.cs" />
+    <Compile Include="ViewModels\ComputerViewModel.cs" />
     <Compile Include="ViewModels\DepartmentViewModel.cs" />
     <Compile Include="Models\Department.cs" />
     <Compile Include="Models\History.cs" />
@@ -188,6 +214,10 @@
     <Compile Include="ViewModels\PeopleIndexViewModel.cs" />
     <Compile Include="ViewModels\PrinterViewModel.cs" />
     <Compile Include="StaticData.cs" />
+    <Compile Include="Report.cs" />
+    <Compile Include="ViewModels\ReportViewModel.cs" />
+    <Compile Include="ViewModels\SupportRequestViewModel.cs" />
+    <Compile Include="Worker.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap-theme.css" />
@@ -280,6 +310,19 @@
     <Content Include="Views\Printers\Details.cshtml" />
     <Content Include="Views\Printers\Edit.cshtml" />
     <Content Include="Views\Printers\Index.cshtml" />
+    <Content Include="Views\Configs\Index.cshtml" />
+    <Content Include="Views\Configs\Details.cshtml" />
+    <Content Include="Views\Computers\Delete.cshtml" />
+    <Content Include="Views\Computers\Details.cshtml" />
+    <Content Include="Views\Computers\Edit.cshtml" />
+    <Content Include="Views\Computers\Index.cshtml" />
+    <Content Include="Views\SupportRequests\Create.cshtml" />
+    <Content Include="Views\SupportRequests\Delete.cshtml" />
+    <Content Include="Views\SupportRequests\Details.cshtml" />
+    <Content Include="Views\SupportRequests\EditByIt.cshtml" />
+    <Content Include="Views\SupportRequests\Index.cshtml" />
+    <Content Include="Views\SupportRequests\EditByUser.cshtml" />
+    <Content Include="Views\SupportRequests\Finish.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -296,6 +339,21 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201702171358202_29.resx">
       <DependentUpon>201702171358202_29.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201703311009390_30.resx">
+      <DependentUpon>201703311009390_30.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201703311012528_31.resx">
+      <DependentUpon>201703311012528_31.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201704061420408_32.resx">
+      <DependentUpon>201704061420408_32.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201704101529045_33.resx">
+      <DependentUpon>201704101529045_33.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201704101659549_34.resx">
+      <DependentUpon>201704101659549_34.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

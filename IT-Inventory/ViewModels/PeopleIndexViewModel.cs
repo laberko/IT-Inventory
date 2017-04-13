@@ -5,7 +5,8 @@ namespace IT_Inventory.ViewModels
 {
     public class PeopleIndexViewModel
     {
-        public List<Person> People { get; set; }
+        public IEnumerable<Person> People { get; set; }
         public bool IsRefreshed { get; set; }
+        public Pager Pager { get; set; }
     }
 }

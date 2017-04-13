@@ -1,0 +1,81 @@
+﻿@model IT_Inventory.ViewModels.ComputerViewModel
+
+@{
+    ViewBag.Title = "Подробно";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<div>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.ComputerName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ComputerName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Owner)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Owner)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Cpu)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Cpu)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Ram)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Ram)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MotherBoard)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MotherBoard)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.VideoAdapter)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.VideoAdapter)
+        </dd>
+
+        <dt>
+            &nbsp;
+        </dt>
+        <dd>
+            &nbsp;
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Software)
+        </dt>
+        <dd>
+            @foreach (var item in Model.Software)
+            {
+                @item<br>
+            }
+        </dd>
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Редактировать", "Edit", new { id = Model.Id }) |
+    @Html.ActionLink("Назад к списку", "Index")
+</p>

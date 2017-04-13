@@ -1,6 +1,4 @@
-﻿using System.Data.Entity;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using System.Web.Mvc;
 using IT_Inventory.Models;
 using IT_Inventory.ViewModels;
@@ -13,12 +11,9 @@ namespace IT_Inventory.Controllers
         private readonly InventoryModel _db = new InventoryModel();
 
         // GET: People
-        public async Task<ActionResult> Index(bool updateList = false)
+        public ActionResult Index(bool updateList = false, int page = 1)
         {
-            var model = new PeopleIndexViewModel
-            {
-                People = await _db.Persons.OrderBy(p => p.FullName).ToListAsync()
-            };
+            var model = new PeopleIndexViewModel();
             //sync users table with AD
             if (updateList)
             {
@@ -27,6 +22,10 @@ namespace IT_Inventory.Controllers
             }
             else
                 model.IsRefreshed = false;
+            var items = _db.Persons.OrderBy(p => p.FullName).ToList();
+            var pager = new Pager(items.Count, page, 18);
+            model.People = items.Skip((pager.CurrentPage - 1) * pager.PageSize).Take(pager.PageSize);
+            model.Pager = pager;
             return View(model);
         }
 

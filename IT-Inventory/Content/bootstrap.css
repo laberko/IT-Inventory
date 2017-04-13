@@ -1455,7 +1455,7 @@ dd {
 @media (min-width: 768px) {
   .dl-horizontal dt {
     float: left;
-    width: 160px;
+    width: 200px;
     overflow: hidden;
     clear: left;
     text-align: right;
@@ -1463,7 +1463,7 @@ dd {
     white-space: nowrap;
   }
   .dl-horizontal dd {
-    margin-left: 180px;
+    margin-left: 220px;
   }
 }
 abbr[title],
@@ -1598,9 +1598,9 @@ pre code {
     width: 970px;
   }
 }
-@media (min-width: 1200px) {
+@media (min-width: 1600px) {
   .container {
-    width: 1170px;
+    width: 1570px;
   }
 }
 .container-fluid {
@@ -2091,7 +2091,7 @@ pre code {
     margin-left: 0;
   }
 }
-@media (min-width: 1200px) {
+@media (min-width: 1600px) {
   .col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12 {
     float: left;
   }
@@ -3178,6 +3178,9 @@ fieldset[disabled] .btn-primary.focus {
   color: #fff;
   background-color: #5cb85c;
   border-color: #4cae4c;
+  margin-top:10px;
+  margin-right:10px;
+  margin-bottom:10px;
 }
 .btn-success:focus,
 .btn-success.focus {
@@ -6664,7 +6667,7 @@ button.close {
     display: inline-block !important;
   }
 }
-@media (min-width: 1200px) {
+@media (min-width: 1600px) {
   .visible-lg {
     display: block !important;
   }
@@ -6679,17 +6682,17 @@ button.close {
     display: table-cell !important;
   }
 }
-@media (min-width: 1200px) {
+@media (min-width: 1600px) {
   .visible-lg-block {
     display: block !important;
   }
 }
-@media (min-width: 1200px) {
+@media (min-width: 1600px) {
   .visible-lg-inline {
     display: inline !important;
   }
 }
-@media (min-width: 1200px) {
+@media (min-width: 1600px) {
   .visible-lg-inline-block {
     display: inline-block !important;
   }
@@ -6709,7 +6712,7 @@ button.close {
     display: none !important;
   }
 }
-@media (min-width: 1200px) {
+@media (min-width: 1600px) {
   .hidden-lg {
     display: none !important;
   }

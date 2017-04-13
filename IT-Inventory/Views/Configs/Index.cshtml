@@ -1,0 +1,44 @@
+﻿@model IEnumerable<IT_Inventory.ViewModels.ReportViewModel>
+
+@{
+    ViewBag.Title = "Отчеты о конфигурации";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<table class="table">
+    <tr>
+        <th>
+            Имя компьютера
+        </th>
+        <th>
+            Имя пользователя
+        </th>
+        <th>
+            Дата отчета
+        </th>
+
+
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.CompName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.UserName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ReportDateString)
+        </td>
+
+
+        <td>
+            @Html.ActionLink("Отчет", "Details", new { compName = item.CompName })
+        </td>
+    </tr>
+}
+
+</table>

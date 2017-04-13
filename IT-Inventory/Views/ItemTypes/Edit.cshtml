@@ -27,7 +27,7 @@
         <div class="form-group">
             @Html.LabelFor(model => model.AttributeIds, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @for (var i = 0; i < 5; i++)
+                @for (var i = 0; i < 6; i++)
                 {
                     <p>
                         @Html.DropDownListFor(model => model.AttributeIds[i], StaticData.SelectAttributes(), "", new { @class = "btn btn-default dropdown-toggle" })

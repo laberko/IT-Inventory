@@ -1,0 +1,90 @@
+﻿@model IT_Inventory.ViewModels.ComputerIndexViewModel
+
+@{
+    ViewBag.Title = "Компьютеры";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<table class="table">
+    <tr>
+        <th white-space: nowrap>
+            @Html.DisplayNameFor(model => model.Computers.First().ComputerName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Computers.First().Owner)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Computers.First().Cpu)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Computers.First().Ram)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Computers.First().MotherBoard)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model.Computers) {
+    <tr>
+        <td white-space: nowrap>
+            @Html.DisplayFor(modelItem => item.ComputerName)
+        </td>
+        <td white-space: nowrap>
+            @Html.DisplayFor(modelItem => item.Owner)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Cpu)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Ram)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.MotherBoard)
+        </td>
+        <td>
+            @if (item.HasRequests)
+            {
+                @Html.ActionLink("Заявки", "Index", "SupportRequests", new { searchCompId = item.Id }, null) @:|
+            }
+            @Html.ActionLink("Редактировать", "Edit", new {id = item.Id}) |
+            @Html.ActionLink("Подробно", "Details", new {id = item.Id}) |
+            @Html.ActionLink("Отчет AIDA", "AidaDetails", new { name = item.ComputerName }) |
+            @Html.ActionLink("Удалить", "Delete", new {id = item.Id})
+        </td>
+    </tr>
+}
+</table>
+<!-- pager -->
+@if (Model.Pager != null && Model.Pager.EndPage > 1)
+{
+    <ul class="pagination">
+        @if (Model.Pager.CurrentPage > 1)
+        {
+            <li>
+                @Html.ActionLink("Первая", "Index", new { page = 1 })
+            </li>
+            <li>
+                @Html.ActionLink("Предыдущая", "Index", new { page = Model.Pager.CurrentPage - 1 })
+            </li>
+        }
+
+        @for (var pageNum = Model.Pager.StartPage; pageNum <= Model.Pager.EndPage; pageNum++)
+        {
+            <li class="@(pageNum == Model.Pager.CurrentPage ? "active" : "")">
+                @Html.ActionLink(pageNum.ToString(), "Index", new { page = pageNum })
+            </li>
+        }
+
+        @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
+        {
+            <li>
+                @Html.ActionLink("Следующая", "Index", new { page = Model.Pager.CurrentPage + 1 })
+            </li>
+            <li>
+                @Html.ActionLink("Последняя", "Index", new { page = Model.Pager.TotalPages })
+            </li>
+        }
+    </ul>
+}

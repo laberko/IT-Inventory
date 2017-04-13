@@ -5,40 +5,50 @@
 <div class="jumbotron">
     <h1>@ViewBag.Title</h1>
     <p class="lead">Сайт Департамента Информационных Технологий</p>
+    @Html.ActionLink("Техподдержка", "Index", "SupportRequests", null, new { @class = "btn btn-primary" })
     @Html.ActionLink("Всё оборудование", "Index", "Items", null, new { @class = "btn btn-primary" })
     @Html.ActionLink("Всe принтеры", "Index", "Printers", null, new { @class = "btn btn-primary" })
     @Html.ActionLink("Вся история", "Index", "Histories", null, new { @class = "btn btn-primary" })
-    @Html.ActionLink("Сотрудники", "Index", "People", null, new { @class = "btn btn-primary" })
     @Html.ActionLink("Расход за 30 дней", "Grant", "Histories", new { days = 30 }, new { @class = "btn btn-primary" })
     @Html.ActionLink("Приход за 30 дней", "Recieve", "Histories", new { days = 30 }, new { @class = "btn btn-primary" })
     @Html.ActionLink("Нехватка", "Index", "Items", new { urgent = true }, new { @class = "btn btn-danger" })
 </div>
 
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-lg-3">
         <h2>Склад</h2>
         @foreach (var type in StaticData.GetTypes().Where(t => t.Id != 11))
         {
             <p>@Html.ActionLink(type.Name, "Index", "Items", new { id = type.Id }, null)</p>
         }
     </div>
-    <div class="col-md-4">
+    <div class="col-lg-3">
         <h2>Принтеры</h2>
         @foreach (var office in StaticData.GetOffices())
         {
-            <p>@Html.ActionLink(office.Name, "Index", "Printers", new { officeId = office.Id }, null)</p>
+            <p>@Html.ActionLink(office.Name, "Index", "Printers", new {officeId = office.Id}, null)</p>
         }
         <p>@Html.ActionLink("Картриджи", "Index", "Items", new {id = 11}, null)</p>
+        <h2>История</h2>
+        <p>@Html.ActionLink("Расход", "Grant", "Histories")</p>
+        <p>@Html.ActionLink("Приход", "Recieve", "Histories")</p>
     </div>
-    <div class="col-md-4">
+    <div class="col-lg-3">
+        <h2>Техподдержка</h2>
+        <p>@Html.ActionLink("Все заявки", "Index", "SupportRequests")</p>
+        <p>@Html.ActionLink("Новые заявки", "Index", "SupportRequests", new { state = 0 }, null)</p>
+        <p>@Html.ActionLink("Заявки в работе", "Index", "SupportRequests", new { state = 1 }, null)</p>
+        <p>@Html.ActionLink("Выполненные заявки", "Index", "SupportRequests", new { state = 2 }, null)</p>
+        <p>@Html.ActionLink("Сотрудники", "Index", "People")</p>
+        <p>@Html.ActionLink("Компьютеры", "Index", "Computers")</p>
+        <p>@Html.ActionLink("Отчеты AIDA", "Index", "Configs")</p>
+    </div>
+    <div class="col-lg-3">
         <h2>Справочники</h2>
         <p>@Html.ActionLink("Офисы", "Index", "Offices")</p>
         <p>@Html.ActionLink("Департаменты", "Index", "Departments")</p>
         <p>@Html.ActionLink("Сотрудники (обновить)", "Index", "People", new { updateList = true }, null)</p>
         <p>@Html.ActionLink("Характеристики оборудования", "Index", "ItemAttributes")</p>
         <p>@Html.ActionLink("Типы оборудования", "Index", "ItemTypes")</p>
-        <h2>История</h2>
-        <p>@Html.ActionLink("Расход", "Grant", "Histories")</p>
-        <p>@Html.ActionLink("Приход", "Recieve", "Histories")</p>
     </div>
 </div>

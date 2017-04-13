@@ -1,0 +1,54 @@
+﻿@model IT_Inventory.Models.SupportRequest
+
+@{
+    ViewBag.Title = "Удаление";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<h3>Вы действительно хотите удалить эту заявку?</h3>
+<div>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.From)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.From.FullName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CreationTime)
+        </dt>
+
+        <dd>
+            @Model.CreationTime.ToString("f")
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Text)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Text)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.State)
+        </dt>
+
+        <dd>
+            @StaticData.RequestState[Model.State]
+        </dd>
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Удалить" class="btn btn-default" /> |
+            @Html.ActionLink("Назад к списку", "Index")
+        </div>
+    }
+</div>

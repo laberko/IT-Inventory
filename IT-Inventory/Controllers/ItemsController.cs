@@ -25,7 +25,7 @@ namespace IT_Inventory.Controllers
             {
                 // all items
                 case null:
-                    var items = new List<Item>();
+                    List<Item> items;
                     if (urgent == false)
                         items = await _db.Items.OrderBy(i => i.ItemType.Name).ThenBy(i => i.Name).ToListAsync();
                     else

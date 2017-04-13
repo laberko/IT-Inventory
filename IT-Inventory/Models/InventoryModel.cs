@@ -17,6 +17,7 @@ namespace IT_Inventory.Models
         public DbSet<ItemAttributeValue> ItemAttributeValues { get; set; }
         public DbSet<ItemType> ItemTypes { get; set; }
         public DbSet<SupportRequest> SupportRequests { get; set; }
+        public DbSet<Computer> Computers { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

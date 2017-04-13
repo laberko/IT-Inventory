@@ -10,8 +10,6 @@
 {
     <h3>Список сотрудников синхронизирован с Active Directory!</h3>
 }
-<hr />
-<h3>Департамент ИТ:</h3>
 <table class="table">
     <tr>
         <th>
@@ -21,35 +19,10 @@
             @Html.DisplayNameFor(model => model.People.First().AccountName)
         </th>
         <th></th>
-    </tr>
-    @foreach (var item in Model.People.Where(i => i.IsItUser))
-    {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FullName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.AccountName)
-            </td>
-            <td>
-                @Html.ActionLink("История (выдано)", "Index", "Histories", new { peopleId = item.Id }, null)
-            </td>
-        </tr>
-    }
-</table>
-<hr />
-<h3>Остальные сотрудники (Санкт-Петербург):</h3>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.People.First().FullName)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.People.First().AccountName)
-        </th>
+        <th></th>
         <th></th>
     </tr>
-    @foreach (var item in Model.People.Where(i => !i.IsItUser))
+    @foreach (var item in Model.People)
     {
         <tr>
             <td>
@@ -59,8 +32,56 @@
                 @Html.DisplayFor(modelItem => item.AccountName)
             </td>
             <td>
-                @Html.ActionLink("История (выдано)", "Index", "Histories", new { peopleId = item.Id }, null)
+                @if (StaticData.CountUserGrant(item.Id) > 0)
+                {
+                    @Html.ActionLink("История (выдано)", "Index", "Histories", new {peopleId = item.Id}, null)
+                }
             </td>
+            <td>
+                @if (StaticData.CountComputers(item.Id) > 0)
+                {
+                    @Html.ActionLink("Компьютер(ы)", "Index", "Computers", new {personId = item.Id}, null)
+                }
+            </td>
+            <td>
+                @if (item.SupportRequests.Count > 0)
+                {
+                    @Html.ActionLink("Заявки", "Index", "SupportRequests", new { searchUserId = item.Id }, null)
+                }
+            </td>
+
         </tr>
     }
 </table>
+<!-- pager -->
+@if (Model.Pager != null && Model.Pager.EndPage > 1)
+{
+    <ul class="pagination">
+        @if (Model.Pager.CurrentPage > 1)
+        {
+            <li>
+                @Html.ActionLink("Первая", "Index", new { page = 1 })
+            </li>
+            <li>
+                @Html.ActionLink("Предыдущая", "Index", new { page = Model.Pager.CurrentPage - 1 })
+            </li>
+        }
+
+        @for (var pageNum = Model.Pager.StartPage; pageNum <= Model.Pager.EndPage; pageNum++)
+        {
+            <li class="@(pageNum == Model.Pager.CurrentPage ? "active" : "")">
+                @Html.ActionLink(pageNum.ToString(), "Index", new { page = pageNum })
+            </li>
+        }
+
+        @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
+        {
+            <li>
+                @Html.ActionLink("Следующая", "Index", new { page = Model.Pager.CurrentPage + 1 })
+            </li>
+            <li>
+                @Html.ActionLink("Последняя", "Index", new { page = Model.Pager.TotalPages })
+            </li>
+        }
+    </ul>
+}

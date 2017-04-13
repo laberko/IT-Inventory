@@ -27,10 +27,12 @@ namespace IT_Inventory.Models
         [Display(Name = "Тип")]
         public virtual ItemType ItemType { get; set; }
 
+        //attribute-value pair collection
         public virtual ICollection<ItemAttributeValue> AttributeValues { get; set; }
 
         public virtual ICollection<History> Histories { get; set; }
 
+        //for cartridges
         public virtual ICollection<Printer> Printers { get; set; }
     }
 }
