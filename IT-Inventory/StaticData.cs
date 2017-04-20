@@ -4,13 +4,13 @@ using System.Data.Entity;
 using System.Diagnostics;
 using System.DirectoryServices;
 using System.DirectoryServices.AccountManagement;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
 using IT_Inventory.Models;
 
@@ -22,6 +22,17 @@ namespace IT_Inventory
         {
             using (var db = new InventoryModel())
             {
+                //foreach (var deptokill in db.Departments.Where(d => d.Office == null).AsEnumerable())
+                //{
+                //    foreach (var user in db.Persons.Where(p => p.Dep.Id == deptokill.Id).AsEnumerable())
+                //    {
+                //        user.Dep = null;
+                //        db.Entry(user).State = EntityState.Modified;
+                //    }
+                //    db.Departments.Remove(deptokill);
+                //}
+                //db.SaveChanges();
+
                 try
                 {
                     var adUsers = new List<Person>();
@@ -32,49 +43,87 @@ namespace IT_Inventory
                     {
                         if (@group != null)
                         {
-                            adUsers = (from p in @group.GetMembers(false)
-                                let entry = new DirectoryEntry("LDAP://DC=rivs,DC=org")
-                                select new DirectorySearcher(entry)
+                            adUsers = new List<Person>();
+                            foreach (var p in @group.GetMembers(false))
+                            {
+                                var entry = new DirectoryEntry("LDAP://DC=rivs,DC=org");
+                                var mySearcher = new DirectorySearcher(entry)
                                 {
                                     Filter = "(&(objectClass=person) (samaccountname=" + p.SamAccountName + "))"
-                                }
-                                into mySearcher
-                                select mySearcher.FindOne().GetDirectoryEntry()
-                                into resultEntry
-                                where resultEntry.Properties.Contains("DisplayName")
-                                      && !resultEntry.Properties.Contains("st")
-                                      && resultEntry.Properties.Contains("department")
-                                select new Person
+                                };
+                                var resultEntry = mySearcher.FindOne().GetDirectoryEntry();
+                                if (resultEntry.Properties.Contains("DisplayName") &&
+                                    !resultEntry.Properties.Contains("st") &&
+                                    resultEntry.Properties.Contains("department") &&
+                                    resultEntry.Properties.Contains("company"))
                                 {
-                                    FullName = resultEntry.Properties["DisplayName"].Value.ToString(),
-                                    AccountName = resultEntry.Properties["sAMAccountName"].Value.ToString(),
-                                    IsItUser = resultEntry.Properties["department"].Value.ToString() == "Департамент информационных технологий"
-                                }).ToList();
+                                    var depName = resultEntry.Properties["company"].Value.ToString();
+                                    var dep = db.Departments.FirstOrDefault(d => d.Name == depName);
+                                    if (dep == null)
+                                    {
+                                        var newDep = new Department
+                                        {
+                                            Name = depName
+                                        };
+                                        db.Departments.Add(newDep);
+                                        dep = newDep;
+                                    }
+                                    adUsers.Add(new Person
+                                    {
+                                        FullName = resultEntry.Properties["DisplayName"].Value.ToString(),
+                                        AccountName = resultEntry.Properties["sAMAccountName"].Value.ToString(),
+                                        Dep = dep,
+                                        Email = resultEntry.Properties.Contains("mail") 
+                                            ? resultEntry.Properties["mail"].Value.ToString() 
+                                            : string.Empty,
+                                        PhoneNumber = resultEntry.Properties.Contains("telephoneNumber") 
+                                            ? resultEntry.Properties["telephoneNumber"].Value.ToString() 
+                                            : string.Empty
+                                        //IsItUser = resultEntry.Properties["department"].Value.ToString() == "Департамент информационных технологий"
+                                    });
+                                }
+                            }
                         }
                     }
-                    //add non-existing users to db
+                    //add non-existing users to db or replace changed fields
                     foreach (var user in adUsers)
                     {
+                        //find ad user in db
                         var existingPerson = db.Persons.FirstOrDefault(p => p.AccountName == user.AccountName);
+                        var modified = false;
                         if (existingPerson == null)
                         {
                             db.Persons.Add(user);
                             newUsers.Add(user.FullName);
                         }
-                        else if (existingPerson.IsItUser != user.IsItUser)
-                        {
-                            existingPerson.IsItUser = user.IsItUser;
-                            db.Entry(existingPerson).State = EntityState.Modified;
-                        }
+                        //full name changed
                         else if (existingPerson.FullName != user.FullName)
                         {
                             existingPerson.FullName = user.FullName;
-                            db.Entry(existingPerson).State = EntityState.Modified;
+                            modified = true;
                         }
+                        //e-mail changed
+                        else if (existingPerson.Email != user.Email)
+                        {
+                            existingPerson.Email = user.Email;
+                            modified = true;
+                        }
+                        //phone number changed
+                        else if (existingPerson.PhoneNumber != user.PhoneNumber)
+                        {
+                            existingPerson.PhoneNumber = user.PhoneNumber;
+                            modified = true;
+                        }
+                        //departmant changed
+                        else if (existingPerson.Dep != user.Dep)
+                        {
+                            existingPerson.Dep = user.Dep;
+                            modified = true;
+                        }
+                        if (modified)
+                            db.Entry(existingPerson).State = EntityState.Modified;
                     }
                     //remove non-existing users from db
-                    //var nonExisting = db.Persons.Where(person => adUsers.All(u => u.AccountName != person.AccountName)).ToList();
-                    //var nonExisting = db.Persons.Where(person => adUsers.FirstOrDefault(u => u.AccountName == person.AccountName) == null);
                     var nonExistingIds = (from user in db.Persons.AsEnumerable()
                                           where adUsers.FirstOrDefault(u => u.AccountName == user.AccountName) == null
                                           select user.Id).ToArray();
@@ -86,18 +135,18 @@ namespace IT_Inventory
                             var nonExistingUser = db.Persons.Find(id);
                             if (nonExistingUser == null)
                                 continue;
+                            foreach (var history in db.Histories
+                                .Where(h => h.WhoTook.Id == nonExistingUser.Id || h.WhoGave.Id == nonExistingUser.Id).ToList())
+                                db.Histories.Remove(history);
+                            foreach (var comp in db.Computers.Where(c => c.Owner.Id == nonExistingUser.Id).ToList())
+                            {
+                                comp.Owner = null;
+                                db.Entry(comp).State = EntityState.Modified;
+                            }
                             db.Persons.Remove(nonExistingUser);
                             log.AppendLine(nonExistingUser.FullName);
                         }
                     }
-
-                    //if (nonExisting.Any())
-                    //{
-                    //    log.AppendLine("Удалены пользователи:");
-                    //    foreach (var user in nonExisting)
-                    //        log.AppendLine(user.FullName);
-                    //    db.Persons.RemoveRange(nonExisting);
-                    //}
 
                     db.SaveChanges();
                     if (newUsers.Count > 0)
@@ -111,21 +160,26 @@ namespace IT_Inventory
                 }
                 catch (Exception ex)
                 {
-                    Task.Run(() => ex.Message.WriteToLogAsync(EventLogEntryType.Error));
+                    var error = ex.Message + ex.InnerException?.Message + ex.InnerException?.InnerException?.Message;
+                    Task.Run(() => error.WriteToLogAsync(EventLogEntryType.Error));
                 }
             }
         }
-
         public static async void RefreshComputers()
         {
             using (var db = new InventoryModel())
             {
                 try
                 {
-                    //db.Computers.RemoveRange(db.Set<Computer>());
+                    //foreach (var comp in db.Computers)
+                    //{
+                    //    comp.FillInventedData();
+                    //    db.Entry(comp).State = EntityState.Modified;
+                    //}
                     //db.SaveChanges();
 
 
+                    var logNonEmpty = false;
                     var rootDir = new DirectoryInfo(@"\\rivs.org\it\ConfigReporting\ConfigReports");
                     var allComputers = new List<Computer>();        //all computers from aida reports
                     var log = new StringBuilder();
@@ -134,7 +188,7 @@ namespace IT_Inventory
                         var report = await Report.GetReportAsync(dir.Name);
                         if (report == null)
                             continue;
-                        allComputers.Add(new Computer
+                        var comp = new Computer
                         {
                             ComputerName = report.CompName,
                             Cpu = report.Cpu,
@@ -143,11 +197,10 @@ namespace IT_Inventory
                             VideoAdapter = report.VideoAdapter,
                             Software = report.Software,
                             Owner = await db.Persons.FirstOrDefaultAsync(p => p.AccountName == report.UserName),
-                        });
+                        };
+                        allComputers.Add(comp);
                     }
                     //cleanup database from non-existing computers
-                    //var nonExistingComputers = db.Computers.Where(existingComputer => allComputers
-                    //    .FirstOrDefault(c => c.ComputerName == existingComputer.ComputerName) == null).ToList();
                     var nonExistingCompNames = (from comp in db.Computers.AsEnumerable()
                                                 where allComputers.FirstOrDefault(c => c.ComputerName == comp.ComputerName) == null
                                                 select comp.ComputerName).ToArray();
@@ -161,16 +214,9 @@ namespace IT_Inventory
                                 continue;
                             db.Computers.Remove(nonExisting);
                             log.AppendLine(comp);
+                            logNonEmpty = true;
                         }
                     }
-
-                    //if (nonExistingComputers.Count > 0)
-                    //{
-                    //    db.Computers.RemoveRange(nonExistingComputers);
-                    //    log.AppendLine("Удалены компьютеры:");
-                    //    foreach (var comp in nonExistingComputers)
-                    //        log.AppendLine(comp.ComputerName);
-                    //}
 
                     log.AppendLine("Добавлены или изменены компьютеры:");
                     foreach (var comp in allComputers)
@@ -178,18 +224,23 @@ namespace IT_Inventory
                         var existingComputer = await db.Computers.FirstOrDefaultAsync(c => c.ComputerName == comp.ComputerName);
                         if (existingComputer == null)
                         {
+                            comp.FillInventedData();
                             db.Computers.Add(comp);
                             log.AppendLine(comp.ComputerName);
+                            logNonEmpty = true;
                         }
                         else if (!existingComputer.Equals(comp))
                         {
                             existingComputer.CopyConfig(comp);
+                            existingComputer.FillInventedData();
                             db.Entry(existingComputer).State = EntityState.Modified;
                             log.AppendLine(comp.ComputerName);
+                            logNonEmpty = true;
                         }
                     }
                     await db.SaveChangesAsync();
-                    await log.ToString().WriteToLogAsync(source: "Computers");
+                    if (logNonEmpty)
+                        await log.ToString().WriteToLogAsync(source: "Computers");
                 }
                 catch (Exception ex)
                 {
@@ -197,7 +248,6 @@ namespace IT_Inventory
                 }
             }
         }
-
         public static async Task WriteToLogAsync(this string log, EventLogEntryType type = EventLogEntryType.Information, string source = "Inventory")
         {
             const string logPath = "C:\\ProgramData\\Inventory\\";
@@ -300,7 +350,6 @@ namespace IT_Inventory
                     history => history.Quantity);
             }
         }
-
         public static int CountUserGrant(int id)
         {
             using (var db = new InventoryModel())
@@ -391,11 +440,15 @@ namespace IT_Inventory
             using (var db = new InventoryModel())
             {
                 var people = isInIt
-                    ? db.Persons.Where(p => p.IsItUser).OrderBy(p => p.FullName).ToList()
+                    ? db.Persons.Where(p => p.Dep.Name == "Департамент информационных технологий").OrderBy(p => p.FullName).ToList()
                     : db.Persons.OrderBy(p => p.FullName).ToList();
                 return new SelectList(people, "Id", "FullName");
             }
         }
+
+
+
+
 
 
 
@@ -426,9 +479,5 @@ namespace IT_Inventory
             {6, @"Файлы/папки" },
             {7, "Другое" }
         };
-
-
-
-
     }
 }

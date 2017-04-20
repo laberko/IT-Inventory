@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Net;
-using System.Web;
 using System.Web.Mvc;
 using IT_Inventory.Models;
 using IT_Inventory.ViewModels;
@@ -57,6 +54,17 @@ namespace IT_Inventory.Controllers
             if (state != null && state >= 0 && state <= 2)
                 return View(requests.Where(r => r.State == state).ToList());
             return View(requests.ToList());
+        }
+
+        public async Task<ActionResult> Modifications(int? compId)
+        {
+            if (compId == null || !User.IsInRole(@"RIVS\IT-Dep"))
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            var comp = await _db.Computers.FindAsync(compId);
+            if (comp == null || !comp.HasModifications)
+                return HttpNotFound();
+            var requests = comp.SupportRequests.Where(r => r.FinishTime != null).AsEnumerable();
+            return View(requests.Where(r => r.Modifications != null).OrderByDescending(r => r.FinishTime).ToList());
         }
 
         // GET: SupportRequests/Details/5

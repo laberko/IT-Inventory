@@ -6,6 +6,18 @@
 
 <h2>@ViewBag.Title</h2>
 
+@if (Model.PersonSearch == false)
+{
+    <ul class="pagination">
+        @foreach (var code in Model.DepCodes)
+        {
+            <li class="@(Model.DepCode == code ? "active" : "")">
+                @Html.ActionLink(code, "Index", new {depCode = code})
+            </li>
+        }
+    </ul>
+}
+
 <table class="table">
     <tr>
         <th white-space: nowrap>
@@ -22,6 +34,9 @@
         </th>
         <th>
             @Html.DisplayNameFor(model => model.Computers.First().MotherBoard)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Computers.First().VideoAdapter)
         </th>
         <th></th>
     </tr>
@@ -44,14 +59,21 @@
             @Html.DisplayFor(modelItem => item.MotherBoard)
         </td>
         <td>
+            @Html.DisplayFor(modelItem => item.VideoAdapter)
+        </td>
+        <td>
+            @if (item.HasModifications)
+            {
+                @Html.ActionLink("Изменения", "Modifications", "SupportRequests", new { compId = item.Id }, null) @:|
+            }
             @if (item.HasRequests)
             {
-                @Html.ActionLink("Заявки", "Index", "SupportRequests", new { searchCompId = item.Id }, null) @:|
+                @Html.ActionLink("Заявки", "Index", "SupportRequests", new {searchCompId = item.Id}, null) @:|
             }
             @Html.ActionLink("Редактировать", "Edit", new {id = item.Id}) |
-            @Html.ActionLink("Подробно", "Details", new {id = item.Id}) |
-            @Html.ActionLink("Отчет AIDA", "AidaDetails", new { name = item.ComputerName }) |
-            @Html.ActionLink("Удалить", "Delete", new {id = item.Id})
+            @Html.ActionLink("Удалить", "Delete", new {id = item.Id}) |
+            @Html.ActionLink("Фактически", "Details", new {id = item.Id}) |
+            @Html.ActionLink("Отчет AIDA", "AidaDetails", new {name = item.ComputerName})
         </td>
     </tr>
 }
@@ -63,27 +85,27 @@
         @if (Model.Pager.CurrentPage > 1)
         {
             <li>
-                @Html.ActionLink("Первая", "Index", new { page = 1 })
+                @Html.ActionLink("Первая", "Index", new { depCode = Model.DepCode, page = 1 })
             </li>
             <li>
-                @Html.ActionLink("Предыдущая", "Index", new { page = Model.Pager.CurrentPage - 1 })
+                @Html.ActionLink("Предыдущая", "Index", new { depCode = Model.DepCode, page = Model.Pager.CurrentPage - 1 })
             </li>
         }
 
         @for (var pageNum = Model.Pager.StartPage; pageNum <= Model.Pager.EndPage; pageNum++)
         {
             <li class="@(pageNum == Model.Pager.CurrentPage ? "active" : "")">
-                @Html.ActionLink(pageNum.ToString(), "Index", new { page = pageNum })
+                @Html.ActionLink(pageNum.ToString(), "Index", new { depCode = Model.DepCode, page = pageNum })
             </li>
         }
 
         @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
         {
             <li>
-                @Html.ActionLink("Следующая", "Index", new { page = Model.Pager.CurrentPage + 1 })
+                @Html.ActionLink("Следующая", "Index", new { depCode = Model.DepCode, page = Model.Pager.CurrentPage + 1 })
             </li>
             <li>
-                @Html.ActionLink("Последняя", "Index", new { page = Model.Pager.TotalPages })
+                @Html.ActionLink("Последняя", "Index", new { depCode = Model.DepCode, page = Model.Pager.TotalPages })
             </li>
         }
     </ul>

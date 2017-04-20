@@ -17,7 +17,7 @@ namespace IT_Inventory.Controllers
         public async Task<ActionResult> Index()
         {
             var departments = await _db.Departments.ToListAsync();
-            return View(departments.OrderBy(d => d.Office.Id).ThenBy(d => d.Name));
+            return View(departments.OrderBy(d => d.Name));
         }
 
         // GET: Departments/Details/5
@@ -48,6 +48,8 @@ namespace IT_Inventory.Controllers
             if (_db.Departments.Any(d => d.Name == department.Name))
                 return new HttpStatusCodeResult(HttpStatusCode.Conflict);
             var office = await _db.Offices.FindAsync(department.OfficeId);
+            if (office == null)
+                return HttpNotFound();
             var newDep = new Department
             {
                 Name = department.Name,
@@ -75,7 +77,7 @@ namespace IT_Inventory.Controllers
             {
                 DepId = (int) id,
                 Name = department.Name,
-                OfficeId = department.Office.Id
+                OfficeId = department.Office?.Id ?? 0
             });
         }
 
@@ -87,6 +89,8 @@ namespace IT_Inventory.Controllers
             if (!ModelState.IsValid)
                 return View(department);
             var editDep = await _db.Departments.FindAsync(department.DepId);
+            if (editDep == null)
+                return HttpNotFound();
             var editOffice = await _db.Offices.FindAsync(department.OfficeId);
             editDep.Name = department.Name;
             editDep.Office = editOffice;
@@ -112,11 +116,15 @@ namespace IT_Inventory.Controllers
         public async Task<ActionResult> DeleteConfirmed(int id)
         {
             var department = await _db.Departments.FindAsync(id);
+            if (department == null)
+                return HttpNotFound();
             if (!User.IsInRole(@"RIVS\InventoryAdmin"))
             {
                 ModelState.AddModelError(string.Empty, "У Вас нет прав на удаление! Обратитесь к системному администратору!");
                 return View(department);
             }
+            foreach (var person in _db.Persons.Where(p => p.Dep.Id == id))
+                person.Dep = null;
             _db.Departments.Remove(department);
             await _db.SaveChangesAsync();
             return RedirectToAction("Index");

@@ -26,6 +26,12 @@ namespace IT_Inventory.Models
                 .HasMany(v => v.AttributeValues)
                 .WithOptional()
                 .WillCascadeOnDelete(true);
+            //modelBuilder
+            //    .Entity<Person>()
+            //    .HasMany(v => v.SupportRequests)
+            //    .WithOptional()
+            //    .WillCascadeOnDelete(true);
+
         }
     }
 }

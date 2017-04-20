@@ -1,0 +1,34 @@
+﻿@model IEnumerable<IT_Inventory.Models.SupportRequest>
+
+@{
+    ViewBag.Title = "История изменений";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<div>
+    <h3>@Model.First().FromComputer.ComputerName</h3>
+    <hr />
+        @foreach (var request in Model)
+        {
+            <h4>@(((DateTime)request.FinishTime).ToString("d MMMM yyyy"))</h4>
+            <dl class="dl-horizontal">
+
+                @foreach (var modification in request.Modifications)
+                {
+
+                    <dt>
+                        @modification.Key
+                    </dt>
+
+                    <dd>
+                        @modification.Value
+                    </dd>
+
+                }
+            </dl>
+        }
+</div>
+<p>
+    @Html.ActionLink("Назад к списку", "Index", "Computers", null, null)
+</p>

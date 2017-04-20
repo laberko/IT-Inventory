@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IT_Inventory.Models
 {
@@ -72,7 +74,35 @@ namespace IT_Inventory.Models
         public virtual Person To { get; set; }
 
         [Display(Name = "Компьютер")]
-
         public virtual Computer FromComputer { get; set; }
+
+        [NotMapped]
+        public Dictionary<string, string> Modifications
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(SoftwareInstalled)
+                    && string.IsNullOrEmpty(SoftwareRemoved)
+                    && string.IsNullOrEmpty(SoftwareRepaired)
+                    && string.IsNullOrEmpty(SoftwareUpdated)
+                    && string.IsNullOrEmpty(HardwareInstalled)
+                    && string.IsNullOrEmpty(HardwareReplaced))
+                    return null;
+                var modifications = new Dictionary<string, string>();
+                if (!string.IsNullOrEmpty(SoftwareInstalled))
+                    modifications.Add("Установлено ПО", SoftwareInstalled);
+                if (!string.IsNullOrEmpty(SoftwareRemoved))
+                    modifications.Add("Удалено ПО", SoftwareRemoved);
+                if (!string.IsNullOrEmpty(SoftwareRepaired))
+                    modifications.Add("Восстановлено ПО", SoftwareRepaired);
+                if (!string.IsNullOrEmpty(SoftwareUpdated))
+                    modifications.Add("Обновлено ПО", SoftwareUpdated);
+                if (!string.IsNullOrEmpty(HardwareInstalled))
+                    modifications.Add("Установлено оборудование", HardwareInstalled);
+                if (!string.IsNullOrEmpty(HardwareReplaced))
+                    modifications.Add("Заменено оборудование", HardwareReplaced);
+                return modifications;
+            }
+        } 
     }
 }

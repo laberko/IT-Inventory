@@ -6,5 +6,8 @@ namespace IT_Inventory.ViewModels
     {
         public IEnumerable<ComputerViewModel> Computers;
         public Pager Pager { get; set; }
+        public IEnumerable<string> DepCodes { get; set; }
+        public string DepCode { get; set; }
+        public bool PersonSearch { get; set; }
     }
 }

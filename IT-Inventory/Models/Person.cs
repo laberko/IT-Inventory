@@ -21,13 +21,30 @@ namespace IT_Inventory.Models
         [Display(Name = "Учетная запись")]
         public string AccountName { get; set; }
 
-        [Display(Name = "Сотрудник ДИТ")]
-        public bool IsItUser { get; set; }
+        [Display(Name = "Почта")]
+        public string Email { get; set; }
+
+        [Display(Name = "Телефон")]
+        public string PhoneNumber { get; set; }
+
+        [Display(Name = "Департамент")]
+        public virtual Department Dep { get; set; }
 
         public virtual ICollection<SupportRequest> SupportRequests { get; set; }
+
         public virtual ICollection<Computer> Computers { get; set; }
 
         [NotMapped]
         public string ShortName => FullName.GetShortName();
+
+        //[NotMapped]
+        //[Display(Name = "Сотрудник ДИТ")]
+        //public bool IsItUser {
+        //    get
+        //    {
+        //        var name = Dep.Name;
+        //        return name == "Департамент информационных технологий";
+        //    }
+        //}
     }
 }

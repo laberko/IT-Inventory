@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -25,6 +24,7 @@ namespace IT_Inventory
 
         public static async Task<Report> GetReportAsync(string hostName)
         {
+            var reportFileName = string.Empty;
             try
             {
                 DateTime reportDate;
@@ -41,13 +41,15 @@ namespace IT_Inventory
                 var reportFile = hostReportDirs.First().GetFiles().OrderByDescending(f => f.CreationTime).FirstOrDefault();
                 if (reportFile == null)
                     return null;
-                
+                reportFileName = reportFile.FullName;
+
+
                 var serializer = new XmlSerializer(typeof (Report));
 
-                using (var fileStream = new FileStream(reportFile.FullName, FileMode.Open))
+                using (var fileStream = new FileStream(reportFileName, FileMode.Open))
                     report = (Report) serializer.Deserialize(fileStream);
 
-                report.UserName = Path.GetFileNameWithoutExtension(reportFile.FullName);
+                report.UserName = Path.GetFileNameWithoutExtension(reportFileName);
                 report.UserFullName = (@"RIVS\" + report.UserName).GetUserName();
                 
                 report.CompName = hostName;
@@ -57,7 +59,8 @@ namespace IT_Inventory
             }
             catch (Exception ex)
             {
-                await ex.Message.WriteToLogAsync(EventLogEntryType.Error);
+                var log = reportFileName + "\n" + ex.Message;
+                await log.WriteToLogAsync(EventLogEntryType.Error);
                 return null;
             }
         }
@@ -73,8 +76,10 @@ namespace IT_Inventory
             {
                 int valueInt;
                 var valueString = Page[1].Group[1].Item[3].Value.Split(' ')[0];
-                int.TryParse(valueString, out valueInt);
-                return valueInt;
+                if (!int.TryParse(valueString, out valueInt))
+                    return valueInt;
+                var valueGb = Math.Round(((double) valueInt)/1024);
+                return (int) valueGb;
             }
         }
 

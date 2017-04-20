@@ -22,6 +22,10 @@ namespace IT_Inventory
             _30Timer?.Start();
             _log = "IT Inventory worker started!";
             await _log.WriteToLogAsync();
+
+            //run tasks on startup
+            await Task.Run(() => StaticData.RefreshUsers());
+            await Task.Run(() => StaticData.RefreshComputers());
         }
 
         public void StopJobs()

@@ -45,5 +45,6 @@ namespace IT_Inventory.ViewModels
         }
 
         public bool HasRequests { get; set; }
+        public bool HasModifications { get; set; }
     }
 }

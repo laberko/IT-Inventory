@@ -127,17 +127,17 @@
             }
         </td>
         <td>
-            @Html.ActionLink("Редактировать", "Edit", new {id = item.Id})
-            @Html.ActionLink("Подробно", "Details", new {id = item.Id})
+            @Html.ActionLink("Редактировать", "Edit", new {id = item.Id}) |
+            @Html.ActionLink("Подробно", "Details", new {id = item.Id}) |
             @if (ViewBag.IsItUser)
             {
                 if (item.State == 0)
                 {
-                    @Html.ActionLink("Принять", "AcceptRequest", new { id = item.Id })
+                    @Html.ActionLink("Принять", "AcceptRequest", new { id = item.Id }) @:|
                 }
                 else if (item.State == 1 && item.To != null && ViewBag.UserId == item.To.Id)
                 {
-                    @Html.ActionLink("Завершить", "FinishRequest", new { id = item.Id })
+                    @Html.ActionLink("Завершить", "FinishRequest", new { id = item.Id }) @:|
                 }
             }
             @Html.ActionLink("Удалить", "Delete", new {id = item.Id})
