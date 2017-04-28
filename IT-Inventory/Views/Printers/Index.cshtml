@@ -18,7 +18,7 @@
 <p>
     @if (ViewBag.Office == "")
     {
-        foreach (var office in StaticData.GetOffices())
+        foreach (var office in StaticData.GetOffices().Where(o => StaticData.CountOfficePrinters(o.Id) > 0))
         {
             @Html.ActionLink(office.Name, "Index", new {officeId = office.Id}, new {@class = "btn btn-primary"})
         }

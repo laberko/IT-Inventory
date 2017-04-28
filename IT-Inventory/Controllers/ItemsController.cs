@@ -59,7 +59,7 @@ namespace IT_Inventory.Controllers
             //special data for cartridges
             if (item.ItemType.Id == 11)
             {
-                ViewBag.PrinterCount = StaticData.CountPrinters(item.Id).ToString();
+                ViewBag.PrinterCount = StaticData.CountCartridgePrinters(item.Id).ToString();
             }
             return View(item);
         }

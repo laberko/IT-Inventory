@@ -1,23 +1,35 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using IT_Inventory.Models;
 
 namespace IT_Inventory.ViewModels
 {
-    public class SupportRequestViewModel
+    public class SupportMailViewModel
     {
         public int Id { get; set; }
+        public string Header { get; set; }
+        public bool FromIt { get; set; }
+
+        [Display(Name = "Пользователь")]
+        public string From { get; set; }
+        public string FromMail { get; set; }
+
+        [Display(Name = "Исполнитель")]
+        public string To { get; set; }
+        public string ToMail { get; set; }
 
         [Display(Name = "Текст")]
         public string Text { get; set; }
 
-        [Display(Name = "Комментарий")]
-        public string Comment { get; set; }
+        [Display(Name = "Компьютер")]
+        public string FromComputer { get; set; }
 
-        [Display(Name = "Оценка")]
-        public string Mark { get; set; }
+        [Display(Name = "Создана")]
+        public string DateCreated { get; set; }
 
-        [Display(Name = "Отзыв о выполнении")]
-        public string FeedBack { get; set; }
+        [Display(Name = "Принята")]
+        public string DateStarted { get; set; }
+
+        [Display(Name = "Завершена")]
+        public string DateFinished { get; set; }
 
         [Display(Name = "Срочность")]
         public int Urgency { get; set; }
@@ -49,18 +61,13 @@ namespace IT_Inventory.ViewModels
         [Display(Name = "Другие действия")]
         public string OtherActions { get; set; }
 
-        [Display(Name = "Пользователь")]
-        public Person From { get; set; }
+        [Display(Name = "Комментарий")]
+        public string Comment { get; set; }
 
-        [Display(Name = "Пользователь")]
-        public int FromId { get; set; }
+        [Display(Name = "Оценка")]
+        public int Mark { get; set; }
 
-        [Display(Name = "Исполнитель")]
-        public int ToId { get; set; }
-
-        [Display(Name = "Компьютер")]
-        public Computer FromComputer { get; set; }
-
-        public bool EditByIt { get; set; }
+        [Display(Name = "Отзыв о выполнении")]
+        public string FeedBack { get; set; }
     }
 }

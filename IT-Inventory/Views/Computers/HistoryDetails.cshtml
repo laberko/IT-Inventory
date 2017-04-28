@@ -1,0 +1,112 @@
+﻿@model IT_Inventory.ViewModels.ComputerHistoryViewModel
+
+@{
+    ViewBag.Title = "Фактические данные о компьютере " + Model.ComputerName + " на " + Model.UpdateDate;
+}
+
+<h2>@ViewBag.Title</h2>
+<h3>Внесенные изменения: @Model.Changes</h3>
+
+<div>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.OwnerName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.OwnerName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Cpu)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Cpu)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Ram)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Ram) ГБ
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MotherBoard)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MotherBoard)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.VideoAdapter)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.VideoAdapter)
+        </dd>
+
+        @if (Model.InstalledSoftware != null && Model.InstalledSoftware.Length > 1)
+        {
+            <dt>
+                &nbsp;
+            </dt>
+            <dd>
+                &nbsp;
+            </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.InstalledSoftware)
+            </dt>
+            <dd>
+                @foreach (var item in Model.InstalledSoftware)
+                {
+                    @item<br>
+                }
+            </dd>
+
+        }
+
+        @if (Model.RemovedSoftware != null && Model.RemovedSoftware.Length > 1)
+        {
+            <dt>
+                &nbsp;
+            </dt>
+            <dd>
+                &nbsp;
+            </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.RemovedSoftware)
+            </dt>
+            <dd>
+                @foreach (var item in Model.RemovedSoftware)
+                {
+                    @item<br>
+                }
+            </dd>
+
+        }
+
+        <dt>
+            &nbsp;
+        </dt>
+        <dd>
+            &nbsp;
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Software)
+        </dt>
+        <dd>
+            @foreach (var item in Model.Software)
+            {
+                @item<br>
+            }
+        </dd>
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Назад к списку", "HistoryIndex", new { id = Model.CompId })
+</p>

@@ -5,7 +5,7 @@
 <div class="jumbotron">
     <h1>@ViewBag.Title</h1>
     <p class="lead">Сайт Департамента Информационных Технологий</p>
-    @Html.ActionLink("Техподдержка", "Index", "SupportRequests", null, new { @class = "btn btn-primary" })
+    @Html.ActionLink("Техподдержка", "Index", "Support", null, new { @class = "btn btn-primary" })
     @Html.ActionLink("Всё оборудование", "Index", "Items", null, new { @class = "btn btn-primary" })
     @Html.ActionLink("Всe принтеры", "Index", "Printers", null, new { @class = "btn btn-primary" })
     @Html.ActionLink("Вся история", "Index", "Histories", null, new { @class = "btn btn-primary" })
@@ -24,7 +24,7 @@
     </div>
     <div class="col-lg-3">
         <h2>Принтеры</h2>
-        @foreach (var office in StaticData.GetOffices())
+        @foreach (var office in StaticData.GetOffices().Where(o => StaticData.CountOfficePrinters(o.Id) > 0))
         {
             <p>@Html.ActionLink(office.Name, "Index", "Printers", new {officeId = office.Id}, null)</p>
         }
@@ -35,10 +35,10 @@
     </div>
     <div class="col-lg-3">
         <h2>Техподдержка</h2>
-        <p>@Html.ActionLink("Все заявки", "Index", "SupportRequests")</p>
-        <p>@Html.ActionLink("Новые заявки", "Index", "SupportRequests", new { state = 0 }, null)</p>
-        <p>@Html.ActionLink("Заявки в работе", "Index", "SupportRequests", new { state = 1 }, null)</p>
-        <p>@Html.ActionLink("Выполненные заявки", "Index", "SupportRequests", new { state = 2 }, null)</p>
+        <p>@Html.ActionLink("Все заявки", "Index", "Support")</p>
+        <p>@Html.ActionLink("Новые заявки", "Index", "Support", new { state = 0 }, null)</p>
+        <p>@Html.ActionLink("Заявки в работе", "Index", "Support", new { state = 1 }, null)</p>
+        <p>@Html.ActionLink("Выполненные заявки", "Index", "Support", new { state = 2 }, null)</p>
         <p>@Html.ActionLink("Сотрудники", "Index", "People")</p>
         <p>@Html.ActionLink("Компьютеры", "Index", "Computers")</p>
         <p>@Html.ActionLink("Отчеты AIDA", "Index", "Configs")</p>

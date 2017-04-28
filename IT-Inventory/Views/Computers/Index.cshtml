@@ -9,12 +9,15 @@
 @if (Model.PersonSearch == false)
 {
     <ul class="pagination">
-        @foreach (var code in Model.DepCodes)
-        {
+        <li>
+            @Html.ActionLink("Изменения (7 дней)", "HistoryIndex", new { days = 7 })
+        </li>
+            @foreach (var code in Model.DepCodes)
+            {
             <li class="@(Model.DepCode == code ? "active" : "")">
                 @Html.ActionLink(code, "Index", new {depCode = code})
             </li>
-        }
+            }
     </ul>
 }
 
@@ -38,6 +41,10 @@
         <th>
             @Html.DisplayNameFor(model => model.Computers.First().VideoAdapter)
         </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Computers.First().UpdateDate)
+        </th>
+
         <th></th>
     </tr>
 
@@ -53,7 +60,7 @@
             @Html.DisplayFor(modelItem => item.Cpu)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Ram)
+            @Html.DisplayFor(modelItem => item.Ram) ГБ
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.MotherBoard)
@@ -62,17 +69,21 @@
             @Html.DisplayFor(modelItem => item.VideoAdapter)
         </td>
         <td>
+            @Html.DisplayFor(modelItem => item.UpdateDate)
+        </td>
+        <td>
             @if (item.HasModifications)
             {
-                @Html.ActionLink("Изменения", "Modifications", "SupportRequests", new { compId = item.Id }, null) @:|
+                @Html.ActionLink("Изменения", "Modifications", "Support", new { compId = item.Id }, null) @:|
             }
             @if (item.HasRequests)
             {
-                @Html.ActionLink("Заявки", "Index", "SupportRequests", new {searchCompId = item.Id}, null) @:|
+                @Html.ActionLink("Заявки", "Index", "Support", new {searchCompId = item.Id}, null) @:|
             }
             @Html.ActionLink("Редактировать", "Edit", new {id = item.Id}) |
             @Html.ActionLink("Удалить", "Delete", new {id = item.Id}) |
             @Html.ActionLink("Фактически", "Details", new {id = item.Id}) |
+            @Html.ActionLink("История", "HistoryIndex", new { id = item.Id }) |
             @Html.ActionLink("Отчет AIDA", "AidaDetails", new {name = item.ComputerName})
         </td>
     </tr>

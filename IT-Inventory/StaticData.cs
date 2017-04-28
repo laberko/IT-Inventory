@@ -10,9 +10,9 @@ using System.Net;
 using System.Security;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
 using IT_Inventory.Models;
+using IT_Inventory.ViewModels;
 
 namespace IT_Inventory
 {
@@ -52,21 +52,27 @@ namespace IT_Inventory
                                     Filter = "(&(objectClass=person) (samaccountname=" + p.SamAccountName + "))"
                                 };
                                 var resultEntry = mySearcher.FindOne().GetDirectoryEntry();
-                                if (resultEntry.Properties.Contains("DisplayName") &&
+                                if ((resultEntry.Properties.Contains("DisplayName") &&
                                     !resultEntry.Properties.Contains("st") &&
                                     resultEntry.Properties.Contains("department") &&
                                     resultEntry.Properties.Contains("company"))
+                                    //add ituser for testing
+                                    || resultEntry.Properties.Contains("DisplayName") && (resultEntry.Properties["DisplayName"].Value.ToString() == "ituser"))
                                 {
-                                    var depName = resultEntry.Properties["company"].Value.ToString();
-                                    var dep = db.Departments.FirstOrDefault(d => d.Name == depName);
-                                    if (dep == null)
+                                    Department dep = null;
+                                    if (resultEntry.Properties.Contains("company"))
                                     {
-                                        var newDep = new Department
+                                        var depName = resultEntry.Properties["company"].Value.ToString();
+                                        dep = db.Departments.FirstOrDefault(d => d.Name == depName);
+                                        if (dep == null)
                                         {
-                                            Name = depName
-                                        };
-                                        db.Departments.Add(newDep);
-                                        dep = newDep;
+                                            var newDep = new Department
+                                            {
+                                                Name = depName
+                                            };
+                                            db.Departments.Add(newDep);
+                                            dep = newDep;
+                                        }
                                     }
                                     adUsers.Add(new Person
                                     {
@@ -178,7 +184,6 @@ namespace IT_Inventory
                     //}
                     //db.SaveChanges();
 
-
                     var logNonEmpty = false;
                     var rootDir = new DirectoryInfo(@"\\rivs.org\it\ConfigReporting\ConfigReports");
                     var allComputers = new List<Computer>();        //all computers from aida reports
@@ -196,7 +201,7 @@ namespace IT_Inventory
                             MotherBoard = report.MotherBoard,
                             VideoAdapter = report.VideoAdapter,
                             Software = report.Software,
-                            Owner = await db.Persons.FirstOrDefaultAsync(p => p.AccountName == report.UserName),
+                            Owner = await db.Persons.FirstOrDefaultAsync(p => p.AccountName == report.UserName)
                         };
                         allComputers.Add(comp);
                     }
@@ -212,6 +217,8 @@ namespace IT_Inventory
                             var nonExisting = await db.Computers.FirstOrDefaultAsync(c => c.ComputerName == comp);
                             if (nonExisting == null)
                                 continue;
+                            foreach (var history in db.ComputerHistory.Where(h => h.HistoryComputer == nonExisting).AsEnumerable())
+                                db.ComputerHistory.Remove(history);
                             db.Computers.Remove(nonExisting);
                             log.AppendLine(comp);
                             logNonEmpty = true;
@@ -219,24 +226,36 @@ namespace IT_Inventory
                     }
 
                     log.AppendLine("Добавлены или изменены компьютеры:");
-                    foreach (var comp in allComputers)
+                    foreach (var newComp in allComputers)
                     {
-                        var existingComputer = await db.Computers.FirstOrDefaultAsync(c => c.ComputerName == comp.ComputerName);
+                        //find computer in db by name
+                        var existingComputer = await db.Computers.FirstOrDefaultAsync(c => c.ComputerName == newComp.ComputerName);
+                        //computer not found
                         if (existingComputer == null)
                         {
-                            comp.FillInventedData();
-                            db.Computers.Add(comp);
-                            log.AppendLine(comp.ComputerName);
+                            newComp.FillInventedData();
+                            db.Computers.Add(newComp);
+                            db.ComputerHistory.Add(newComp.NewHistory());
+                            log.AppendLine(newComp.ComputerName);
                             logNonEmpty = true;
                         }
-                        else if (!existingComputer.Equals(comp))
+                        //computer found but has changes in configuration
+                        else if (!existingComputer.Equals(newComp))
                         {
-                            existingComputer.CopyConfig(comp);
                             existingComputer.FillInventedData();
+                            var changes = existingComputer.CopyConfig(newComp);
+                            db.ComputerHistory.Add(existingComputer.NewHistory(changes[0], changes[1], changes[2]));
                             db.Entry(existingComputer).State = EntityState.Modified;
-                            log.AppendLine(comp.ComputerName);
+                            log.AppendLine(newComp.ComputerName);
                             logNonEmpty = true;
                         }
+                        //else if (existingComputer.UpdateDate == null)
+                        //{
+                        //    var history = existingComputer.NewHistory();
+                        //    db.ComputerHistory.Add(history);
+                        //    existingComputer.UpdateDate = DateTime.Now;
+                        //    db.Entry(existingComputer).State = EntityState.Modified;
+                        //}
                     }
                     await db.SaveChangesAsync();
                     if (logNonEmpty)
@@ -325,11 +344,18 @@ namespace IT_Inventory
                 return printer != null && printer.Cartridges.Any(cartridge => cartridge.Quantity <= cartridge.MinQuantity);
             }
         }
-        public static int CountPrinters(int cartridgeId)
+        public static int CountCartridgePrinters(int cartridgeId)
         {
             using (var db = new InventoryModel())
             {
                 return db.Printers.Count(p => p.Cartridges.FirstOrDefault(c => c.Id == cartridgeId) != null);
+            }
+        }
+        public static int CountOfficePrinters(int officeId)
+        {
+            using (var db = new InventoryModel())
+            {
+                return db.Printers.Count(p => p.Department.Office.Id == officeId);
             }
         }
         public static int CountComputers(int personId)
@@ -445,20 +471,61 @@ namespace IT_Inventory
                 return new SelectList(people, "Id", "FullName");
             }
         }
+        public static async Task<SupportMailViewModel> GetMailViewModel(int requestId)
+        {
+            using (var db = new InventoryModel())
+            {
+                var request = await db.SupportRequests.FindAsync(requestId);
+                if (request == null)
+                    return null;
+                return new SupportMailViewModel
+                {
+                    Id = requestId,
+                    From = request.From == null ? string.Empty : request.From.FullName,
+                    FromMail = request.From == null ? string.Empty : request.From.Email,
+                    To = request.To == null ? string.Empty : request.To.FullName,
+                    ToMail = request.To == null ? string.Empty : request.To.Email,
+                    Text = request.Text,
+                    FromComputer = request.FromComputer == null ? string.Empty : request.FromComputer.ComputerName,
+                    DateCreated = request.CreationTime.ToString("f"),
+                    DateStarted = request.StartTime?.ToString("f") ?? string.Empty,
+                    DateFinished = request.FinishTime?.ToString("f") ?? string.Empty,
+                    Urgency = request.Urgency,
+                    Category = request.Category,
+                    State = request.State,
+                    SoftwareInstalled = request.SoftwareInstalled,
+                    SoftwareRemoved = request.SoftwareRemoved,
+                    SoftwareRepaired = request.SoftwareRepaired,
+                    SoftwareUpdated = request.SoftwareUpdated,
+                    HardwareInstalled = request.HardwareInstalled,
+                    HardwareReplaced = request.HardwareReplaced,
+                    OtherActions = request.OtherActions,
+                    Comment = request.Comment,
+                    Mark = request.Mark,
+                    FeedBack = request.FeedBack
+                };
+            }
+        }
+
+
+        public static void SendMail(MailRecipients recipient, RequestStatus requestStatus, int requestId)
+        {
+            using (var db = new InventoryModel())
+            {
 
 
 
-
-
+            }
+        }
 
 
         public static Dictionary<int, string> RequestUrgency = new Dictionary<int, string>
         {
+            {4, "В течении дня" },
             {0, "Срочно" },
             {1, "1 час" },
             {2, "2 часа" },
-            {3, "4 часа" },
-            {4, "В течении дня" }
+            {3, "4 часа" }
         };
 
         public static Dictionary<int, string> RequestState = new Dictionary<int, string>
@@ -478,6 +545,23 @@ namespace IT_Inventory
             {5, "Телефония" },
             {6, @"Файлы/папки" },
             {7, "Другое" }
+        };
+
+        public enum MailRecipients
+        {
+            AllSupportUsers,
+            SupportUser,
+            User
+        };
+
+        public enum RequestStatus
+        {
+            NewFromUser,
+            NewFromIt,
+            EditByUser,
+            EditByIt,
+            Accepted,
+            Finished
         };
     }
 }

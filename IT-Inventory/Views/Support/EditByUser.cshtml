@@ -54,7 +54,7 @@
             <div class="form-group">
                 @Html.LabelFor(model => model.Mark, htmlAttributes: new {@class = "control-label col-md-2"})
                 <div class="col-md-10">
-                    @Html.DropDownListFor(model => model.Mark, Enumerable.Range(1, 5).Select(i => new SelectListItem {Text = i.ToString(), Value = i.ToString()}), "", new {@class = "btn btn-default dropdown-toggle"})
+                    @Html.DropDownListFor(model => model.Mark, Enumerable.Range(1, 5).Reverse().Select(i => new SelectListItem {Text = i.ToString(), Value = i.ToString()}), "", new {@class = "btn btn-default dropdown-toggle"})
                 </div>
             </div>
 

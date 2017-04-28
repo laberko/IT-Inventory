@@ -6,10 +6,11 @@ using System.Net;
 using System.Web.Mvc;
 using IT_Inventory.Models;
 using IT_Inventory.ViewModels;
+using ActionMailer.Net.Mvc4;
 
 namespace IT_Inventory.Controllers
 {
-    public class SupportRequestsController : Controller
+    public class SupportController : Controller
     {
         private readonly InventoryModel _db = new InventoryModel();
 
@@ -89,7 +90,11 @@ namespace IT_Inventory.Controllers
         // GET: SupportRequests/Create
         public ActionResult Create()
         {
-            return View(new SupportRequestViewModel());
+            return View(new SupportRequestViewModel
+            {
+                //one day urgency by default
+                Urgency = 4
+            });
         }
 
         // POST: SupportRequests/Create
@@ -99,40 +104,93 @@ namespace IT_Inventory.Controllers
         {
             if (!ModelState.IsValid)
                 return View(supportRequest);
+            if (string.IsNullOrEmpty(supportRequest.Text))
+            {
+                // return view with error message
+                ModelState.AddModelError(string.Empty, "Введите текст заявки!");
+                return View(supportRequest);
+            }
+            var fromIt = false;
             var login = User.Identity.Name;
             var accountName = login.Substring(5, login.Length - 5);
             var person = _db.Persons.FirstOrDefault(p => p.AccountName == accountName);
             if (person == null)
             {
-                // return view with error message
                 ModelState.AddModelError(string.Empty, "Ошибка авторизации!");
                 return View(supportRequest);
             }
             Computer comp = null;
-            var compName = StaticData.GetCompName(Request.UserHostName);
-            if (!string.IsNullOrEmpty(compName))
-                comp = _db.Computers.FirstOrDefault(c => c.ComputerName == compName);
             var newRequest = new SupportRequest
             {
                 Text = supportRequest.Text,
                 Urgency = supportRequest.Urgency,
                 Category = supportRequest.Category,
-                State = 0,
                 CreationTime = DateTime.Now,
-                StartTime = null,
-                FinishTime = null,
-                From = person,
-                FromComputer = comp
+                FinishTime = null
             };
-            _db.SupportRequests.Add(newRequest);
-            person.SupportRequests.Add(newRequest);
-            _db.Entry(person).State = EntityState.Modified;
+            //created by IT-user
+            if (supportRequest.ToId != 0 && supportRequest.FromId != 0)
+            {
+                var ituser = await _db.Persons.FindAsync(supportRequest.ToId);
+                var user = await _db.Persons.FindAsync(supportRequest.FromId);
+                if (ituser == null || user == null)
+                {
+                    ModelState.AddModelError(string.Empty, "Пользователь не найден!");
+                    return View(supportRequest);
+                }
+                comp = _db.Computers.FirstOrDefault(c => c.Owner.Id == user.Id);
+                newRequest.To = ituser;
+                newRequest.From = user;
+                newRequest.State = 1;
+                newRequest.StartTime = DateTime.Now;
+                user.SupportRequests.Add(newRequest);
+                _db.Entry(user).State = EntityState.Modified;
+                fromIt = true;
+            }
+            //created by ordinary user
+            else
+            {
+                var compName = StaticData.GetCompName(Request.UserHostName);
+                if (!string.IsNullOrEmpty(compName))
+                    comp = _db.Computers.FirstOrDefault(c => c.ComputerName == compName);
+                newRequest.From = person;
+                newRequest.State = 0;
+                newRequest.StartTime = null;
+                person.SupportRequests.Add(newRequest);
+                _db.Entry(person).State = EntityState.Modified;
+
+            }
+
             if (comp != null)
             {
+                newRequest.FromComputer = comp;
                 comp.SupportRequests.Add(newRequest);
                 _db.Entry(comp).State = EntityState.Modified;
             }
-            await _db.SaveChangesAsync();
+
+            _db.SupportRequests.Add(newRequest);
+            _db.SaveChanges();
+
+            using (var mailer = new EmailController())
+            {
+                EmailResult mail;
+                if (fromIt)
+                {
+                    //mail for selected IT user
+                    mail = await mailer.EditByIt(newRequest.Id, User.Identity.Name.GetUserName());
+                    mail?.Deliver();
+                    //mail for user (job started)
+                    mail = await mailer.Accepted(newRequest.Id);
+                    mail?.Deliver();
+                }
+                else
+                {
+                    //mail for IT users
+                    mail = await mailer.NewFromUser(newRequest.Id);
+                    mail?.Deliver();
+                }
+            }
+
             return RedirectToAction("Index");
         }
 
@@ -185,6 +243,8 @@ namespace IT_Inventory.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Edit(SupportRequestViewModel requestViewModel)
         {
+            var started = false;
+            var itUserChanged = false;
             var login = User.Identity.Name;
             var accountName = login.Substring(5, login.Length - 5);
             var person = await _db.Persons.FirstOrDefaultAsync(p => p.AccountName == accountName);
@@ -199,14 +259,22 @@ namespace IT_Inventory.Controllers
             if (supportRequest == null)
                 return HttpNotFound();
             supportRequest.Category = requestViewModel.Category;
+            //edit by user
             if (!requestViewModel.EditByIt)
             {
                 int mark;
                 supportRequest.Text = requestViewModel.Text;
                 supportRequest.Mark = int.TryParse(requestViewModel.Mark, out mark) ? mark : 0;
+                if (supportRequest.State == 2 && supportRequest.Mark == 0)
+                {
+                    requestViewModel.State = 2;
+                    ModelState.AddModelError(string.Empty, "Пожалуйста, выберите оценку");
+                    return View("EditByUser", requestViewModel);
+                }
                 supportRequest.FeedBack = requestViewModel.FeedBack;
                 supportRequest.Urgency = requestViewModel.Urgency;
             }
+            //edit by IT-user
             else
             {
                 if (requestViewModel.ToId != 0)
@@ -214,11 +282,15 @@ namespace IT_Inventory.Controllers
                     var itUser = await _db.Persons.FindAsync(requestViewModel.ToId);
                     if (itUser != null)
                     {
+                        //new request assigned to an IT-user - start it
                         if (supportRequest.State == 0)
                         {
                             supportRequest.State = 1;
                             supportRequest.StartTime = DateTime.Now;
+                            started = true;
                         }
+                        else if (supportRequest.To != itUser)
+                            itUserChanged = true;
                         supportRequest.To = itUser;
                     }
                 }
@@ -233,6 +305,51 @@ namespace IT_Inventory.Controllers
             }
             _db.Entry(supportRequest).State = EntityState.Modified;
             await _db.SaveChangesAsync();
+
+            using (var mailer = new EmailController())
+            {
+                EmailResult mail = null;
+                //edit by IT-user
+                if (requestViewModel.EditByIt)
+                {
+                    //job started right now, IT-user selected
+                    if (started)
+                    {
+                        //mail for user (job started)
+                        mail = await mailer.Accepted(requestViewModel.Id);
+                        mail?.Deliver();
+                        //mail for selected IT user (request assigned)
+                        mail = await mailer.EditByIt(requestViewModel.Id, User.Identity.Name.GetUserName());
+                        mail?.Deliver();
+                    }
+                    //job in progress, IT-user changed by another IT-user
+                    else if (itUserChanged)
+                    {
+                        //mail for selected IT user (request assigned)
+                        mail = await mailer.EditByIt(requestViewModel.Id, User.Identity.Name.GetUserName());
+                        mail?.Deliver();
+                    }
+                }
+                //edit by user
+                else
+                {
+                    switch (supportRequest.State)
+                    {
+                        //job in progress
+                        case 1:
+                            //mail for selected IT user (request changed)
+                            mail = await mailer.EditByUser(requestViewModel.Id);
+                            break;
+                        //job is done, user added mark and feedback
+                        case 2:
+                            //mail for IT managers
+                            mail = await mailer.Feedback(requestViewModel.Id);
+                            break;
+                    }
+                    mail?.Deliver();
+                }
+            }
+
             return RedirectToAction("Index");
         }
 
@@ -256,6 +373,14 @@ namespace IT_Inventory.Controllers
             supportRequest.To = person;
             _db.Entry(supportRequest).State = EntityState.Modified;
             await _db.SaveChangesAsync();
+
+            using (var mailer = new EmailController())
+            {
+                //mail for user (job started)
+                var mail = await mailer.Accepted((int)id);
+                mail?.Deliver();
+            }
+
             return RedirectToAction("Index");
         }
 
@@ -318,6 +443,14 @@ namespace IT_Inventory.Controllers
             supportRequest.FinishTime = DateTime.Now;
             _db.Entry(supportRequest).State = EntityState.Modified;
             await _db.SaveChangesAsync();
+
+            using (var mailer = new EmailController())
+            {
+                //mail for user (job finished)
+                var mail = await mailer.Finished(requestViewModel.Id);
+                mail?.Deliver();
+            }
+
             return RedirectToAction("Index");
         }
 
@@ -329,10 +462,7 @@ namespace IT_Inventory.Controllers
             var supportRequest = await _db.SupportRequests.FindAsync(id);
             if (supportRequest == null)
                 return HttpNotFound();
-            var login = User.Identity.Name;
-            var accountName = login.Substring(5, login.Length - 5);
-            var person = await _db.Persons.FirstOrDefaultAsync(p => p.AccountName == accountName);
-            if (supportRequest.From != person && !User.IsInRole(@"RIVS\IT-Dep"))
+            if (!User.IsInRole(@"RIVS\IT-Dep"))
                 return RedirectToAction("Index");
             return View(supportRequest);
         }

@@ -1,0 +1,243 @@
+﻿@model IT_Inventory.ViewModels.SupportMailViewModel
+@{
+    Layout = null;
+}
+
+<html>
+    <body>
+        <div style="font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif">
+
+            <h2>Техподдержка</h2>
+
+            <h3>@Model.Header</h3>
+            <hr />
+            <dl class="dl-horizontal">
+
+                <dt>
+                    <strong>
+                        @Html.DisplayNameFor(model => model.From)
+                    </strong>
+                </dt>
+                <dd>
+                    @Html.DisplayFor(model => model.From)
+                </dd>
+
+                @if (!string.IsNullOrEmpty(Model.To))
+                {
+                    <dt>
+                        <strong>
+                            @Html.DisplayNameFor(model => model.To)
+                        </strong>
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.To)
+                    </dd>
+                }
+                @if (!string.IsNullOrEmpty(Model.FromComputer) && !Model.FromIt)
+                {
+                    <dt>
+                        <strong>
+                            @Html.DisplayNameFor(model => model.FromComputer)
+                        </strong>
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.FromComputer)
+                    </dd>
+                }
+
+                <dt>
+                    <strong>
+                        @Html.DisplayNameFor(model => model.Text)
+                    </strong>
+                </dt>
+                <dd>
+                    @Html.DisplayFor(model => model.Text)
+                </dd>
+                @if (Model.State < 2)
+                {
+
+                    <dt>
+                        <strong>
+                            @Html.DisplayNameFor(model => model.DateCreated)
+                        </strong>
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.DateCreated)
+                    </dd>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.DateStarted) && Model.State < 2)
+                {
+                    <dt>
+                        <strong>
+                            @Html.DisplayNameFor(model => model.DateStarted)
+                        </strong>
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.DateStarted)
+                    </dd>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.DateFinished))
+                {
+                    <dt>
+                        <strong>
+                            @Html.DisplayNameFor(model => model.DateFinished)
+                        </strong>
+                    </dt>
+                    <dd>
+                        @Html.DisplayFor(model => model.DateFinished)
+                    </dd>
+                }
+
+                @if (!Model.FromIt && Model.State < 2)
+                {
+
+                    <dt>
+                        <strong>
+                            @Html.DisplayNameFor(model => model.Urgency)
+                        </strong>
+                    </dt>
+                    <dd>
+                        @StaticData.RequestUrgency[Model.Urgency]
+                    </dd>
+
+                    <dt>
+                        <strong>
+                            @Html.DisplayNameFor(model => model.Category)
+                        </strong>
+                    </dt>
+                    <dd>
+                        @StaticData.RequestCategory[Model.Category]
+                    </dd>
+                }
+
+                @if (Model.State > 0)
+                {
+                    if (!string.IsNullOrEmpty(Model.SoftwareInstalled))
+                    {
+                        <dt>
+                            <strong>
+                                @Html.DisplayNameFor(model => model.SoftwareInstalled)
+                            </strong>
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.SoftwareInstalled)
+                        </dd>
+                    }
+
+                    if (!string.IsNullOrEmpty(Model.SoftwareRepaired))
+                    {
+                        <dt>
+                            <strong>
+                                @Html.DisplayNameFor(model => model.SoftwareRepaired)
+                            </strong>
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.SoftwareRepaired)
+                        </dd>
+                    }
+
+                    if (!string.IsNullOrEmpty(Model.SoftwareUpdated))
+                    {
+                        <dt>
+                            <strong>
+                                @Html.DisplayNameFor(model => model.SoftwareUpdated)
+                            </strong>
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.SoftwareUpdated)
+                        </dd>
+                    }
+
+                    if (!string.IsNullOrEmpty(Model.SoftwareRemoved))
+                    {
+                        <dt>
+                            <strong>
+                                @Html.DisplayNameFor(model => model.SoftwareRemoved)
+                            </strong>
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.SoftwareRemoved)
+                        </dd>
+                    }
+
+                    if (!string.IsNullOrEmpty(Model.HardwareInstalled))
+                    {
+                        <dt style="white-space: nowrap;">
+                            <strong>
+                                @Html.DisplayNameFor(model => model.HardwareInstalled)
+                            </strong>
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.HardwareInstalled)
+                        </dd>
+                    }
+
+                    if (!string.IsNullOrEmpty(Model.HardwareReplaced))
+                    {
+                        <dt style="white-space: nowrap;">
+                            <strong>
+                                @Html.DisplayNameFor(model => model.HardwareReplaced)
+                            </strong>
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.HardwareReplaced)
+                        </dd>
+                    }
+
+                    if (!string.IsNullOrEmpty(Model.OtherActions))
+                    {
+                        <dt>
+                            <strong>
+                                @Html.DisplayNameFor(model => model.OtherActions)
+                            </strong>
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.OtherActions)
+                        </dd>
+                    }
+
+                    if (!string.IsNullOrEmpty(Model.Comment))
+                    {
+                        <dt>
+                            <strong>
+                                @Html.DisplayNameFor(model => model.Comment)
+                            </strong>
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.Comment)
+                        </dd>
+                    }
+                }
+                @if (Model.State == 2)
+                {
+                    if (Model.Mark > 0)
+                    {
+                        <dt>
+                            <strong>
+                                @Html.DisplayNameFor(model => model.Mark)
+                            </strong>
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.Mark)
+                        </dd>
+                    }
+
+                    if (!string.IsNullOrEmpty(Model.FeedBack))
+                    {
+                        <dt>
+                            <strong>
+                                @Html.DisplayNameFor(model => model.FeedBack)
+                            </strong>
+                        </dt>
+                        <dd>
+                            @Html.DisplayFor(model => model.FeedBack)
+                        </dd>
+                    }
+                }
+            </dl>
+            <hr />
+        </div>
+    </body>
+</html>

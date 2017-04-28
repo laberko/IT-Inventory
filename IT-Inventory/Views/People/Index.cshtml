@@ -75,7 +75,7 @@
                 <td>
                     @if (item.SupportRequests.Count > 0)
                     {
-                        @Html.ActionLink("Заявки", "Index", "SupportRequests", new { searchUserId = item.Id }, null)
+                        @Html.ActionLink("Заявки", "Index", "Support", new { searchUserId = item.Id }, null)
                     }
                 </td>
 

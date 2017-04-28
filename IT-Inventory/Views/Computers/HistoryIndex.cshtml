@@ -1,0 +1,80 @@
+﻿@model  IEnumerable<IT_Inventory.ViewModels.ComputerHistoryViewModel>
+
+@{
+    ViewBag.Title = "История зафиксированных изменений";
+}
+
+<h2>@ViewBag.Title</h2>
+@if (!string.IsNullOrEmpty(ViewBag.CompName))
+{
+    <h3>@ViewBag.CompName</h3>
+}
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.First().UpdateDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.First().Changes)
+        </th>
+        @if (string.IsNullOrEmpty(ViewBag.CompName))
+        {
+            <th>
+                @Html.DisplayNameFor(model => model.First().ComputerName)
+            </th>
+        }
+        <th>
+            @Html.DisplayNameFor(model => model.First().OwnerName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.First().Cpu)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.First().Ram)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.First().MotherBoard)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.First().VideoAdapter)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model)
+{
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.UpdateDate)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Changes)
+        </td>
+        @if (string.IsNullOrEmpty(ViewBag.CompName))
+        {
+            <td white-space: nowrap>
+                @Html.DisplayFor(modelItem => item.ComputerName)
+            </td>
+        }
+        <td white-space: nowrap>
+            @Html.DisplayFor(modelItem => item.OwnerName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Cpu)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Ram) ГБ
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.MotherBoard)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.VideoAdapter)
+        </td>
+        <td>
+            @Html.ActionLink("Подробно", "HistoryDetails", new {id = item.Id})
+        </td>
+    </tr>
+}
+</table>

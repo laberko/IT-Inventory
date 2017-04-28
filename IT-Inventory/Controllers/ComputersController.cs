@@ -27,7 +27,6 @@ namespace IT_Inventory.Controllers
                     : _db.Computers.AsEnumerable().Where(c => c.ComputerName.StartsWith(depCode + '-')).OrderBy(c => c.ComputerName).ToList();
             else
                 dbComputers = _db.Computers.OrderBy(c => c.ComputerName).Where(c => c.Owner.Id == personId).ToList();
-
             var pager = new Pager(dbComputers.Count, page, 11);
             var computers = dbComputers.Select(comp => new ComputerViewModel
             {
@@ -39,7 +38,8 @@ namespace IT_Inventory.Controllers
                 VideoAdapter = comp.VideoAdapterInvent,
                 Owner = comp.Owner == null ? string.Empty : comp.Owner.ShortName,
                 HasRequests = comp.SupportRequests.Count > 0,
-                HasModifications = comp.HasModifications
+                HasModifications = comp.HasModifications,
+                UpdateDate = comp.UpdateDate?.ToString("g") ?? string.Empty
             });
             var computersViewModel = new ComputerIndexViewModel
             {
@@ -52,8 +52,56 @@ namespace IT_Inventory.Controllers
             return View(computersViewModel);
         }
 
+        // GET: Computers/HistoryIndex/5
+        // fixed computer configuration changes
+        public async Task<ActionResult> HistoryIndex(int? id, int? days)
+        {
+            if (id == null && days == null)
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            var historyModels = new List<ComputerHistoryViewModel>();
+            IEnumerable<ComputerHistoryItem> historyItems;
+
+            if (id != null && days != null)
+            {
+                var comp = await _db.Computers.FindAsync(id);
+                if (comp == null)
+                    return HttpNotFound();
+                ViewBag.CompName = comp.ComputerName;
+                historyItems = _db.ComputerHistory.AsEnumerable()
+                    .Where(h => h.HistoryComputer == comp && (DateTime.Now - h.HistoryUpdated) < new TimeSpan((int)days, 0, 0, 0));
+            }
+            else if (id != null)
+            {
+                var comp = await _db.Computers.FindAsync(id);
+                if (comp == null)
+                    return HttpNotFound();
+                ViewBag.CompName = comp.ComputerName;
+                historyItems = _db.ComputerHistory.AsEnumerable()
+                    .Where(h => h.HistoryComputer == comp);
+            }
+            else
+                historyItems = _db.ComputerHistory.AsEnumerable()
+                    .Where(h => (DateTime.Now - h.HistoryUpdated) < new TimeSpan((int)days, 0, 0, 0));
+
+            historyModels = historyItems.OrderByDescending(h => h.HistoryUpdated)
+                .Select(history => new ComputerHistoryViewModel
+            {
+                Id = history.Id,
+                Cpu = history.HistoryCpu,
+                Ram = history.HistoryRam,
+                MotherBoard = history.HistoryMotherBoard,
+                VideoAdapter = history.HistoryVideoAdapter,
+                UpdateDate = history.HistoryUpdated?.ToString("g") ?? string.Empty,
+                Changes = history.Changes,
+                OwnerName = history.HistoryComputerOwner == null ? string.Empty : history.HistoryComputerOwner.ShortName,
+                ComputerName = history.HistoryComputer == null ? string.Empty : history.HistoryComputer.ComputerName
+            }).ToList();
+
+            return View(historyModels);
+        }
+
         // GET: Computers/Details/5
-        // details of a computer from aida report
+        // details of a computer from the last aida report
         public async Task<ActionResult> Details(int? id)
         {
             if (id == null)
@@ -73,6 +121,34 @@ namespace IT_Inventory.Controllers
                 Software = comp.Software.Split(new[] { "[NEW_LINE]" }, StringSplitOptions.None)
             };
             return View(compModel);
+        }
+
+        // GET: Computers/HistoryDetails/5
+        // details of a computer configuration from history
+        public async Task<ActionResult> HistoryDetails(int? id)
+        {
+            if (id == null)
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            var historyItem = await _db.ComputerHistory.FindAsync(id);
+            if (historyItem?.HistoryComputer == null)
+                return HttpNotFound();
+
+            var historyModel = new ComputerHistoryViewModel
+            {
+                CompId = historyItem.HistoryComputer.Id,
+                ComputerName = historyItem.HistoryComputer.ComputerName,
+                UpdateDate = historyItem.HistoryUpdated?.ToString("D") ?? string.Empty,
+                OwnerName = historyItem.HistoryComputerOwner == null ? string.Empty : historyItem.HistoryComputerOwner.FullName,
+                Cpu = historyItem.HistoryCpu,
+                Ram = historyItem.HistoryRam,
+                MotherBoard = historyItem.HistoryMotherBoard,
+                VideoAdapter = historyItem.HistoryVideoAdapter,
+                Software = historyItem.HistorySoftware.Split(new[] { "[NEW_LINE]" }, StringSplitOptions.None),
+                Changes = historyItem.Changes,
+                InstalledSoftware = historyItem.SoftwareInstalled?.Split(new[] { "[NEW_LINE]" }, StringSplitOptions.None),
+                RemovedSoftware = historyItem.SoftwareRemoved?.Split(new[] { "[NEW_LINE]" }, StringSplitOptions.None)
+            };
+            return View(historyModel);
         }
 
         // GET: Config/AidaDetails/name

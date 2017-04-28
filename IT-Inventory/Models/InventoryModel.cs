@@ -18,6 +18,7 @@ namespace IT_Inventory.Models
         public DbSet<ItemType> ItemTypes { get; set; }
         public DbSet<SupportRequest> SupportRequests { get; set; }
         public DbSet<Computer> Computers { get; set; }
+        public DbSet<ComputerHistoryItem> ComputerHistory { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

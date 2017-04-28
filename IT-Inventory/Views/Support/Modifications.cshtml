@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<IT_Inventory.Models.SupportRequest>
 
 @{
-    ViewBag.Title = "История изменений";
+    ViewBag.Title = "История изменений, внесенных техподдержкой";
 }
 
 <h2>@ViewBag.Title</h2>
@@ -16,15 +16,12 @@
 
                 @foreach (var modification in request.Modifications)
                 {
-
                     <dt>
                         @modification.Key
                     </dt>
-
                     <dd>
                         @modification.Value
                     </dd>
-
                 }
             </dl>
         }

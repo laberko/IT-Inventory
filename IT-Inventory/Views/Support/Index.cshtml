@@ -21,6 +21,7 @@
 
 <table class="table">
     <tr>
+        <th></th>
         <th>
             @Html.DisplayNameFor(model => model.CreationTime)
         </th>
@@ -71,6 +72,18 @@
 @foreach (var item in Model) {
     <tr>
         <td>
+            @switch (item.State)
+            {
+                case 0:
+                    <font color="red">&#11044</font>
+                    break;
+                case 1:
+                    <font color="orange">&#11044</font>
+                    break;
+            }
+        </td>
+
+        <td>
             @item.CreationTime.ToString("g")
         </td>
 
@@ -84,19 +97,19 @@
         <td>
             @if (item.FinishTime != null)
             {
-                @(((DateTime)item.FinishTime).ToString("g"))
+                @(((DateTime) item.FinishTime).ToString("g"))
             }
         </td>
         @if (ViewBag.IsItUser)
         {
             <td white-space: nowrap>
-                @Html.ActionLink(item.From.ShortName, "Index", new { searchUserId = item.From.Id })
+                @Html.ActionLink(item.From.ShortName, "Index", new {searchUserId = item.From.Id})
             </td>
 
             <td white-space: nowrap>
                 @if (item.FromComputer != null)
                 {
-                    @Html.ActionLink(item.FromComputer.ComputerName, "Index", new { searchCompId = item.FromComputer.Id })
+                    @Html.ActionLink(item.FromComputer.ComputerName, "Index", new {searchCompId = item.FromComputer.Id})
                 }
             </td>
         }
@@ -127,20 +140,34 @@
             }
         </td>
         <td>
-            @Html.ActionLink("Редактировать", "Edit", new {id = item.Id}) |
-            @Html.ActionLink("Подробно", "Details", new {id = item.Id}) |
+            @if (ViewBag.IsItUser || item.State != 2)
+            {
+                @Html.ActionLink("Редактировать", "Edit", new {id = item.Id})
+                @:|
+            }
+            else
+            {
+                @Html.ActionLink("Оценить", "Edit", new {id = item.Id})
+                @:|
+            }
+
+
+            @Html.ActionLink("Подробно", "Details", new {id = item.Id})
             @if (ViewBag.IsItUser)
             {
+                @:|
                 if (item.State == 0)
                 {
-                    @Html.ActionLink("Принять", "AcceptRequest", new { id = item.Id }) @:|
+                    @Html.ActionLink("Принять", "AcceptRequest", new {id = item.Id})
+                    @:|
                 }
                 else if (item.State == 1 && item.To != null && ViewBag.UserId == item.To.Id)
                 {
-                    @Html.ActionLink("Завершить", "FinishRequest", new { id = item.Id }) @:|
+                    @Html.ActionLink("Завершить", "FinishRequest", new {id = item.Id})
+                    @:|
                 }
+                @Html.ActionLink("Удалить", "Delete", new {id = item.Id})
             }
-            @Html.ActionLink("Удалить", "Delete", new {id = item.Id})
         </td>
     </tr>
 }

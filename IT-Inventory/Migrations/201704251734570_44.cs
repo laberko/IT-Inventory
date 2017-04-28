@@ -1,0 +1,20 @@
+namespace IT_Inventory.Migrations
+{
+    using System;
+    using System.Data.Entity.Migrations;
+    
+    public partial class _44 : DbMigration
+    {
+        public override void Up()
+        {
+            AddColumn("dbo.ComputerHistoryItems", "SoftwareInstalled", c => c.String());
+            AddColumn("dbo.ComputerHistoryItems", "SoftwareRemoved", c => c.String());
+        }
+        
+        public override void Down()
+        {
+            DropColumn("dbo.ComputerHistoryItems", "SoftwareRemoved");
+            DropColumn("dbo.ComputerHistoryItems", "SoftwareInstalled");
+        }
+    }
+}

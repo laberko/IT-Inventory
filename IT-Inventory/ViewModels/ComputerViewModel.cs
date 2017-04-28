@@ -28,9 +28,13 @@ namespace IT_Inventory.ViewModels
         [Display(Name = "Владелец")]
         public int OwnerId { get; set; }
 
+        [Display(Name = "Обновлено")]
+        public string UpdateDate { get; set; }
+
         [Display(Name = "Установленные программы")]
         public string[] Software { get; set; }
 
+        //used in Edit view
         [Display(Name = "Установленные программы")]
         public string SoftwareString
         {

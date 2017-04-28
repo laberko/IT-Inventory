@@ -99,11 +99,11 @@ namespace IT_Inventory
                 var page = Page.FirstOrDefault(p => p.Title == "Установленные программы");
                 if (page == null)
                     return null;
-                string[] exclusions = {"Hotfix", "MUI", "C++", "Update", "Proof", "Service Pack", "Framework", "Runtime", "Пакет", "NVIDIA" };
+                string[] exclusions = {"Hotfix", "MUI", "C++", "Update", "Proof", "Service Pack", "Framework", "Runtime", "Пакет", "NVIDIA", "CCC", "Redistributable", "Средства" , "Засоби", "Языковой" };
                 var softList = (from item 
                           in page.Device
                           where !exclusions.Any(item.Title.Contains)
-                          select item.Title);
+                          select item.Title).Distinct();
                 var softString = new StringBuilder();
                 foreach (var item in softList)
                     softString.Append(item + "[NEW_LINE]");
