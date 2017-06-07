@@ -25,16 +25,18 @@ namespace IT_Inventory
         public static async Task<Report> GetReportAsync(string hostName)
         {
             var reportFileName = string.Empty;
+            var log = string.Empty;
             try
             {
                 DateTime reportDate;
                 Report report;
+                
                 var rootDir = new DirectoryInfo(@"\\rivs.org\it\ConfigReporting\ConfigReports");
                 var hostDirs = rootDir.GetDirectories();
                 var hostDir = hostDirs.FirstOrDefault(d => d.Name == hostName.ToUpper());
                 if (hostDir == null)
                     return null;
-                var hostReportDirs = hostDir.GetDirectories().OrderByDescending(d => d.CreationTime);
+                var hostReportDirs = hostDir.GetDirectories().OrderByDescending(d => d.CreationTime).ToList();
                 //take only the last report
                 if (!DateTime.TryParse(hostReportDirs.First().Name, out reportDate))
                     return null;
@@ -43,24 +45,38 @@ namespace IT_Inventory
                     return null;
                 reportFileName = reportFile.FullName;
 
-
-                var serializer = new XmlSerializer(typeof (Report));
-
                 using (var fileStream = new FileStream(reportFileName, FileMode.Open))
-                    report = (Report) serializer.Deserialize(fileStream);
-
+                {
+                    try
+                    {
+                        var serializer = new XmlSerializer(typeof (Report));
+                        report = (Report) serializer.Deserialize(fileStream);
+                    }
+                    catch
+                    {
+                        fileStream.Close();
+                        File.Delete(reportFileName);
+                        log = "File with broken XML DOM deleted:\n";
+                        throw;
+                    }
+                }
                 report.UserName = Path.GetFileNameWithoutExtension(reportFileName);
                 report.UserFullName = (@"RIVS\" + report.UserName).GetUserName();
-                
                 report.CompName = hostName;
                 report.ReportDate = reportDate;
+
+                //remove folders older than 10 days but keep at least 10 folders
+                var span = new TimeSpan(10, 0, 0, 0);
+                foreach (var dir in hostReportDirs.Skip(10).Where(dir => DateTime.Now - dir.CreationTime > span))
+                    dir.Delete(true);
 
                 return report;
             }
             catch (Exception ex)
             {
-                var log = reportFileName + "\n" + ex.Message;
-                await log.WriteToLogAsync(EventLogEntryType.Error);
+                log += reportFileName + "\n" + ex.Message;
+                await log.WriteToLogAsync(EventLogEntryType.Warning, "Report");
+                ex.WriteToLogAsync(source: "Report");
                 return null;
             }
         }
@@ -80,6 +96,41 @@ namespace IT_Inventory
                     return valueInt;
                 var valueGb = Math.Round(((double) valueInt)/1024);
                 return (int) valueGb;
+            }
+        }
+
+        public string Hdd
+        {
+            get
+            {
+                //int valueInt;
+                //var item = Page[1].Group[5].Item.FirstOrDefault(i => i.Title == "Общий объём");
+                //var valueString = item == null ? string.Empty : item.Value;
+                //if (valueString.Contains("МБ"))
+                //{
+                //    valueString = valueString.Split(' ')[0];
+                //    int.TryParse(valueString, out valueInt);
+                //    valueInt = valueInt/1024;
+                //}
+                //else if (valueString.Contains("ГБ"))
+                //{
+                //    valueString = valueString.Split('.')[0];
+                //    int.TryParse(valueString, out valueInt);
+                //}
+                //else
+                //    return 0;
+                //return valueInt;
+                var items = Page[1].Group[4].Item.Where(i => i.Title == "Дисковый накопитель" && !i.Value.Contains("USB")).ToArray();
+                if (items.Length == 0)
+                    return string.Empty;
+                var sb = new StringBuilder();
+                foreach (var item in items)
+                {
+                    sb.Append(item.Value.Replace(" SCSI Disk Device", "").Replace(" ATA Device", ""));
+                    sb.Append(", ");
+                }
+                var hddString = sb.ToString();
+                return hddString.Remove(hddString.Length - 2);
             }
         }
 

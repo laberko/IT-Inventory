@@ -1,0 +1,40 @@
+﻿@model IT_Inventory.Models.Person
+
+@{
+    ViewBag.Title = "Удалить";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<h3>Вы действительно хотите удалить эту учетную запись из базы?</h3>
+<h4>(Пользователь не будет удален из Active Directory)</h4>
+
+<div>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.FullName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.FullName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Dep)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Dep.Name)
+        </dd>
+    </dl>
+
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+
+        <div class="form-actions no-color">
+            <input type="submit" value="Удалить" class="btn btn-default" /> |
+            @Html.ActionLink("Назад к списку", "Index")
+        </div>
+    }
+</div>

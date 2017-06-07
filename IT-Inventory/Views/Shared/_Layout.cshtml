@@ -27,8 +27,8 @@
                 <div class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
                         <li>@Html.ActionLink("Склад", "Index", "Items", null, new {@href = "/Items/Index"})</li>
+                        <li>@Html.ActionLink(@"Приход/расход", "Index", "Histories", null, new { @href = "/Histories/Index" })</li>
                         <li>@Html.ActionLink("Принтеры", "Index", "Printers", null, new {@href = "/Printers/Index"})</li>
-                        <li>@Html.ActionLink("История", "Index", "Histories", null, new {@href = "/Histories/Index"})</li>
                         <li>@Html.ActionLink("Техподдержка", "Index", "Support", null, new { @href = "/Support/Index" })</li>
                         <li>@Html.ActionLink("Сотрудники", "Index", "People", null, new {@href = "/People/Index"})</li>
                         <li>@Html.ActionLink("Компьютеры", "Index", "Computers", null, new { @href = "/Computers/Index" })</li>

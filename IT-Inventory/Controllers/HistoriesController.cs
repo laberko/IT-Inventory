@@ -15,7 +15,7 @@ namespace IT_Inventory.Controllers
     {
         private readonly InventoryModel _db = new InventoryModel();
 
-        // GET: Histories/5     - history for all or an item
+        // GET: Histories/5     - history for all or an item or a person
         // id = item, peopleId = person
         public async Task<ActionResult> Index(int? id, int? peopleId, int page = 1)
         {
@@ -29,8 +29,11 @@ namespace IT_Inventory.Controllers
                 //history for a person
                 else
                 {
+                    var person = _db.Persons.Find(peopleId);
+                    if (person == null)
+                        return HttpNotFound();
                     items = await _db.Histories.Where(h => h.WhoTook.Id == peopleId).OrderByDescending(h => h.Date).ToListAsync();
-                    model.PersonName = _db.Persons.Find(peopleId).FullName;
+                    model.PersonName = person.FullName;
                     model.GrantHistory = true;
                 }
                 model.MonthGrant = 0;
@@ -39,8 +42,11 @@ namespace IT_Inventory.Controllers
             else
             {
                 //history for an item
+                var item = _db.Items.Find(id);
+                if (item == null)
+                    return HttpNotFound();
                 items = await _db.Histories.Where(h => h.Item.Id == id).OrderByDescending(h => h.Date).ToListAsync();
-                model.ItemName = _db.Items.Find(id).Name;
+                model.ItemName = item.Name;
                 model.MonthGrant = StaticData.CountItemGrant((int) id, 30);
                 model.MonthRecieve = StaticData.CountRecieve((int) id, 30);
                 model.Id = id;

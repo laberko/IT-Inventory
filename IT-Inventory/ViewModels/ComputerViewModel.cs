@@ -16,6 +16,9 @@ namespace IT_Inventory.ViewModels
         [Display(Name = "Память")]
         public int Ram { get; set; }
 
+        [Display(Name = "Жесткий диск")]
+        public string Hdd { get; set; }
+
         [Display(Name = "Материнская плата")]
         public string MotherBoard { get; set; }
 

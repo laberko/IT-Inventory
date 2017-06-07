@@ -30,6 +30,9 @@ namespace IT_Inventory.Models
         public int Ram { get; set; }
         public int RamInvent { get; set; }
 
+        public string Hdd { get; set; }
+        public string HddInvent { get; set; }
+
         public string MotherBoard { get; set; }
         public string MotherBoardInvent { get; set; }
 
@@ -54,6 +57,7 @@ namespace IT_Inventory.Models
                 HistoryCpu = Cpu,
                 HistoryMotherBoard = MotherBoard,
                 HistoryRam = Ram,
+                HistoryHdd = Hdd,
                 HistorySoftware = Software,
                 HistoryVideoAdapter = VideoAdapter,
                 Changes = changesSummary,
@@ -84,6 +88,7 @@ namespace IT_Inventory.Models
             return 
                    Cpu.Split(',')[0] == otherComputer.Cpu.Split(',')[0]
                 && Ram == otherComputer.Ram
+                && Hdd == otherComputer.Hdd
                 && MotherBoard == otherComputer.MotherBoard
                 && VideoAdapter == otherComputer.VideoAdapter
                 && Software == otherComputer.Software;
@@ -104,6 +109,11 @@ namespace IT_Inventory.Models
             {
                 Ram = newConfig.Ram;
                 sb.Append("Память, ");
+            }
+            if (Hdd != newConfig.Hdd)
+            {
+                Hdd = newConfig.Hdd;
+                sb.Append("Диск, ");
             }
             if (MotherBoard != newConfig.MotherBoard)
             {
@@ -143,6 +153,8 @@ namespace IT_Inventory.Models
                 CpuInvent = Cpu;
             if (RamInvent == 0)
                 RamInvent = Ram;
+            //if (string.IsNullOrEmpty(HddInvent))
+                HddInvent = Hdd;
             if (string.IsNullOrEmpty(MotherBoardInvent))
                 MotherBoardInvent = MotherBoard;
             if (string.IsNullOrEmpty(VideoAdapterInvent))

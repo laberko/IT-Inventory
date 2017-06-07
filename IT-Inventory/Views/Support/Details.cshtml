@@ -8,7 +8,7 @@
 
 <div>
     <h4>Заявка в техподдержку</h4>
-    <hr />
+    <hr/>
     <dl class="dl-horizontal">
 
         <dt>
@@ -39,33 +39,33 @@
             @Model.CreationTime.ToString("f")
         </dd>
 
-@if (Model.StartTime != null)
-{
+        @if (Model.StartTime != null)
+        {
 
-    <dt>
-        @Html.DisplayNameFor(model => model.StartTime)
-    </dt>
-    <dd>
-        @(((DateTime)Model.StartTime).ToString("f"))
-    </dd>
-}
+            <dt>
+                @Html.DisplayNameFor(model => model.StartTime)
+            </dt>
+            <dd>
+                @(((DateTime) Model.StartTime).ToString("f"))
+            </dd>
+        }
 
-@if (Model.FinishTime != null)
-{
+        @if (Model.FinishTime != null)
+        {
 
-    <dt>
-        @Html.DisplayNameFor(model => model.FinishTime)
-    </dt>
-    <dd>
-        @(((DateTime)Model.FinishTime).ToString("f"))
-    </dd>
-}
+            <dt>
+                @Html.DisplayNameFor(model => model.FinishTime)
+            </dt>
+            <dd>
+                @(((DateTime) Model.FinishTime).ToString("f"))
+            </dd>
+        }
 
         <dt>
             @Html.DisplayNameFor(model => model.Text)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Text)
+            @Html.NewLine2Br(Model.Text)
         </dd>
 
         <dt>
@@ -192,7 +192,25 @@
         }
 
     </dl>
+
 </div>
+
+@if (Model.File != null)
+{
+    if (Model.File.IsImage)
+    {
+        <div style="width: 100%; float: left; text-align: center">
+            <img src="~/SupportFiles/@Model.FileNameLastPart" alt="" style="max-width: 100%;" title="">
+        </div>
+    }
+    else
+    {
+        <p>
+            @Html.ActionLink("Файл: " + Model.File.FileName, "DownloadFile", new { filename = Model.File.Path })
+        </p>
+    }
+}
+
 <p>
     @Html.ActionLink("Редактировать", "Edit", new { id = Model.Id }) |
     @Html.ActionLink("Назад к списку", "Index")

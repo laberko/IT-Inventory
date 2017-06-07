@@ -20,7 +20,9 @@ namespace IT_Inventory.ViewModels
         [Display(Name = "Минимум")]
         public int MinQuantity { get; set; }
 
+        [Display(Name = "Категория")]
         public string ItemTypeName { get; set; }
+
         public int ItemTypeId { get; set; }
 
         [Display(Name = "Кто выдал")]
@@ -28,6 +30,7 @@ namespace IT_Inventory.ViewModels
 
         [Display(Name = "Кто получил")]
         public int WhoTookId { get; set; }
+
         public List<ItemAttributeValueViewModel> AttributeValues { get; set; }
     }
 }

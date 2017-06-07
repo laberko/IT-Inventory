@@ -26,6 +26,7 @@ namespace IT_Inventory
             //run tasks on startup
             await Task.Run(() => StaticData.RefreshUsers());
             await Task.Run(() => StaticData.RefreshComputers());
+            await Task.Run(() => StaticData.SendUrgentItemsMail());
         }
 
         public void StopJobs()
@@ -37,8 +38,10 @@ namespace IT_Inventory
         {
             _log = "30 minute job started!";
             await _log.WriteToLogAsync();
+
             await Task.Run(() => StaticData.RefreshUsers());
             await Task.Run(() => StaticData.RefreshComputers());
+            await Task.Run(() => StaticData.SendUrgentItemsMail());
         }
     }
 }

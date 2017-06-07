@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.IO;
 
 namespace IT_Inventory.Models
 {
@@ -39,6 +40,9 @@ namespace IT_Inventory.Models
 
         [Display(Name = "Завершена")]
         public DateTime? FinishTime { get; set; }
+
+        [Display(Name = "Файл")]
+        public virtual SupportFile File { get; set; }
 
         [Display(Name = "Установлено ПО")]
         public string SoftwareInstalled { get; set; }
@@ -104,5 +108,16 @@ namespace IT_Inventory.Models
                 return modifications;
             }
         } 
+
+        [NotMapped]
+        public string FileNameLastPart {
+            get
+            {
+                if (File == null)
+                    return string.Empty;
+                var parts = File.Path.Split('\\');
+                return parts[parts.Length - 2] + "/" + parts[parts.Length - 1];
+            }
+        }
     }
 }

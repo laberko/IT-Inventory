@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using IT_Inventory.Models;
 using IT_Inventory.ViewModels;
@@ -33,6 +34,35 @@ namespace IT_Inventory.Controllers
             model.FirstLetters = _db.Persons.AsEnumerable().Select(p => p.FullName.First()).Distinct().OrderBy(c => c).ToArray();
             model.Letter = letter;
             return View(model);
+        }
+
+        // GET: People/Delete/5
+        public async Task<ActionResult> Delete(int? id)
+        {
+            if (id == null)
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            var user = await _db.Persons.FindAsync(id);
+            if (user == null)
+                return HttpNotFound();
+            return View(user);
+        }
+
+        // POST: People/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> DeleteConfirmed(int id)
+        {
+            var user = await _db.Persons.FindAsync(id);
+            if (user == null)
+                return HttpNotFound();
+            if (!User.IsInRole(@"RIVS\InventoryAdmin"))
+            {
+                ModelState.AddModelError(string.Empty, "У Вас нет прав на удаление! Обратитесь к системному администратору!");
+                return View(user);
+            }
+            _db.Persons.Remove(user);
+            await _db.SaveChangesAsync();
+            return RedirectToAction("Index");
         }
 
         protected override void Dispose(bool disposing)

@@ -7,6 +7,7 @@ using System.Web.Mvc;
 using IT_Inventory.Models;
 using IT_Inventory.ViewModels;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace IT_Inventory.Controllers
 {
@@ -463,6 +464,8 @@ namespace IT_Inventory.Controllers
         public async Task<ActionResult> DeleteConfirmed(int id)
         {
             var item = await _db.Items.FindAsync(id);
+            if (item == null)
+                return RedirectToAction("Index");
             // check if current user belongs to admin group
             //if (!User.IsInRole(@"RIVS\InventoryAdmin"))
             //{
@@ -471,6 +474,17 @@ namespace IT_Inventory.Controllers
             //}
             _db.Items.Remove(item);
             await _db.SaveChangesAsync();
+            return RedirectToAction("Index");
+        }
+
+        [AllowAnonymous]
+        public async Task<RedirectToRouteResult> SendUrgentItemsMail()
+        {
+            var mailer = new EmailController();
+            var mail = mailer.UrgentItemsWarning();
+            mail.DeliverAsync();
+            var log = "Inventory warning mail sent to: " + mail.Mail.To;
+            await log.WriteToLogAsync(EventLogEntryType.Information, "Mailer");
             return RedirectToAction("Index");
         }
 

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Web;
 using IT_Inventory.Models;
 
 namespace IT_Inventory.ViewModels
@@ -62,5 +63,9 @@ namespace IT_Inventory.ViewModels
         public Computer FromComputer { get; set; }
 
         public bool EditByIt { get; set; }
+
+        [Display(Name = "Файл")]
+        [DataType(DataType.Upload)]
+        public HttpPostedFileBase Upload { get; set; }
     }
 }

@@ -18,6 +18,8 @@ namespace IT_Inventory.Models
 
         public int HistoryRam { get; set; }
 
+        public string HistoryHdd { get; set; }
+
         public string HistoryMotherBoard { get; set; }
 
         public string HistoryVideoAdapter { get; set; }

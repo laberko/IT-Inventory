@@ -27,13 +27,14 @@ namespace IT_Inventory.Controllers
                     : _db.Computers.AsEnumerable().Where(c => c.ComputerName.StartsWith(depCode + '-')).OrderBy(c => c.ComputerName).ToList();
             else
                 dbComputers = _db.Computers.OrderBy(c => c.ComputerName).Where(c => c.Owner.Id == personId).ToList();
-            var pager = new Pager(dbComputers.Count, page, 11);
+            var pager = new Pager(dbComputers.Count, page, 8);
             var computers = dbComputers.Select(comp => new ComputerViewModel
             {
                 Id = comp.Id,
                 ComputerName = comp.ComputerName,
                 Cpu = comp.CpuInvent,
                 Ram = comp.RamInvent,
+                Hdd = comp.HddInvent,
                 MotherBoard = comp.MotherBoardInvent,
                 VideoAdapter = comp.VideoAdapterInvent,
                 Owner = comp.Owner == null ? string.Empty : comp.Owner.ShortName,
@@ -58,7 +59,6 @@ namespace IT_Inventory.Controllers
         {
             if (id == null && days == null)
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            var historyModels = new List<ComputerHistoryViewModel>();
             IEnumerable<ComputerHistoryItem> historyItems;
 
             if (id != null && days != null)
@@ -83,19 +83,20 @@ namespace IT_Inventory.Controllers
                 historyItems = _db.ComputerHistory.AsEnumerable()
                     .Where(h => (DateTime.Now - h.HistoryUpdated) < new TimeSpan((int)days, 0, 0, 0));
 
-            historyModels = historyItems.OrderByDescending(h => h.HistoryUpdated)
+            var historyModels = historyItems.OrderByDescending(h => h.HistoryUpdated)
                 .Select(history => new ComputerHistoryViewModel
-            {
-                Id = history.Id,
-                Cpu = history.HistoryCpu,
-                Ram = history.HistoryRam,
-                MotherBoard = history.HistoryMotherBoard,
-                VideoAdapter = history.HistoryVideoAdapter,
-                UpdateDate = history.HistoryUpdated?.ToString("g") ?? string.Empty,
-                Changes = history.Changes,
-                OwnerName = history.HistoryComputerOwner == null ? string.Empty : history.HistoryComputerOwner.ShortName,
-                ComputerName = history.HistoryComputer == null ? string.Empty : history.HistoryComputer.ComputerName
-            }).ToList();
+                {
+                    Id = history.Id,
+                    Cpu = history.HistoryCpu,
+                    Ram = history.HistoryRam,
+                    Hdd = history.HistoryHdd,
+                    MotherBoard = history.HistoryMotherBoard,
+                    VideoAdapter = history.HistoryVideoAdapter,
+                    UpdateDate = history.HistoryUpdated?.ToString("g") ?? string.Empty,
+                    Changes = history.Changes,
+                    OwnerName = history.HistoryComputerOwner == null ? string.Empty : history.HistoryComputerOwner.ShortName,
+                    ComputerName = history.HistoryComputer == null ? string.Empty : history.HistoryComputer.ComputerName
+                }).ToList();
 
             return View(historyModels);
         }
@@ -115,6 +116,7 @@ namespace IT_Inventory.Controllers
                 ComputerName = comp.ComputerName,
                 Cpu = comp.Cpu,
                 Ram = comp.Ram,
+                Hdd = comp.Hdd,
                 MotherBoard = comp.MotherBoard,
                 VideoAdapter = comp.VideoAdapter,
                 Owner = comp.Owner == null ? string.Empty : comp.Owner.FullName,
@@ -141,6 +143,7 @@ namespace IT_Inventory.Controllers
                 OwnerName = historyItem.HistoryComputerOwner == null ? string.Empty : historyItem.HistoryComputerOwner.FullName,
                 Cpu = historyItem.HistoryCpu,
                 Ram = historyItem.HistoryRam,
+                Hdd = historyItem.HistoryHdd,
                 MotherBoard = historyItem.HistoryMotherBoard,
                 VideoAdapter = historyItem.HistoryVideoAdapter,
                 Software = historyItem.HistorySoftware.Split(new[] { "[NEW_LINE]" }, StringSplitOptions.None),
@@ -176,6 +179,7 @@ namespace IT_Inventory.Controllers
                 OwnerId = comp.Owner?.Id ?? 0,
                 Cpu = comp.CpuInvent,
                 Ram = comp.RamInvent,
+                Hdd = comp.HddInvent,
                 MotherBoard = comp.MotherBoardInvent,
                 VideoAdapter = comp.VideoAdapterInvent,
                 Software = comp.SoftwareInvent.Split(new[] { "[NEW_LINE]" }, StringSplitOptions.None)
@@ -196,8 +200,10 @@ namespace IT_Inventory.Controllers
             comp.Owner = await _db.Persons.FindAsync(compModel.OwnerId);
             comp.CpuInvent = compModel.Cpu;
             comp.RamInvent = compModel.Ram;
+            comp.HddInvent = compModel.Hdd;
             comp.MotherBoardInvent = compModel.MotherBoard;
             comp.VideoAdapterInvent = compModel.VideoAdapter;
+            comp.UpdateDate = DateTime.Now;
             var softString = new StringBuilder();
             foreach (var item in compModel.Software)
                 softString.Append(item + "[NEW_LINE]");
@@ -226,6 +232,11 @@ namespace IT_Inventory.Controllers
             var computer = await _db.Computers.FindAsync(id);
             if (computer == null)
                 return HttpNotFound();
+            if (!User.IsInRole(@"RIVS\InventoryAdmin"))
+            {
+                ModelState.AddModelError(string.Empty, "У Вас нет прав на удаление! Обратитесь к системному администратору!");
+                return View(computer);
+            }
             _db.Computers.Remove(computer);
             await _db.SaveChangesAsync();
             return RedirectToAction("Index");

@@ -112,6 +112,8 @@ namespace IT_Inventory.Controllers
         public async Task<ActionResult> DeleteConfirmed(int id)
         {
             var itemType = await _db.ItemTypes.FindAsync(id);
+            if (itemType == null)
+                return HttpNotFound();
             if (!User.IsInRole(@"RIVS\InventoryAdmin"))
             {
                 ModelState.AddModelError(string.Empty, "У Вас нет прав на удаление! Обратитесь к системному администратору!");

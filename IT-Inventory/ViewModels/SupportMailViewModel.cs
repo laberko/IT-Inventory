@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.IO;
 
 namespace IT_Inventory.ViewModels
 {
@@ -69,5 +70,11 @@ namespace IT_Inventory.ViewModels
 
         [Display(Name = "Отзыв о выполнении")]
         public string FeedBack { get; set; }
+
+        public string ImagePathLastPart { get; set; }
+
+        public string FilePath { get; set; }
+
+        public string FileName => string.IsNullOrEmpty(FilePath) ? string.Empty : Path.GetFileName(FilePath);
     }
 }

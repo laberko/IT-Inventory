@@ -1,7 +1,7 @@
 ﻿@model IT_Inventory.ViewModels.HistoryIndexViewModel
 
 @{
-    ViewBag.Title = Model.GrantHistory ? "История выданного оборудования" : "История действий";
+    ViewBag.Title = Model.GrantHistory ? "История выданного оборудования" : @"Приход/расход";
 }
 
 <h2>@ViewBag.Title</h2>
@@ -30,6 +30,9 @@
         </th>
         @if (string.IsNullOrEmpty(Model.ItemName))
         {
+            <th>
+                @Html.DisplayNameFor(model => model.Histories.First().Item.ItemType.Name)
+            </th>
             <th>
                 @Html.DisplayNameFor(model => model.Histories.First().Item)
             </th>
@@ -63,6 +66,9 @@
             </td>
             @if (string.IsNullOrEmpty(Model.ItemName))
             {
+                <td>
+                    @Html.DisplayFor(modelItem => item.Item.ItemType.Name)
+                </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Item.Name)
                 </td>

@@ -15,7 +15,7 @@
         <th>
             @Html.DisplayNameFor(model => model.First().UpdateDate)
         </th>
-        <th>
+        <th white-space: nowrap>
             @Html.DisplayNameFor(model => model.First().Changes)
         </th>
         @if (string.IsNullOrEmpty(ViewBag.CompName))
@@ -34,12 +34,14 @@
             @Html.DisplayNameFor(model => model.First().Ram)
         </th>
         <th>
+            @Html.DisplayNameFor(model => model.First().Hdd)
+        </th>
+        <th>
             @Html.DisplayNameFor(model => model.First().MotherBoard)
         </th>
         <th>
             @Html.DisplayNameFor(model => model.First().VideoAdapter)
         </th>
-        <th></th>
     </tr>
 
 @foreach (var item in Model)
@@ -49,7 +51,8 @@
             @Html.DisplayFor(modelItem => item.UpdateDate)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Changes)
+            @Html.DisplayFor(modelItem => item.Changes)<br>
+            @Html.ActionLink("Подробно", "HistoryDetails", new { id = item.Id })
         </td>
         @if (string.IsNullOrEmpty(ViewBag.CompName))
         {
@@ -67,13 +70,13 @@
             @Html.DisplayFor(modelItem => item.Ram) ГБ
         </td>
         <td>
+            @Html.DisplayFor(modelItem => item.Hdd)
+        </td>
+        <td>
             @Html.DisplayFor(modelItem => item.MotherBoard)
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.VideoAdapter)
-        </td>
-        <td>
-            @Html.ActionLink("Подробно", "HistoryDetails", new {id = item.Id})
         </td>
     </tr>
 }

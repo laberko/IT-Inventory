@@ -10,6 +10,7 @@ using System.Net;
 using System.Security;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
 using IT_Inventory.Models;
 using IT_Inventory.ViewModels;
@@ -52,12 +53,12 @@ namespace IT_Inventory
                                     Filter = "(&(objectClass=person) (samaccountname=" + p.SamAccountName + "))"
                                 };
                                 var resultEntry = mySearcher.FindOne().GetDirectoryEntry();
-                                if ((resultEntry.Properties.Contains("DisplayName") &&
+                                if (resultEntry.Properties.Contains("DisplayName") &&
                                     !resultEntry.Properties.Contains("st") &&
                                     resultEntry.Properties.Contains("department") &&
                                     resultEntry.Properties.Contains("company"))
                                     //add ituser for testing
-                                    || resultEntry.Properties.Contains("DisplayName") && (resultEntry.Properties["DisplayName"].Value.ToString() == "ituser"))
+                                    //|| resultEntry.Properties.Contains("DisplayName") && (resultEntry.Properties["DisplayName"].Value.ToString() == "ituser"))
                                 {
                                     Department dep = null;
                                     if (resultEntry.Properties.Contains("company"))
@@ -130,29 +131,29 @@ namespace IT_Inventory
                             db.Entry(existingPerson).State = EntityState.Modified;
                     }
                     //remove non-existing users from db
-                    var nonExistingIds = (from user in db.Persons.AsEnumerable()
-                                          where adUsers.FirstOrDefault(u => u.AccountName == user.AccountName) == null
-                                          select user.Id).ToArray();
-                    if (nonExistingIds.Length > 0)
-                    {
-                        log.AppendLine("Удалены пользователи:");
-                        foreach (var id in nonExistingIds)
-                        {
-                            var nonExistingUser = db.Persons.Find(id);
-                            if (nonExistingUser == null)
-                                continue;
-                            foreach (var history in db.Histories
-                                .Where(h => h.WhoTook.Id == nonExistingUser.Id || h.WhoGave.Id == nonExistingUser.Id).ToList())
-                                db.Histories.Remove(history);
-                            foreach (var comp in db.Computers.Where(c => c.Owner.Id == nonExistingUser.Id).ToList())
-                            {
-                                comp.Owner = null;
-                                db.Entry(comp).State = EntityState.Modified;
-                            }
-                            db.Persons.Remove(nonExistingUser);
-                            log.AppendLine(nonExistingUser.FullName);
-                        }
-                    }
+                    //var nonExistingIds = (from user in db.Persons.AsEnumerable()
+                    //                      where adUsers.FirstOrDefault(u => u.AccountName == user.AccountName) == null
+                    //                      select user.Id).ToArray();
+                    //if (nonExistingIds.Length > 0)
+                    //{
+                    //    log.AppendLine("Удалены пользователи:");
+                    //    foreach (var id in nonExistingIds)
+                    //    {
+                    //        var nonExistingUser = db.Persons.Find(id);
+                    //        if (nonExistingUser == null)
+                    //            continue;
+                    //        foreach (var history in db.Histories
+                    //            .Where(h => h.WhoTook.Id == nonExistingUser.Id || h.WhoGave.Id == nonExistingUser.Id).ToList())
+                    //            db.Histories.Remove(history);
+                    //        foreach (var comp in db.Computers.Where(c => c.Owner.Id == nonExistingUser.Id).ToList())
+                    //        {
+                    //            comp.Owner = null;
+                    //            db.Entry(comp).State = EntityState.Modified;
+                    //        }
+                    //        db.Persons.Remove(nonExistingUser);
+                    //        log.AppendLine(nonExistingUser.FullName);
+                    //    }
+                    //}
 
                     db.SaveChanges();
                     if (newUsers.Count > 0)
@@ -166,8 +167,9 @@ namespace IT_Inventory
                 }
                 catch (Exception ex)
                 {
-                    var error = ex.Message + ex.InnerException?.Message + ex.InnerException?.InnerException?.Message;
-                    Task.Run(() => error.WriteToLogAsync(EventLogEntryType.Error));
+                    ex.WriteToLogAsync(source: "Users");
+                    //var error = ex.Message + ex.InnerException?.Message + ex.InnerException?.InnerException?.Message;
+                    //Task.Run(() => error.WriteToLogAsync(EventLogEntryType.Error, "Users"));
                 }
             }
         }
@@ -181,6 +183,12 @@ namespace IT_Inventory
                     //{
                     //    comp.FillInventedData();
                     //    db.Entry(comp).State = EntityState.Modified;
+                    //}
+                    //db.SaveChanges();
+
+                    //foreach (var history in db.ComputerHistory.AsEnumerable())
+                    //{
+                    //    db.ComputerHistory.Remove(history);
                     //}
                     //db.SaveChanges();
 
@@ -198,6 +206,7 @@ namespace IT_Inventory
                             ComputerName = report.CompName,
                             Cpu = report.Cpu,
                             Ram = report.Ram,
+                            Hdd = report.Hdd,
                             MotherBoard = report.MotherBoard,
                             VideoAdapter = report.VideoAdapter,
                             Software = report.Software,
@@ -212,41 +221,41 @@ namespace IT_Inventory
                     if (nonExistingCompNames.Length > 0)
                     {
                         log.AppendLine("Удалены компьютеры:");
-                        foreach (var comp in nonExistingCompNames)
+                        foreach (var compName in nonExistingCompNames)
                         {
-                            var nonExisting = await db.Computers.FirstOrDefaultAsync(c => c.ComputerName == comp);
+                            var nonExisting = await db.Computers.FirstOrDefaultAsync(c => c.ComputerName == compName);
                             if (nonExisting == null)
                                 continue;
-                            foreach (var history in db.ComputerHistory.Where(h => h.HistoryComputer == nonExisting).AsEnumerable())
+                            foreach (var history in db.ComputerHistory.Where(h => h.HistoryComputer.ComputerName == compName).AsEnumerable())
                                 db.ComputerHistory.Remove(history);
                             db.Computers.Remove(nonExisting);
-                            log.AppendLine(comp);
+                            log.AppendLine(compName);
                             logNonEmpty = true;
                         }
                     }
 
                     log.AppendLine("Добавлены или изменены компьютеры:");
-                    foreach (var newComp in allComputers)
+                    foreach (var comp in allComputers)
                     {
                         //find computer in db by name
-                        var existingComputer = await db.Computers.FirstOrDefaultAsync(c => c.ComputerName == newComp.ComputerName);
+                        var existingComputer = await db.Computers.FirstOrDefaultAsync(c => c.ComputerName == comp.ComputerName);
                         //computer not found
                         if (existingComputer == null)
                         {
-                            newComp.FillInventedData();
-                            db.Computers.Add(newComp);
-                            db.ComputerHistory.Add(newComp.NewHistory());
-                            log.AppendLine(newComp.ComputerName);
+                            comp.FillInventedData();
+                            db.Computers.Add(comp);
+                            db.ComputerHistory.Add(comp.NewHistory());
+                            log.AppendLine(comp.ComputerName);
                             logNonEmpty = true;
                         }
                         //computer found but has changes in configuration
-                        else if (!existingComputer.Equals(newComp))
+                        else if (!existingComputer.Equals(comp))
                         {
                             existingComputer.FillInventedData();
-                            var changes = existingComputer.CopyConfig(newComp);
+                            var changes = existingComputer.CopyConfig(comp);
                             db.ComputerHistory.Add(existingComputer.NewHistory(changes[0], changes[1], changes[2]));
                             db.Entry(existingComputer).State = EntityState.Modified;
-                            log.AppendLine(newComp.ComputerName);
+                            log.AppendLine(comp.ComputerName);
                             logNonEmpty = true;
                         }
                         //else if (existingComputer.UpdateDate == null)
@@ -263,9 +272,52 @@ namespace IT_Inventory
                 }
                 catch (Exception ex)
                 {
-                    await ex.Message.WriteToLogAsync(EventLogEntryType.Error);
+                    ex.WriteToLogAsync(source: "Computers");
                 }
             }
+        }
+        public static void SendUrgentItemsMail()
+        {
+            try
+            {
+                using (var db = new InventoryModel())
+                {
+                    //send mail only after 9:00 once in 3 days
+                    if (DateTime.Now.Hour <= 9)
+                        return;
+                    foreach (var mail in db.SentMails.OrderByDescending(m => m.Date))
+                    {
+                        var mailDate = mail.Date;
+                        var span = (DateTime.Now - mailDate);
+                        if (span.Days < 3)
+                            return;
+                    }
+                }
+                //we invoke mail sending by calling this url (SendUrgentItemsMail() in ItemController)
+                const string url = @"http://inventory.rivs.org/Items/SendUrgentItemsMail";
+                var req = (HttpWebRequest) WebRequest.Create(url);
+                req.Method = "GET";
+                req.AllowAutoRedirect = false;
+                req.UseDefaultCredentials = true;
+                req.BeginGetResponse(null, null);
+            }
+            catch (Exception ex)
+            {
+                ex.WriteToLogAsync(source: "Mailer");
+            }
+        }
+        public static async void WriteToLogAsync(this Exception ex, EventLogEntryType type = EventLogEntryType.Error, string source = "Inventory")
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine(ex.Message);
+            if (ex.InnerException != null)
+            {
+                sb.AppendLine(ex.InnerException.Message);
+                if (ex.InnerException.InnerException != null)
+                    sb.AppendLine(ex.InnerException.InnerException.Message);
+            }
+            sb.AppendLine(ex.StackTrace);
+            await sb.ToString().WriteToLogAsync(type, source);
         }
         public static async Task WriteToLogAsync(this string log, EventLogEntryType type = EventLogEntryType.Information, string source = "Inventory")
         {
@@ -293,6 +345,20 @@ namespace IT_Inventory
                     }
                 }
             });
+        }
+        public static MvcHtmlString NewLine2Br(this HtmlHelper htmlHelper, string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return MvcHtmlString.Create(text);
+            var builder = new StringBuilder();
+            var lines = text.Split('\n');
+            for (var i = 0; i < lines.Length; i++)
+            {
+                if (i > 0)
+                    builder.Append("<br/>\n");
+                builder.Append(HttpUtility.HtmlEncode(lines[i]));
+            }
+            return MvcHtmlString.Create(builder.ToString());
         }
         public static string GetUserName(this string login)
         {
@@ -446,7 +512,7 @@ namespace IT_Inventory
         public static IEnumerable<SelectListItem> SelectCartridges()
         {
             using (var db = new InventoryModel())
-                return new SelectList(db.Items.Where(i => i.ItemType.Id == 11).ToList(), "Id", "Name");
+                return new SelectList(db.Items.Where(i => i.ItemType.Id == 11).OrderBy(i => i.Name).ToList(), "Id", "Name");
         }
         public static IEnumerable<SelectListItem> SelectDepartments()
         {
@@ -471,7 +537,7 @@ namespace IT_Inventory
                 return new SelectList(people, "Id", "FullName");
             }
         }
-        public static async Task<SupportMailViewModel> GetMailViewModel(int requestId)
+        public static async Task<SupportMailViewModel> GetSupportMailViewModel(int requestId)
         {
             using (var db = new InventoryModel())
             {
@@ -502,22 +568,12 @@ namespace IT_Inventory
                     OtherActions = request.OtherActions,
                     Comment = request.Comment,
                     Mark = request.Mark,
-                    FeedBack = request.FeedBack
+                    FeedBack = request.FeedBack,
+                    ImagePathLastPart = request.File != null && request.File.IsImage ? request.FileNameLastPart : string.Empty,
+                    FilePath = request.File != null && !request.File.IsImage ? request.File.Path : string.Empty
                 };
             }
         }
-
-
-        public static void SendMail(MailRecipients recipient, RequestStatus requestStatus, int requestId)
-        {
-            using (var db = new InventoryModel())
-            {
-
-
-
-            }
-        }
-
 
         public static Dictionary<int, string> RequestUrgency = new Dictionary<int, string>
         {
@@ -543,8 +599,9 @@ namespace IT_Inventory
             {3, "Интернет" },
             {4, "Почта" },
             {5, "Телефония" },
-            {6, @"Файлы/папки" },
-            {7, "Другое" }
+            {6, "Файлы/папки" },
+            {7, "1C" },
+            {8, "Другое" }
         };
 
         public enum MailRecipients
@@ -562,6 +619,12 @@ namespace IT_Inventory
             EditByIt,
             Accepted,
             Finished
+        };
+
+        public enum MailType
+        {
+            Support,
+            Inventory
         };
     }
 }

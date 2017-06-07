@@ -6,11 +6,11 @@
 
 <h2>@ViewBag.Title</h2>
 
-
-@using (Html.BeginForm())
-{
+<form action="" method="post" enctype="multipart/form-data">
+    @*@using (Html.BeginForm())
+        {*@
     @Html.AntiForgeryToken()
-    
+
     <div class="form-horizontal">
         <hr />
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
@@ -20,23 +20,23 @@
         @if (Model.State < 2)
         {
             <div class="form-group">
-                @Html.LabelFor(model => model.Urgency, htmlAttributes: new {@class = "control-label col-md-2"})
+                @Html.LabelFor(model => model.Urgency, htmlAttributes: new { @class = "control-label col-md-2" })
                 <div class="col-md-10">
-                    @Html.DropDownListFor(model => model.Urgency, new SelectList(StaticData.RequestUrgency, "Key", "Value"), "", new {@class = "btn btn-default dropdown-toggle"})
-                    @Html.ValidationMessageFor(model => model.Urgency, "", new {@class = "text-danger"})
+                    @Html.DropDownListFor(model => model.Urgency, new SelectList(StaticData.RequestUrgency, "Key", "Value"), "", new { @class = "btn btn-default dropdown-toggle" })
+                    @Html.ValidationMessageFor(model => model.Urgency, "", new { @class = "text-danger" })
                 </div>
             </div>
 
             <div class="form-group">
-                @Html.LabelFor(model => model.Category, htmlAttributes: new {@class = "control-label col-md-2"})
+                @Html.LabelFor(model => model.Category, htmlAttributes: new { @class = "control-label col-md-2" })
                 <div class="col-md-10">
-                    @Html.DropDownListFor(model => model.Category, new SelectList(StaticData.RequestCategory, "Key", "Value"), "", new {@class = "btn btn-default dropdown-toggle"})
-                    @Html.ValidationMessageFor(model => model.Category, "", new {@class = "text-danger"})
+                    @Html.DropDownListFor(model => model.Category, new SelectList(StaticData.RequestCategory, "Key", "Value"), "", new { @class = "btn btn-default dropdown-toggle" })
+                    @Html.ValidationMessageFor(model => model.Category, "", new { @class = "text-danger" })
                 </div>
             </div>
 
             <div class="form-group">
-                @Html.LabelFor(model => model.Text, htmlAttributes: new {@class = "control-label col-md-2"})
+                @Html.LabelFor(model => model.Text, htmlAttributes: new { @class = "control-label col-md-2" })
                 <div class="col-md-10">
                     @Html.TextAreaFor(model => model.Text, 10, 55, null)
                 </div>
@@ -52,14 +52,14 @@
         @if (Model.State == 2)
         {
             <div class="form-group">
-                @Html.LabelFor(model => model.Mark, htmlAttributes: new {@class = "control-label col-md-2"})
+                @Html.LabelFor(model => model.Mark, htmlAttributes: new { @class = "control-label col-md-2" })
                 <div class="col-md-10">
-                    @Html.DropDownListFor(model => model.Mark, Enumerable.Range(1, 5).Reverse().Select(i => new SelectListItem {Text = i.ToString(), Value = i.ToString()}), "", new {@class = "btn btn-default dropdown-toggle"})
+                    @Html.DropDownListFor(model => model.Mark, Enumerable.Range(1, 5).Reverse().Select(i => new SelectListItem { Text = i.ToString(), Value = i.ToString() }), "", new { @class = "btn btn-default dropdown-toggle" })
                 </div>
             </div>
 
             <div class="form-group">
-                @Html.LabelFor(model => model.FeedBack, htmlAttributes: new {@class = "control-label col-md-2"})
+                @Html.LabelFor(model => model.FeedBack, htmlAttributes: new { @class = "control-label col-md-2" })
                 <div class="col-md-10">
                     @Html.TextAreaFor(model => model.FeedBack, 10, 55, null)
                 </div>
@@ -72,17 +72,27 @@
         }
 
         <div class="form-group">
+            @Html.LabelFor(model => model.Upload, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextBoxFor(model => model.Upload, new { type = "file" })
+            </div>
+        </div>
+
+
+        <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
                 <input type="submit" value="Сохранить" class="btn btn-default" />
             </div>
         </div>
     </div>
-}
+    @*}*@
+</form>
 
-<div>
-    @Html.ActionLink("Назад к списку", "Index")
-</div>
 
-@section Scripts {
-    @Scripts.Render("~/bundles/jqueryval")
-}
+    <div>
+        @Html.ActionLink("Назад к списку", "Index")
+    </div>
+
+    @section Scripts {
+        @Scripts.Render("~/bundles/jqueryval")
+    }

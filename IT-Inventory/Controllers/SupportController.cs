@@ -7,6 +7,10 @@ using System.Web.Mvc;
 using IT_Inventory.Models;
 using IT_Inventory.ViewModels;
 using ActionMailer.Net.Mvc4;
+using System.Collections.Generic;
+using System.IO;
+using System.Web.Hosting;
+using System.Web.UI;
 
 namespace IT_Inventory.Controllers
 {
@@ -15,24 +19,40 @@ namespace IT_Inventory.Controllers
         private readonly InventoryModel _db = new InventoryModel();
 
         // GET: SupportRequests
+        [OutputCache(NoStore = true, Location = OutputCacheLocation.Client, Duration = 30)]
         public async Task<ActionResult> Index(int? state, int? searchUserId, int? searchCompId)
         {
+            ViewBag.State = state;
+            ViewBag.SearchUserId = searchUserId;
+            ViewBag.SearchCompId = searchCompId;
+
+            if (!Request.IsAjaxRequest())
+                return View();
+
             var login = User.Identity.Name;
             var accountName = login.Substring(5, login.Length - 5);
             var person = _db.Persons.FirstOrDefault(p => p.AccountName == accountName);
             if (person == null)
                 return HttpNotFound();
-            var requests = _db.SupportRequests.OrderBy(r => r.State).ThenByDescending(r => r.CreationTime).AsEnumerable();
+            ViewBag.UserId = person.Id;
+
+            IEnumerable<SupportRequest> requests;
+            //requests of a computer
             if (searchCompId != null)
             {
                 var comp = await _db.Computers.FindAsync(searchCompId);
                 if (comp != null)
                 {
-                    requests = comp.SupportRequests.OrderBy(r => r.State)
+                    requests = comp.SupportRequests
+                        .Where(r => r.Modifications != null)
+                        .OrderBy(r => r.State)
                         .ThenByDescending(r => r.CreationTime).AsEnumerable();
                     ViewBag.SearchString = comp.ComputerName;
                 }
+                else
+                    return HttpNotFound();
             }
+            //requests of a user
             else if (searchUserId != null)
             {
                 var user = await _db.Persons.FindAsync(searchUserId);
@@ -42,19 +62,28 @@ namespace IT_Inventory.Controllers
                         .ThenByDescending(r => r.CreationTime).AsEnumerable();
                     ViewBag.SearchString = user.FullName;
                 }
+                else
+                    return HttpNotFound();
             }
-            ViewBag.UserId = person.Id;
+            //all requests
+            else
+                requests = _db.SupportRequests.OrderBy(r => r.State)
+                    .ThenByDescending(r => r.CreationTime).AsEnumerable();
+
+            //non-IT user - show only user's requests
             if (!User.IsInRole(@"RIVS\IT-Dep"))
             {
                 ViewBag.IsItUser = false;
-                if (state != null && state >= 0 && state <= 2)
-                    return View(requests.Where(r => r.From == person && r.State == state).ToList());
-                return View(requests.Where(r => r.From == person).ToList());
+                //user's requests with a selected state or all requests
+                return PartialView("IndexPartial", state != null 
+                    ? requests.Where(r => r.From == person && r.State == state).ToList() 
+                    : requests.Where(r => r.From == person).ToList());
             }
             ViewBag.IsItUser = true;
-            if (state != null && state >= 0 && state <= 2)
-                return View(requests.Where(r => r.State == state).ToList());
-            return View(requests.ToList());
+            //IT user - show all users' requests with a selected state or all requests
+            return PartialView("IndexPartial", state != null 
+                ? requests.Where(r => r.State == state).ToList() 
+                : requests.ToList());
         }
 
         public async Task<ActionResult> Modifications(int? compId)
@@ -120,13 +149,38 @@ namespace IT_Inventory.Controllers
                 return View(supportRequest);
             }
             Computer comp = null;
+            SupportFile requestFile = null;
+
+            //support request has attached file
+            if (supportRequest.Upload != null && supportRequest.Upload.ContentLength > 0)
+            {
+                if (supportRequest.Upload.ContentLength > 10485760)
+                {
+                    ModelState.AddModelError(string.Empty, "Файл должен быть меньше 10 МБ!");
+                    return View(supportRequest);
+                }
+                var fileName = Path.GetFileName(supportRequest.Upload.FileName);
+                if (!string.IsNullOrEmpty(fileName))
+                {
+                    var dir = Directory.CreateDirectory(Path.Combine(HostingEnvironment.MapPath(@"~/SupportFiles"), Guid.NewGuid().ToString()));
+                    var filePath = Path.Combine(dir.FullName, fileName);
+                    supportRequest.Upload.SaveAs(filePath);
+                    requestFile = new SupportFile
+                    {
+                        Path = filePath
+                    };
+                    _db.SupportFiles.Add(requestFile);
+                }
+            }
+
             var newRequest = new SupportRequest
             {
                 Text = supportRequest.Text,
                 Urgency = supportRequest.Urgency,
                 Category = supportRequest.Category,
                 CreationTime = DateTime.Now,
-                FinishTime = null
+                FinishTime = null,
+                File = requestFile
             };
             //created by IT-user
             if (supportRequest.ToId != 0 && supportRequest.FromId != 0)
@@ -259,6 +313,30 @@ namespace IT_Inventory.Controllers
             if (supportRequest == null)
                 return HttpNotFound();
             supportRequest.Category = requestViewModel.Category;
+
+            //a file was attached
+            if (requestViewModel.Upload != null && requestViewModel.Upload.ContentLength > 0)
+            {
+                if (requestViewModel.Upload.ContentLength > 10485760)
+                {
+                    ModelState.AddModelError(string.Empty, "Файл должен быть меньше 10 МБ!");
+                    return View(requestViewModel.EditByIt ? "EditByIt" : "EditByUser", requestViewModel);
+                }
+                var fileName = Path.GetFileName(requestViewModel.Upload.FileName);
+                if (!string.IsNullOrEmpty(fileName))
+                {
+                    var dir = Directory.CreateDirectory(Path.Combine(HostingEnvironment.MapPath(@"~/SupportFiles"), Guid.NewGuid().ToString()));
+                    var filePath = Path.Combine(dir.FullName, fileName);
+                    requestViewModel.Upload.SaveAs(filePath);
+                    var requestFile = new SupportFile
+                    {
+                        Path = filePath
+                    };
+                    _db.SupportFiles.Add(requestFile);
+                    supportRequest.File = requestFile;
+                }
+            }
+
             //edit by user
             if (!requestViewModel.EditByIt)
             {
@@ -479,6 +557,17 @@ namespace IT_Inventory.Controllers
             await _db.SaveChangesAsync();
             return RedirectToAction("Index");
         }
+
+        public ActionResult DownloadFile(string filename)
+        {
+            return File(filename, "multipart/form-data", Path.GetFileName(filename));
+        }
+
+        public ActionResult DownloadImage(string filename)
+        {
+            return File(filename, "image/jpeg");
+        }
+
 
         protected override void Dispose(bool disposing)
         {

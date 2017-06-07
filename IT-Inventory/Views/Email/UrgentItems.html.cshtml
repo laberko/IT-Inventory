@@ -1,0 +1,41 @@
+﻿@model IEnumerable<IT_Inventory.ViewModels.ItemViewModel>
+@{
+    Layout = null;
+}
+
+<html>
+<body>
+    <div style="font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif">
+
+        <h2>Нехватка оборудования на складе</h2>
+
+        <table cellpadding="7" style="font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif">
+            <tr>
+                <th align="left">
+                    @Html.DisplayNameFor(model => model.First().ItemTypeName)
+                </th>
+                <th align="left">
+                    @Html.DisplayNameFor(model => model.First().Name)
+                </th>
+                <th align="left">
+                    @Html.DisplayNameFor(model => model.First().Quantity)
+                </th>
+            </tr>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.ItemTypeName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td style="@(item.Quantity == 0 ? "color:red" : "")">
+                        @Html.DisplayFor(modelItem => item.Quantity)
+                    </td>
+                </tr>
+            }
+        </table>
+    </div>
+</body>
+</html>
