@@ -31,6 +31,15 @@ namespace IT_Inventory.ViewModels
         [Display(Name = "Кто получил")]
         public int WhoTookId { get; set; }
 
+        [Display(Name = "Склад")]
+        public int SourceOfficeId { get; set; }
+
+        [Display(Name = "Склад")]
+        public string SourceOfficeName { get; set; }
+
+        [Display(Name = "Склад")]
+        public int TargetOfficeId { get; set; }
+
         public List<ItemAttributeValueViewModel> AttributeValues { get; set; }
     }
 }

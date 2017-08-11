@@ -17,10 +17,14 @@ namespace IT_Inventory.Models
         [Key]
         public int Id { get; set; }
 
+        //unique motherboard id
+        public string MbId { get; set; }
+
         [Display(Name = "Имя компьютера")]
         public string ComputerName { get; set; }
 
         public DateTime? UpdateDate { get; set; }
+        public DateTime? LastReportDate { get; set; }
 
         // fixed value from AIDA report
         public string Cpu { get; set; }
@@ -38,6 +42,9 @@ namespace IT_Inventory.Models
 
         public string VideoAdapter { get; set; }
         public string VideoAdapterInvent { get; set; }
+
+        public string Monitor { get; set; }
+        public string MonitorInvent { get; set; }
 
         public string Software { get; set; }
         public string SoftwareInvent { get; set; }
@@ -60,6 +67,7 @@ namespace IT_Inventory.Models
                 HistoryHdd = Hdd,
                 HistorySoftware = Software,
                 HistoryVideoAdapter = VideoAdapter,
+                HistoryMonitor = Monitor,
                 Changes = changesSummary,
                 SoftwareInstalled = installedSoft,
                 SoftwareRemoved = removedSoft
@@ -73,58 +81,70 @@ namespace IT_Inventory.Models
             get
             {
                 return SupportRequests.Any(request => 
-                request.FinishTime != null
-                || !string.IsNullOrEmpty(request.SoftwareInstalled) 
+                request.FinishTime != null &&
+                  (!string.IsNullOrEmpty(request.SoftwareInstalled) 
                 || !string.IsNullOrEmpty(request.SoftwareRemoved) 
                 || !string.IsNullOrEmpty(request.SoftwareRepaired) 
                 || !string.IsNullOrEmpty(request.SoftwareUpdated) 
-                || !string.IsNullOrEmpty(request.HardwareInstalled) 
-                || !string.IsNullOrEmpty(request.HardwareReplaced));
+                || request.HardwareId != 0 
+                ));
             }
         }
 
         public bool Equals(Computer otherComputer)
         {
-            return 
-                   Cpu.Split(',')[0] == otherComputer.Cpu.Split(',')[0]
-                && Ram == otherComputer.Ram
+            return
+                Ram == otherComputer.Ram
                 && Hdd == otherComputer.Hdd
+                && Cpu == otherComputer.Cpu
                 && MotherBoard == otherComputer.MotherBoard
                 && VideoAdapter == otherComputer.VideoAdapter
-                && Software == otherComputer.Software;
+                && Monitor == otherComputer.Monitor
+                && Software == otherComputer.Software
+                && Owner == otherComputer.Owner
+                && MbId == otherComputer.MbId;
         }
 
-        //return array of strings representing changes in configuration
+        //return array of strings representing changes in configuration and update data
         public string[] CopyConfig(Computer newConfig)
         {
-            UpdateDate = DateTime.Now;
+            LastReportDate = newConfig.LastReportDate;
             var changes = new string[3];
             var sb = new StringBuilder();
-            if (Cpu != newConfig.Cpu)
-            {
-                Cpu = newConfig.Cpu;
-                sb.Append("Процесор, ");
-            }
             if (Ram != newConfig.Ram)
             {
                 Ram = newConfig.Ram;
-                sb.Append("Память, ");
+                sb.Append("память, ");
+            }
+            if (Cpu != newConfig.Cpu)
+            {
+                Cpu = newConfig.Cpu;
+                //we don't write any info about cpu change because cpu frequency is changing frequently
             }
             if (Hdd != newConfig.Hdd)
             {
                 Hdd = newConfig.Hdd;
-                sb.Append("Диск, ");
+                sb.Append("диск, ");
             }
             if (MotherBoard != newConfig.MotherBoard)
             {
                 MotherBoard = newConfig.MotherBoard;
-                sb.Append("Материнская плата, ");
+                sb.Append("материнская плата, ");
             }
             if (VideoAdapter != newConfig.VideoAdapter)
             {
                 VideoAdapter = newConfig.VideoAdapter;
-                sb.Append("Видеокарта, ");
+                sb.Append("видеокарта, ");
             }
+            if (Monitor != newConfig.Monitor)
+            {
+                Monitor = newConfig.Monitor;
+                sb.Append("монитор(ы), ");
+            }
+
+            if (MbId != newConfig.MbId)
+                MbId = newConfig.MbId;
+
             if (Software != newConfig.Software)
             {
                 var oldSoftware = Software.Split(new[] {"[NEW_LINE]"}, StringSplitOptions.None);
@@ -140,29 +160,68 @@ namespace IT_Inventory.Models
                 changes[1] = installedSb.ToString();
                 changes[2] = removedSb.ToString();
                 Software = newConfig.Software;
-                sb.Append("Установленные программы, ");
+                sb.Append("установленные программы, ");
             }
+
+            if (Owner != newConfig.Owner)
+            {
+                Owner = newConfig.Owner;
+                sb.Append("пользователь, ");
+            }
+
             var changesSummary = sb.ToString();
-            changes[0] = changesSummary.Remove(changesSummary.Length - 2);
+            if (changesSummary.Length > 4)
+            {
+                var changesString = changesSummary.Remove(changesSummary.Length - 2);
+                changes[0] = char.ToUpper(changesString[0]) + changesString.Substring(1);
+            }
             return (changes);
         }
 
-        public void FillInventedData()
+        public bool FillInventedData()
         {
+            var modified = false;
             if (string.IsNullOrEmpty(CpuInvent))
+            {
                 CpuInvent = Cpu;
+                modified = true;
+            }
             if (RamInvent == 0)
+            {
                 RamInvent = Ram;
-            //if (string.IsNullOrEmpty(HddInvent))
+                modified = true;
+            }
+            if (string.IsNullOrEmpty(HddInvent))
+            {
                 HddInvent = Hdd;
+                modified = true;
+            }
             if (string.IsNullOrEmpty(MotherBoardInvent))
+            {
                 MotherBoardInvent = MotherBoard;
+                modified = true;
+            }
             if (string.IsNullOrEmpty(VideoAdapterInvent))
+            {
                 VideoAdapterInvent = VideoAdapter;
+                modified = true;
+            }
+            if (string.IsNullOrEmpty(MonitorInvent))
+            {
+                MonitorInvent = Monitor;
+                modified = true;
+            }
             if (string.IsNullOrEmpty(SoftwareInvent))
+            {
                 SoftwareInvent = Software;
+                modified = true;
+            }
             if (UpdateDate == null)
+            {
                 UpdateDate = DateTime.Now;
+                modified = true;
+            }
+            return modified;
         }
     }
 }

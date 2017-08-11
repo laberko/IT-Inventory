@@ -21,72 +21,93 @@
 </ul>
 
 
-    <table class="table">
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.People.First().FullName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.People.First().AccountName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.People.First().Dep)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.People.First().Email)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.People.First().PhoneNumber)
-            </th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
-        </tr>
-        @foreach (var item in Model.People)
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.FullName)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.AccountName)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Dep.Name)
-                </td>
-                <td>
-                    <a href="mailto:@item.Email">@item.Email</a>
-                </td>
-                <td>
-                    <a href="tel:+@item.PhoneNumber">@item.PhoneNumber</a>
-                </td>
-                <td>
-                    @if (StaticData.CountComputers(item.Id) > 0)
-                    {
-                        @Html.ActionLink("Компьютер(ы)", "Index", "Computers", new { personId = item.Id }, null)
-                    }
-                </td>
-                <td>
-                    @if (StaticData.CountUserGrant(item.Id) > 0)
-                    {
-                        @Html.ActionLink("История (выдано)", "Index", "Histories", new { peopleId = item.Id }, null)
-                    }
-                </td>
-                <td>
-                    @if (item.SupportRequests.Count > 0)
-                    {
-                        @Html.ActionLink("Заявки", "Index", "Support", new { searchUserId = item.Id }, null)
-                    }
-                </td>
-                <td>
-                    @Html.ActionLink("Удалить", "Delete", new { id = item.Id })
-                </td>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.People.First().FullName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.People.First().AccountName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.People.First().Dep)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.People.First().Email)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.People.First().PhoneNumber)
+        </th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
 
-            </tr>
-        }
-    </table>
-    <!-- pager -->
+    </tr>
+    @foreach (var item in Model.People)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.FullName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AccountName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Dep.Name)
+            </td>
+            <td>
+                <a href="mailto:@item.Email">@item.Email</a>
+            </td>
+            <td>
+                <a href="tel:+@item.PhoneNumber">@item.PhoneNumber</a>
+            </td>
+
+            <td>
+                @if (StaticData.CountComputers(item.Id) > 0)
+                {
+                    @*@Html.ActionLink("Компьютер(ы)", "Index", "Computers", new {personId = item.Id}, null)*@
+
+                    <a href='@Url.Action("Index", "Computers", new { personId = item.Id })' style="text-decoration:none">
+                        <img src='@Url.Content("~/Content/icons/ic_desktop_windows_black_24dp_1x.png")' alt="Компьютер(ы)" title="Компьютер(ы)" />
+                    </a>
+                }
+            </td>
+            <td>
+
+                @if (StaticData.CountUserGrant(item.Id) > 0)
+                {
+                    @*@Html.ActionLink("История (выдано)", "Index", "Histories", new {peopleId = item.Id}, null)*@
+
+                    <a href='@Url.Action("Index", "Histories", new { peopleId = item.Id })' style="text-decoration:none">
+                        <img src='@Url.Content("~/Content/icons/ic_shopping_cart_black_24dp_1x.png")' alt="Выданное оборудование (история)" title="Выданное оборудование (история)" />
+                    </a>
+                }
+            </td>
+            <td>
+
+                @if (item.SupportRequests.Count > 0)
+                {
+                    @*@Html.ActionLink("Заявки", "Index", "Support", new { searchUserId = item.Id }, null)*@
+
+                    <a href='@Url.Action("Index", "Support", new { searchUserId = item.Id })' style="text-decoration:none">
+                        <img src='@Url.Content("~/Content/icons/ic_announcement_black_24dp_1x.png")' alt="Заявки в техподдержку" title="Заявки в техподдержку" />
+                    </a>
+                }
+            </td>
+            <td>
+
+                @*@Html.ActionLink("Удалить", "Delete", new {id = item.Id})*@
+
+                <a href='@Url.Action("Delete", new { id = item.Id })' style="text-decoration:none">
+                    <img src='@Url.Content("~/Content/icons/ic_delete_forever_black_24dp_1x.png")' alt="Удалить" title="Удалить" />
+                </a>
+            </td>
+        </tr>
+    }
+</table>
+
+<!-- pager -->
     @if (Model.Pager != null && Model.Pager.EndPage > 1)
     {
         <ul class="pagination">

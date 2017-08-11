@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.IO;
 
 namespace IT_Inventory.Models
 {
@@ -61,11 +60,16 @@ namespace IT_Inventory.Models
 
         [Display(Name = "Установлено оборудование")]
 
-        public string HardwareInstalled { get; set; }
+        public int HardwareId { get; set; }
 
-        [Display(Name = "Заменено оборудование")]
+        [Display(Name = "Количество")]
 
-        public string HardwareReplaced { get; set; }
+        public int HardwareQuantity { get; set; }
+
+
+        //[Display(Name = "Заменено оборудование")]
+
+        //public string HardwareReplaced { get; set; }
 
         [Display(Name = "Другие действия")]
 
@@ -89,8 +93,9 @@ namespace IT_Inventory.Models
                     && string.IsNullOrEmpty(SoftwareRemoved)
                     && string.IsNullOrEmpty(SoftwareRepaired)
                     && string.IsNullOrEmpty(SoftwareUpdated)
-                    && string.IsNullOrEmpty(HardwareInstalled)
-                    && string.IsNullOrEmpty(HardwareReplaced))
+                    && HardwareId == 0
+                    //&& string.IsNullOrEmpty(HardwareReplaced)
+                    )
                     return null;
                 var modifications = new Dictionary<string, string>();
                 if (!string.IsNullOrEmpty(SoftwareInstalled))
@@ -101,10 +106,12 @@ namespace IT_Inventory.Models
                     modifications.Add("Восстановлено ПО", SoftwareRepaired);
                 if (!string.IsNullOrEmpty(SoftwareUpdated))
                     modifications.Add("Обновлено ПО", SoftwareUpdated);
-                if (!string.IsNullOrEmpty(HardwareInstalled))
-                    modifications.Add("Установлено оборудование", HardwareInstalled);
-                if (!string.IsNullOrEmpty(HardwareReplaced))
-                    modifications.Add("Заменено оборудование", HardwareReplaced);
+                if (HardwareId != 0)
+                {
+                    var itemName = StaticData.GetItemFullName(HardwareId);
+                    if (itemName != string.Empty)
+                        modifications.Add("Установлено оборудование", itemName + " (" + HardwareQuantity + " шт.)");
+                }
                 return modifications;
             }
         } 

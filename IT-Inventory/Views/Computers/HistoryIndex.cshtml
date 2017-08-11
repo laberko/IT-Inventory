@@ -36,12 +36,19 @@
         <th>
             @Html.DisplayNameFor(model => model.First().Hdd)
         </th>
-        <th>
+        <th white-space: nowrap>
             @Html.DisplayNameFor(model => model.First().MotherBoard)
         </th>
         <th>
             @Html.DisplayNameFor(model => model.First().VideoAdapter)
         </th>
+        <th>
+            @Html.DisplayNameFor(model => model.First().Monitor)
+        </th>
+
+        <th>
+        </th>
+
     </tr>
 
 @foreach (var item in Model)
@@ -51,8 +58,7 @@
             @Html.DisplayFor(modelItem => item.UpdateDate)
         </td>
         <td>
-            @Html.DisplayFor(modelItem => item.Changes)<br>
-            @Html.ActionLink("Подробно", "HistoryDetails", new { id = item.Id })
+            @Html.DisplayFor(modelItem => item.Changes)
         </td>
         @if (string.IsNullOrEmpty(ViewBag.CompName))
         {
@@ -78,6 +84,24 @@
         <td>
             @Html.DisplayFor(modelItem => item.VideoAdapter)
         </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Monitor)
+        </td>
+
+        <td white-space: nowrap>
+            <a href='@Url.Action("HistoryDetails", new { id = item.Id })' style="text-decoration: none">
+                <img src='@Url.Content("~/Content/icons/ic_info_outline_black_24dp_1x.png")' alt="Подробно" title="Подробно"/>
+            </a>
+
+            @if (item.CompId != 0 && string.IsNullOrEmpty(ViewBag.CompName))
+            {
+                <a href='@Url.Action("HistoryIndex", new {id = item.CompId})' style="text-decoration: none">
+                    <img src='@Url.Content("~/Content/icons/ic_history_black_24dp_1x.png")' alt="История зафиксированных изменений" title="История зафиксированных изменений"/>
+                </a>
+            }
+
+        </td>
+
     </tr>
 }
 </table>

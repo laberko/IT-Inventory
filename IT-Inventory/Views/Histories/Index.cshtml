@@ -95,7 +95,9 @@
                 </td>
             }
             <td>
-                @Html.ActionLink("Удалить", "Delete", new {id = item.Id})
+                <a href='@Url.Action("Delete", new { id = item.Id })' style="text-decoration:none">
+                    <img src='@Url.Content("~/Content/icons/ic_delete_forever_black_24dp_1x.png")' alt="Удалить" title="Удалить" />
+                </a>
             </td>
         </tr>
     }
@@ -110,27 +112,27 @@
         @if (Model.Pager.CurrentPage > 1)
         {
             <li>
-                @Html.ActionLink("Первая", "Index", new { id = Model.Id, page = 1 })
+                @Html.ActionLink("Первая", "Index", new { id = Model.ItemId, peopleId = Model.PersonId, page = 1 })
             </li>
             <li>
-                @Html.ActionLink("Предыдущая", "Index", new { id = Model.Id, page = Model.Pager.CurrentPage - 1 })
+                @Html.ActionLink("Предыдущая", "Index", new { id = Model.ItemId, peopleId = Model.PersonId, page = Model.Pager.CurrentPage - 1 })
             </li>
         }
 
         @for (var pageNum = Model.Pager.StartPage; pageNum <= Model.Pager.EndPage; pageNum++)
         {
             <li class="@(pageNum == Model.Pager.CurrentPage ? "active" : "")">
-                @Html.ActionLink(pageNum.ToString(), "Index", new { id = Model.Id, page = pageNum })
+                @Html.ActionLink(pageNum.ToString(), "Index", new { id = Model.ItemId, peopleId = Model.PersonId, page = pageNum })
             </li>    
         }
 
         @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
         {
             <li>
-                @Html.ActionLink("Следующая", "Index", new { id = Model.Id, page = Model.Pager.CurrentPage + 1 })
+                @Html.ActionLink("Следующая", "Index", new { id = Model.ItemId, peopleId = Model.PersonId, page = Model.Pager.CurrentPage + 1 })
             </li>
             <li>
-                @Html.ActionLink("Последняя", "Index", new { id = Model.Id, page = Model.Pager.TotalPages })
+                @Html.ActionLink("Последняя", "Index", new { id = Model.ItemId, peopleId = Model.PersonId, page = Model.Pager.TotalPages })
             </li>
         }
     </ul>

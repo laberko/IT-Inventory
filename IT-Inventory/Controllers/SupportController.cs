@@ -20,21 +20,23 @@ namespace IT_Inventory.Controllers
 
         // GET: SupportRequests
         [OutputCache(NoStore = true, Location = OutputCacheLocation.Client, Duration = 30)]
-        public async Task<ActionResult> Index(int? state, int? searchUserId, int? searchCompId)
+        public async Task<ActionResult> Index(int? state, int? searchUserId, int? searchCompId, int page = 1)
         {
             ViewBag.State = state;
+            ViewBag.Page = page;
             ViewBag.SearchUserId = searchUserId;
             ViewBag.SearchCompId = searchCompId;
 
             if (!Request.IsAjaxRequest())
                 return View();
 
+            var model = new SupportIndexViewModel();
             var login = User.Identity.Name;
             var accountName = login.Substring(5, login.Length - 5);
             var person = _db.Persons.FirstOrDefault(p => p.AccountName == accountName);
             if (person == null)
                 return HttpNotFound();
-            ViewBag.UserId = person.Id;
+            model.UserId = person.Id;
 
             IEnumerable<SupportRequest> requests;
             //requests of a computer
@@ -47,7 +49,7 @@ namespace IT_Inventory.Controllers
                         .Where(r => r.Modifications != null)
                         .OrderBy(r => r.State)
                         .ThenByDescending(r => r.CreationTime).AsEnumerable();
-                    ViewBag.SearchString = comp.ComputerName;
+                    model.SearchString = comp.ComputerName;
                 }
                 else
                     return HttpNotFound();
@@ -60,30 +62,41 @@ namespace IT_Inventory.Controllers
                 {
                     requests = user.SupportRequests.OrderBy(r => r.State)
                         .ThenByDescending(r => r.CreationTime).AsEnumerable();
-                    ViewBag.SearchString = user.FullName;
+                    model.SearchString = user.FullName;
                 }
                 else
                     return HttpNotFound();
             }
             //all requests
-            else
-                requests = _db.SupportRequests.OrderBy(r => r.State)
+            else requests = _db.SupportRequests
+                    .OrderBy(r => r.State)
                     .ThenByDescending(r => r.CreationTime).AsEnumerable();
 
+
+            List<SupportRequest> requestList;
+            
             //non-IT user - show only user's requests
             if (!User.IsInRole(@"RIVS\IT-Dep"))
             {
-                ViewBag.IsItUser = false;
+                model.IsItUser = false;
                 //user's requests with a selected state or all requests
-                return PartialView("IndexPartial", state != null 
-                    ? requests.Where(r => r.From == person && r.State == state).ToList() 
-                    : requests.Where(r => r.From == person).ToList());
+                requestList = state != null
+                    ? requests.Where(r => r.From == person && r.State == state).ToList()
+                    : requests.Where(r => r.From == person).ToList();
             }
-            ViewBag.IsItUser = true;
-            //IT user - show all users' requests with a selected state or all requests
-            return PartialView("IndexPartial", state != null 
-                ? requests.Where(r => r.State == state).ToList() 
-                : requests.ToList());
+            else
+            {
+                model.IsItUser = true;
+                //IT user - show all users' requests with a selected state or all requests
+                requestList = state != null
+                    ? requests.Where(r => r.State == state).ToList()
+                    : requests.ToList();
+            }
+
+            var pager = new Pager(requestList.Count, page, 10);
+            model.Pager = pager;
+            model.SupportRequests = requestList.Skip((pager.CurrentPage - 1) * pager.PageSize).Take(pager.PageSize).ToList();
+            return PartialView("IndexPartial", model);
         }
 
         public async Task<ActionResult> Modifications(int? compId)
@@ -182,6 +195,7 @@ namespace IT_Inventory.Controllers
                 FinishTime = null,
                 File = requestFile
             };
+
             //created by IT-user
             if (supportRequest.ToId != 0 && supportRequest.FromId != 0)
             {
@@ -192,7 +206,7 @@ namespace IT_Inventory.Controllers
                     ModelState.AddModelError(string.Empty, "Пользователь не найден!");
                     return View(supportRequest);
                 }
-                comp = _db.Computers.FirstOrDefault(c => c.Owner.Id == user.Id);
+                comp = _db.Computers.Where(c => c.Owner.Id == user.Id).OrderByDescending(c => c.LastReportDate).FirstOrDefault();
                 newRequest.To = ituser;
                 newRequest.From = user;
                 newRequest.State = 1;
@@ -201,6 +215,7 @@ namespace IT_Inventory.Controllers
                 _db.Entry(user).State = EntityState.Modified;
                 fromIt = true;
             }
+
             //created by ordinary user
             else
             {
@@ -284,8 +299,8 @@ namespace IT_Inventory.Controllers
             requestViewModel.SoftwareRemoved = supportRequest.SoftwareRemoved;
             requestViewModel.SoftwareRepaired = supportRequest.SoftwareRepaired;
             requestViewModel.SoftwareUpdated = supportRequest.SoftwareUpdated;
-            requestViewModel.HardwareInstalled = supportRequest.HardwareInstalled;
-            requestViewModel.HardwareReplaced = supportRequest.HardwareReplaced;
+            //requestViewModel.HardwareId = supportRequest.HardwareId;
+            //requestViewModel.HardwareReplaced = supportRequest.HardwareReplaced;
             requestViewModel.OtherActions = supportRequest.OtherActions;
             requestViewModel.ToId = supportRequest.To?.Id ?? 0;
             requestViewModel.From = supportRequest.From;
@@ -352,6 +367,7 @@ namespace IT_Inventory.Controllers
                 supportRequest.FeedBack = requestViewModel.FeedBack;
                 supportRequest.Urgency = requestViewModel.Urgency;
             }
+
             //edit by IT-user
             else
             {
@@ -377,10 +393,11 @@ namespace IT_Inventory.Controllers
                 supportRequest.SoftwareRemoved = requestViewModel.SoftwareRemoved;
                 supportRequest.SoftwareRepaired = requestViewModel.SoftwareRepaired;
                 supportRequest.SoftwareUpdated = requestViewModel.SoftwareUpdated;
-                supportRequest.HardwareInstalled = requestViewModel.HardwareInstalled;
-                supportRequest.HardwareReplaced = requestViewModel.HardwareReplaced;
+                //supportRequest.HardwareId = requestViewModel.HardwareId;
+                //supportRequest.HardwareReplaced = requestViewModel.HardwareReplaced;
                 supportRequest.OtherActions = requestViewModel.OtherActions;
             }
+
             _db.Entry(supportRequest).State = EntityState.Modified;
             await _db.SaveChangesAsync();
 
@@ -439,6 +456,7 @@ namespace IT_Inventory.Controllers
             var supportRequest = await _db.SupportRequests.FindAsync(id);
             if (supportRequest == null)
                 return HttpNotFound();
+            //request is already accepted or iser is not in IT-dep
             if (supportRequest.State != 0 || !User.IsInRole(@"RIVS\IT-Dep"))
                 return RedirectToAction("Index");
             var login = User.Identity.Name;
@@ -473,6 +491,7 @@ namespace IT_Inventory.Controllers
             var login = User.Identity.Name;
             var accountName = login.Substring(5, login.Length - 5);
             var person = _db.Persons.FirstOrDefault(p => p.AccountName == accountName);
+            //request was not accepted or was accepted by other user
             if (supportRequest.State != 1 || supportRequest.To != person)
                 return RedirectToAction("Index");
             var requestViewModel = new SupportRequestViewModel
@@ -483,8 +502,6 @@ namespace IT_Inventory.Controllers
                 SoftwareRemoved = supportRequest.SoftwareRemoved,
                 SoftwareRepaired = supportRequest.SoftwareRepaired,
                 SoftwareUpdated = supportRequest.SoftwareUpdated,
-                HardwareInstalled = supportRequest.HardwareInstalled,
-                HardwareReplaced = supportRequest.HardwareReplaced,
                 OtherActions = supportRequest.OtherActions,
                 From = supportRequest.From
             };
@@ -498,27 +515,70 @@ namespace IT_Inventory.Controllers
         {
             var login = User.Identity.Name;
             var accountName = login.Substring(5, login.Length - 5);
-            var person = await _db.Persons.FirstOrDefaultAsync(p => p.AccountName == accountName);
-            if (person == null || !ModelState.IsValid || !User.IsInRole(@"RIVS\IT-Dep"))
+            var itPerson = await _db.Persons.FirstOrDefaultAsync(p => p.AccountName == accountName);
+            if (!ModelState.IsValid || itPerson == null)
+                return View("Finish", requestViewModel);
+            if (!User.IsInRole(@"RIVS\IT-Dep"))
             {
                 // return view with error message
-                if (person == null || !User.IsInRole(@"RIVS\IT-Dep"))
-                    ModelState.AddModelError(string.Empty, "Ошибка авторизации!");
+                ModelState.AddModelError(string.Empty, "Ошибка авторизации!");
                 return View("Finish", requestViewModel);
             }
+
             var supportRequest = await _db.SupportRequests.FindAsync(requestViewModel.Id);
             if (supportRequest == null)
                 return HttpNotFound();
+
+            int hardwareId;
+            int.TryParse(requestViewModel.HardwareId, out hardwareId);
+
             supportRequest.Comment = requestViewModel.Comment;
             supportRequest.SoftwareInstalled = requestViewModel.SoftwareInstalled;
             supportRequest.SoftwareRemoved = requestViewModel.SoftwareRemoved;
             supportRequest.SoftwareRepaired = requestViewModel.SoftwareRepaired;
             supportRequest.SoftwareUpdated = requestViewModel.SoftwareUpdated;
-            supportRequest.HardwareInstalled = requestViewModel.HardwareInstalled;
-            supportRequest.HardwareReplaced = requestViewModel.HardwareReplaced;
+            supportRequest.HardwareId = hardwareId;
+            supportRequest.HardwareQuantity = requestViewModel.HardwareQuantity > 0 && hardwareId > 0 ? requestViewModel.HardwareQuantity : 0;
             supportRequest.OtherActions = requestViewModel.OtherActions;
             supportRequest.State = 2;
             supportRequest.FinishTime = DateTime.Now;
+            
+            //grant selected hardware
+            if (hardwareId > 0 && requestViewModel.HardwareQuantity > 0)
+            {
+                // find item in db
+                var editItem = await _db.Items.FindAsync(hardwareId);
+                if (editItem == null)
+                    return HttpNotFound();
+
+                // check if we give more than we have
+                if (editItem.Quantity < requestViewModel.HardwareQuantity)
+                {
+                    // return view with error message
+                    ModelState.AddModelError(string.Empty, "Нельзя выдать больше, чем есть в наличии (" + editItem.Quantity + " шт.)!");
+                    return View("Finish", requestViewModel);
+                }
+
+                // decrease item quantity
+                editItem.Quantity -= requestViewModel.HardwareQuantity;
+
+                // create new history item
+                var newHistory = new History
+                {
+                    Recieved = false,
+                    Date = DateTime.Now,
+                    Item = editItem,
+                    Quantity = requestViewModel.HardwareQuantity,
+                    WhoGave = itPerson,
+                    WhoTook = supportRequest.From
+                };
+                // add new history item to db
+                _db.Histories.Add(newHistory);
+                // add new history item to modified item history list
+                editItem.Histories.Add(newHistory);
+                _db.Entry(editItem).State = EntityState.Modified;
+            }
+
             _db.Entry(supportRequest).State = EntityState.Modified;
             await _db.SaveChangesAsync();
 

@@ -56,9 +56,6 @@ namespace IT_Inventory.ViewModels
         [Display(Name = "Установлено оборудование")]
         public string HardwareInstalled { get; set; }
 
-        [Display(Name = "Заменено оборудование")]
-        public string HardwareReplaced { get; set; }
-
         [Display(Name = "Другие действия")]
         public string OtherActions { get; set; }
 

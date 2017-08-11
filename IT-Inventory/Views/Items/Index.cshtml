@@ -1,84 +1,152 @@
 ﻿@model IT_Inventory.ViewModels.ItemIndexViewModel
 
 @{
-    ViewBag.Title = "Оборудование";
+    ViewBag.Title = Model.IsUrgent ? "Нехватка оборудования" : "Оборудование";
 }
 
 <h2>@ViewBag.Title</h2>
 
-    @foreach (var type in StaticData.GetTypes())
-    {
-        @Html.ActionLink(type.Name, "Index", new { id = type.Id }, new { @class = "btn btn-primary" })
-    }
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Items.First().ItemType.Name)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Items.First().Name)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Items.First().Quantity)
-        </th>
-        <th></th>
-    </tr>
-    @foreach (var item in Model.Items)
-    {
-        <tr style="@(item.Quantity <= item.MinQuantity && !Model.IsUrgent ? "color:red" : "")">
-            <td>
-                @Html.DisplayFor(modelItem => item.ItemType.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Quantity)
-            </td>
-            <td style="color: black">
-                @if (item.Quantity > 0)
-                {
-                    @Html.ActionLink("Выдать", "Grant", new { id = item.Id }) @: |
-                }
-                @Html.ActionLink("Принять", "Recieve", new {id = item.Id}) |
-                @Html.ActionLink("История", "Index", "Histories", new {id = item.Id}, null) |
-                @Html.ActionLink("Редактировать", "Edit", new {id = item.Id}) |
-                @Html.ActionLink("Подробно", "Details", new {id = item.Id}) |
-                @Html.ActionLink("Удалить", "Delete", new {id = item.Id})
-            </td>
-        </tr>
-    }
-</table>
-
-<!-- pager -->
-@if (Model.Pager != null && Model.Pager.EndPage > 1)
+@if (!Model.IsUrgent)
 {
+        foreach (var office in StaticData.GetOffices(true))
+        {
+            @Html.ActionLink(office.Name, "Index", new { officeId = office.Id }, office.Id == Model.OfficeId ? new { @class = "btn btn-warning", Style = "color:black" } : new { @class = "btn btn-default", Style = "color:black" })
+            <text>&nbsp;</text>
+}
+
     <ul class="pagination">
-        @if (Model.Pager.CurrentPage > 1)
+        @foreach (var type in StaticData.GetTypes())
         {
             <li>
-                @Html.ActionLink("Первая", "Index", new { page = 1, urgent = Model.IsUrgent })
-            </li>
-            <li>
-                @Html.ActionLink("Предыдущая", "Index", new { page = Model.Pager.CurrentPage - 1, urgent = Model.IsUrgent })
-            </li>
-        }
-
-        @for (var pageNum = Model.Pager.StartPage; pageNum <= Model.Pager.EndPage; pageNum++)
-        {
-            <li class="@(pageNum == Model.Pager.CurrentPage ? "active" : "")">
-                @Html.ActionLink(pageNum.ToString(), "Index", new { page = pageNum, urgent = Model.IsUrgent })
-            </li>
-        }
-
-        @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
-        {
-            <li>
-                @Html.ActionLink("Следующая", "Index", new { page = Model.Pager.CurrentPage + 1, urgent = Model.IsUrgent })
-            </li>
-            <li>
-                @Html.ActionLink("Последняя", "Index", new { page = Model.Pager.TotalPages, urgent = Model.IsUrgent })
+                @(Model.OfficeId != 0 
+                    ? Html.ActionLink(type.Name, "Index", new {id = type.Id, officeId = Model.OfficeId}, new {Style = "color:black"}) 
+                    : Html.ActionLink(type.Name, "Index", new {id = type.Id}, new {Style = "color:black"}))
             </li>
         }
     </ul>
 }
+        <table class="table">
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Items.First().ItemType.Name)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Items.First().Name)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Items.First().Quantity)
+                </th>
+                @if (!Model.IsUrgent && Model.OfficeId == 0)
+                {
+                    <th>
+                        @Html.DisplayNameFor(model => model.Items.First().Location)
+                    </th>
+                }
+                <th></th>
+            </tr>
+            @foreach (var item in Model.Items)
+            {
+                <tr style="@(item.Quantity <= item.MinQuantity && !Model.IsUrgent && (item.Location == null || item.Location.Id == 1) ? "color:red" : "")">
+                    <td>
+                        @Html.DisplayFor(modelItem => item.ItemType.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Quantity)
+                    </td>
+
+                    @if (!Model.IsUrgent && Model.OfficeId == 0)
+                    {
+                        <td>
+                            @if (item.Location == null)
+                            {
+                                <text>Железноводская</text>
+                            }
+                            else
+                            {
+                                @Html.DisplayFor(modelItem => item.Location.Name)
+                            }
+                        </td>
+                    }
+                    <td style="color: black" white-space: nowrap align="right">
+                        @if (item.Quantity > 0)
+                        {
+                            <a href='@Url.Action("Grant", new { id = item.Id })' style="text-decoration:none">
+                                <img src='@Url.Content("~/Content/icons/ic_remove_circle_outline_black_24dp_1x.png")' alt="Выдать" title="Выдать" />
+                            </a>
+                        }
+                        <a href='@Url.Action("Recieve", new {id = item.Id})' style="text-decoration: none">
+                            <img src='@Url.Content("~/Content/icons/ic_add_circle_outline_black_24dp_1x.png")' alt="Принять" title="Принять" />
+                        </a>
+
+                        <a href='@Url.Action("Index", "Histories", new {id = item.Id})' style="text-decoration: none">
+                            <img src='@Url.Content("~/Content/icons/ic_history_black_24dp_1x.png")' alt="История" title="История" />
+                        </a>
+
+                        <a href='@Url.Action("Edit", new {id = item.Id})' style="text-decoration: none">
+                            <img src='@Url.Content("~/Content/icons/ic_edit_black_24dp_1x.png")' alt="Редактировать" title="Редактировать" />
+                        </a>
+
+                        @if (item.Quantity > 0)
+                        {
+                            <a href='@Url.Action("Transfer", new {id = item.Id})' style="text-decoration: none">
+                                <img src='@Url.Content("~/Content/icons/ic_compare_arrows_black_24dp_1x.png")' alt="Переместить на другой склад" title="Переместить на другой склад" />
+                            </a>
+                        }
+
+                        <a href='@Url.Action("Details", new {id = item.Id})' style="text-decoration: none">
+                            <img src='@Url.Content("~/Content/icons/ic_info_outline_black_24dp_1x.png")' alt="Подробно" title="Подробно" />
+                        </a>
+
+                        <a href='@Url.Action("Delete", new { id = item.Id })' style="text-decoration:none">
+                            <img src='@Url.Content("~/Content/icons/ic_delete_forever_black_24dp_1x.png")' alt="Удалить" title="Удалить" />
+                        </a>
+                    </td>
+                </tr>
+            }
+        </table>
+
+        <!-- pager -->
+        @if (Model.Pager != null && Model.Pager.EndPage > 1)
+        {
+            <ul class="pagination">
+                @if (Model.Pager.CurrentPage > 1)
+                {
+                    <li>
+                        @(Model.OfficeId != 0
+                        ? @Html.ActionLink("Первая", "Index", new {officeId = Model.OfficeId, page = 1, urgent = Model.IsUrgent})
+                        : @Html.ActionLink("Первая", "Index", new { page = 1, urgent = Model.IsUrgent }))
+                    </li>
+                    <li>
+                        @(Model.OfficeId != 0
+                        ? @Html.ActionLink("Предыдущая", "Index", new {officeId = Model.OfficeId, page = Model.Pager.CurrentPage - 1, urgent = Model.IsUrgent})
+                        : @Html.ActionLink("Предыдущая", "Index", new { page = Model.Pager.CurrentPage - 1, urgent = Model.IsUrgent }))
+                    </li>
+                }
+
+                @for (var pageNum = Model.Pager.StartPage; pageNum <= Model.Pager.EndPage; pageNum++)
+                {
+                    <li class="@(pageNum == Model.Pager.CurrentPage ? "active" : "")">
+                        @(Model.OfficeId != 0
+                        ? @Html.ActionLink(pageNum.ToString(), "Index", new {officeId = Model.OfficeId, page = pageNum, urgent = Model.IsUrgent})
+                        : @Html.ActionLink(pageNum.ToString(), "Index", new { page = pageNum, urgent = Model.IsUrgent }))
+                    </li>
+                }
+
+                @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
+                {
+                    <li>
+                        @(Model.OfficeId != 0
+                        ? @Html.ActionLink("Следующая", "Index", new {officeId = Model.OfficeId, page = Model.Pager.CurrentPage + 1, urgent = Model.IsUrgent})
+                        : @Html.ActionLink("Следующая", "Index", new { page = Model.Pager.CurrentPage + 1, urgent = Model.IsUrgent }))
+                    </li>
+                    <li>
+                        @(Model.OfficeId != 0
+                        ? @Html.ActionLink("Последняя", "Index", new {officeId = Model.OfficeId, page = Model.Pager.TotalPages, urgent = Model.IsUrgent})
+                        : @Html.ActionLink("Последняя", "Index", new { page = Model.Pager.TotalPages, urgent = Model.IsUrgent }))
+                    </li>
+                }
+            </ul>
+        }

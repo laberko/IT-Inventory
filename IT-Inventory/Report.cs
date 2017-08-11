@@ -15,7 +15,7 @@ namespace IT_Inventory
     [XmlRoot(Namespace = "", IsNullable = false)]
     public class Report
     {
-        public DateTime ReportDate;
+        public DateTime FileDate;
         public string UserFullName;
         public string UserName;
         public string CompName;
@@ -28,7 +28,7 @@ namespace IT_Inventory
             var log = string.Empty;
             try
             {
-                DateTime reportDate;
+                //DateTime fileDate;
                 Report report;
                 
                 var rootDir = new DirectoryInfo(@"\\rivs.org\it\ConfigReporting\ConfigReports");
@@ -37,9 +37,11 @@ namespace IT_Inventory
                 if (hostDir == null)
                     return null;
                 var hostReportDirs = hostDir.GetDirectories().OrderByDescending(d => d.CreationTime).ToList();
+                
+
                 //take only the last report
-                if (!DateTime.TryParse(hostReportDirs.First().Name, out reportDate))
-                    return null;
+                //if (!DateTime.TryParse(hostReportDirs.First().Name, out fileDate))
+                //    return null;
                 var reportFile = hostReportDirs.First().GetFiles().OrderByDescending(f => f.CreationTime).FirstOrDefault();
                 if (reportFile == null)
                     return null;
@@ -60,10 +62,12 @@ namespace IT_Inventory
                         throw;
                     }
                 }
+
+                report.FileDate = reportFile.LastWriteTime;
                 report.UserName = Path.GetFileNameWithoutExtension(reportFileName);
                 report.UserFullName = (@"RIVS\" + report.UserName).GetUserName();
                 report.CompName = hostName;
-                report.ReportDate = reportDate;
+                //report.FileDate = fileDate;
 
                 //remove folders older than 10 days but keep at least 10 folders
                 var span = new TimeSpan(10, 0, 0, 0);
@@ -82,9 +86,47 @@ namespace IT_Inventory
         }
 
 
+        public DateTime ReportDate
+        {
+            get
+            {
+                try
+                {
+                    DateTime reportDate;
+                    return DateTime.TryParse(Page[1].Group[0].Item[8].Value.Replace(" / ", " "), out reportDate)
+                        ? reportDate
+                        : FileDate;
+                }
+                catch
+                {
+                    return FileDate;
+                }
+            }
+        }
+
         public string Cpu => Page[1].Group[1].Item[0].Value;
 
         public string MotherBoard => Page[1].Group[1].Item[1].Value;
+
+
+        public string MbId
+        {
+            get
+            {
+                try
+                {
+                    var value = Page[1].Group.Length > 9 ? Page[1].Group[9].Item[6].Value : Page[3].Group[0].Item[0].Value;
+                    if (value.Contains("Acer") || value.Contains("MICRO-STAR"))
+                        value = Page[1].Group.FirstOrDefault(g => g.Title == "Сеть").Item.FirstOrDefault(i => i.Title == "Первичный адрес MAC").Value;
+                    return value;
+                }
+                catch
+                {
+                    //return mac address at least
+                    return Page[1].Group.FirstOrDefault(g => g.Title == "Сеть").Item.FirstOrDefault(i => i.Title == "Первичный адрес MAC").Value;
+                }
+            }
+        }
 
         public int Ram
         {
@@ -103,23 +145,6 @@ namespace IT_Inventory
         {
             get
             {
-                //int valueInt;
-                //var item = Page[1].Group[5].Item.FirstOrDefault(i => i.Title == "Общий объём");
-                //var valueString = item == null ? string.Empty : item.Value;
-                //if (valueString.Contains("МБ"))
-                //{
-                //    valueString = valueString.Split(' ')[0];
-                //    int.TryParse(valueString, out valueInt);
-                //    valueInt = valueInt/1024;
-                //}
-                //else if (valueString.Contains("ГБ"))
-                //{
-                //    valueString = valueString.Split('.')[0];
-                //    int.TryParse(valueString, out valueInt);
-                //}
-                //else
-                //    return 0;
-                //return valueInt;
                 var items = Page[1].Group[4].Item.Where(i => i.Title == "Дисковый накопитель" && !i.Value.Contains("USB")).ToArray();
                 if (items.Length == 0)
                     return string.Empty;
@@ -130,7 +155,7 @@ namespace IT_Inventory
                     sb.Append(", ");
                 }
                 var hddString = sb.ToString();
-                return hddString.Remove(hddString.Length - 2);
+                return hddString.Length < 3 ? string.Empty : hddString.Remove(hddString.Length - 2);
             }
         }
 
@@ -140,6 +165,28 @@ namespace IT_Inventory
             {
                 var page = Page.FirstOrDefault(p => p.Title == "Видео Windows");
                 return page == null ? string.Empty : page.Device[0].Group[0].Item[0].Value;
+            }
+        }
+
+        public string Monitor
+        {
+            get
+            {
+                var page = Page.FirstOrDefault(p => p.Title == "Монитор");
+                if (page == null)
+                    return string.Empty;
+                var sb = new StringBuilder();
+                foreach (var dev in page.Device)
+                {
+                    if (dev.Title.Contains("NoDB"))
+                        continue;
+                    sb.Append(dev.Title);
+                    sb.Append(", ");
+                }
+                var monitors = sb.ToString();
+                if (monitors.Length < 3)
+                    return string.Empty;
+                return monitors.Remove(monitors.Length - 2);
             }
         }
 

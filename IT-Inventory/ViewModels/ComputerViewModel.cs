@@ -25,6 +25,9 @@ namespace IT_Inventory.ViewModels
         [Display(Name = "Видеокарта")]
         public string VideoAdapter { get; set; }
 
+        [Display(Name = "Монитор")]
+        public string Monitor { get; set; }
+
         [Display(Name = "Владелец")]
         public string Owner { get; set; }
 
@@ -33,6 +36,9 @@ namespace IT_Inventory.ViewModels
 
         [Display(Name = "Обновлено")]
         public string UpdateDate { get; set; }
+
+        [Display(Name = "Дата отчета")]
+        public string LastReportDate { get; set; }
 
         [Display(Name = "Установленные программы")]
         public string[] Software { get; set; }

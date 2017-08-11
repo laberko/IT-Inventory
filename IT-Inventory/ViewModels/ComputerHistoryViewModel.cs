@@ -28,6 +28,9 @@ namespace IT_Inventory.ViewModels
         [Display(Name = "Видеокарта")]
         public string VideoAdapter { get; set; }
 
+        [Display(Name = "Монитор")]
+        public string Monitor { get; set; }
+
         [Display(Name = "Зафиксировано")]
         public string UpdateDate { get; set; }
 

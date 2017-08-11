@@ -32,8 +32,9 @@ namespace IT_Inventory.Controllers
                     var person = _db.Persons.Find(peopleId);
                     if (person == null)
                         return HttpNotFound();
-                    items = await _db.Histories.Where(h => h.WhoTook.Id == peopleId).OrderByDescending(h => h.Date).ToListAsync();
+                    items = await _db.Histories.Where(h => h.WhoTook.Id == peopleId && !h.Recieved).OrderByDescending(h => h.Date).ToListAsync();
                     model.PersonName = person.FullName;
+                    model.PersonId = peopleId;
                     model.GrantHistory = true;
                 }
                 model.MonthGrant = 0;
@@ -47,9 +48,9 @@ namespace IT_Inventory.Controllers
                     return HttpNotFound();
                 items = await _db.Histories.Where(h => h.Item.Id == id).OrderByDescending(h => h.Date).ToListAsync();
                 model.ItemName = item.Name;
+                model.ItemId = id;
                 model.MonthGrant = StaticData.CountItemGrant((int) id, 30);
                 model.MonthRecieve = StaticData.CountRecieve((int) id, 30);
-                model.Id = id;
             }
             var pager = new Pager(items.Count, page, 18);
             model.Histories = items.Skip((pager.CurrentPage - 1)*pager.PageSize).Take(pager.PageSize);

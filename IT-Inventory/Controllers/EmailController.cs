@@ -12,12 +12,12 @@ namespace IT_Inventory.Controllers
         private readonly InventoryModel _db = new InventoryModel();
 
         //support requests recievers
-        //private readonly string[] _supportUsers = { "m_laberko@rivs.ru", "P_Petrov@rivs.ru", "a_lobyzenko@rivs.ru"  };
-        private readonly string[] _supportUsers = { "m_laberko@rivs.ru" };
+        private readonly string[] _supportUsers = { "m_laberko@rivs.ru", "P_Petrov@rivs.ru", "a_lobyzenko@rivs.ru", "r_halyapov@rivs.ru", "A_Glukhikh@rivs.ru" };
+        //private readonly string[] _supportUsers = { "m_laberko@rivs.ru" };
         //support feedback recievers
         private readonly string[] _supportManagers = { "m_laberko@rivs.ru" };
         //urgent items warning recievers
-        private readonly string[] _inventoryManagers = { "m_laberko@rivs.ru", "a_lobyzenko@rivs.ru", "L_Zimin@rivs.ru" };
+        private readonly string[] _inventoryManagers = { "L_Zimin@rivs.ru", "m_laberko@rivs.ru", "a_lobyzenko@rivs.ru" };
 
         //user created new request
         public async Task<EmailResult> NewFromUser(int requestId)
@@ -113,7 +113,8 @@ namespace IT_Inventory.Controllers
         public EmailResult UrgentItemsWarning()
         {
             To.Clear();
-            var items = _db.Items.Where(i => i.Quantity <= i.MinQuantity)
+            //take only items in Zheleznovodskaya, exclude trip notebooks
+            var items = _db.Items.Where(i => i.Quantity <= i.MinQuantity && (i.Location == null || i.Location.Id == 1) && i.ItemType.Id != 8)
                 .OrderBy(i => i.ItemType.Name).ThenBy(i => i.Name).ToList();
             if (items.Count == 0)
                 return null;
@@ -126,7 +127,6 @@ namespace IT_Inventory.Controllers
             }).ToList();
             foreach (var mail in _inventoryManagers)
                 To.Add(mail);
-            //To.Add("m_laberko@rivs.ru");
             From = "Инвентаризация <inventory@rivs.ru>";
             Subject = "Нехватка оборудования на складе";
             AddMailToDb(StaticData.MailType.Inventory);

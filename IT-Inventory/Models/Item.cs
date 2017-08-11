@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IT_Inventory.Models
 {
@@ -24,8 +25,17 @@ namespace IT_Inventory.Models
         [Display(Name = "Минимум")]
         public int MinQuantity { get; set; }
 
+        [NotMapped]
+        public string NameQuantity => Name + " (" + Quantity + " шт.)";
+
         [Display(Name = "Тип")]
         public virtual ItemType ItemType { get; set; }
+
+        [Display(Name = "Склад")]
+        public virtual Office Location { get; set; }
+
+        [NotMapped]
+        public string LocationName => Location == null ? "Железноводская" : Location.Name;
 
         //attribute-value pair collection
         public virtual ICollection<ItemAttributeValue> AttributeValues { get; set; }

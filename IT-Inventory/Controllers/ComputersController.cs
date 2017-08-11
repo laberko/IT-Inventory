@@ -18,7 +18,7 @@ namespace IT_Inventory.Controllers
 
         // GET: Computers
         // manually edited computers data
-        public ActionResult Index(string depCode, int? personId, int page = 1)
+        public ActionResult Index(string depCode, int? personId, string searchSoft = "", int page = 1)
         {
             List<Computer> dbComputers;
             if (personId == null)
@@ -27,6 +27,10 @@ namespace IT_Inventory.Controllers
                     : _db.Computers.AsEnumerable().Where(c => c.ComputerName.StartsWith(depCode + '-')).OrderBy(c => c.ComputerName).ToList();
             else
                 dbComputers = _db.Computers.OrderBy(c => c.ComputerName).Where(c => c.Owner.Id == personId).ToList();
+
+            if (searchSoft != "")
+                dbComputers = dbComputers.Where(c => c.Software.IndexOf(searchSoft, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+
             var pager = new Pager(dbComputers.Count, page, 8);
             var computers = dbComputers.Select(comp => new ComputerViewModel
             {
@@ -37,19 +41,22 @@ namespace IT_Inventory.Controllers
                 Hdd = comp.HddInvent,
                 MotherBoard = comp.MotherBoardInvent,
                 VideoAdapter = comp.VideoAdapterInvent,
+                Monitor = comp.MonitorInvent,
                 Owner = comp.Owner == null ? string.Empty : comp.Owner.ShortName,
                 HasRequests = comp.SupportRequests.Count > 0,
                 HasModifications = comp.HasModifications,
                 UpdateDate = comp.UpdateDate?.ToString("g") ?? string.Empty
             });
+
             var computersViewModel = new ComputerIndexViewModel
             {
                 Computers = computers.Skip((pager.CurrentPage - 1) * pager.PageSize).Take(pager.PageSize),
                 Pager = pager,
                 DepCodes = _db.Computers.AsEnumerable().Select(c => c.ComputerName.Split('-').First()).Distinct().OrderBy(c => c).ToArray(),
                 DepCode = depCode,
+                SearchSoft = searchSoft == "" ? null : searchSoft,
                 PersonSearch = personId != null
-        };
+            };
             return View(computersViewModel);
         }
 
@@ -92,10 +99,12 @@ namespace IT_Inventory.Controllers
                     Hdd = history.HistoryHdd,
                     MotherBoard = history.HistoryMotherBoard,
                     VideoAdapter = history.HistoryVideoAdapter,
+                    Monitor = history.HistoryMonitor,
                     UpdateDate = history.HistoryUpdated?.ToString("g") ?? string.Empty,
                     Changes = history.Changes,
                     OwnerName = history.HistoryComputerOwner == null ? string.Empty : history.HistoryComputerOwner.ShortName,
-                    ComputerName = history.HistoryComputer == null ? string.Empty : history.HistoryComputer.ComputerName
+                    ComputerName = history.HistoryComputer == null ? string.Empty : history.HistoryComputer.ComputerName,
+                    CompId = history.HistoryComputer?.Id ?? 0
                 }).ToList();
 
             return View(historyModels);
@@ -119,6 +128,8 @@ namespace IT_Inventory.Controllers
                 Hdd = comp.Hdd,
                 MotherBoard = comp.MotherBoard,
                 VideoAdapter = comp.VideoAdapter,
+                Monitor = comp.Monitor,
+                LastReportDate = comp.LastReportDate?.ToString("d MMMM HH:mm") ?? comp.UpdateDate?.ToString("d MMMM HH:mm"),
                 Owner = comp.Owner == null ? string.Empty : comp.Owner.FullName,
                 Software = comp.Software.Split(new[] { "[NEW_LINE]" }, StringSplitOptions.None)
             };
@@ -146,6 +157,7 @@ namespace IT_Inventory.Controllers
                 Hdd = historyItem.HistoryHdd,
                 MotherBoard = historyItem.HistoryMotherBoard,
                 VideoAdapter = historyItem.HistoryVideoAdapter,
+                Monitor = historyItem.HistoryMonitor,
                 Software = historyItem.HistorySoftware.Split(new[] { "[NEW_LINE]" }, StringSplitOptions.None),
                 Changes = historyItem.Changes,
                 InstalledSoftware = historyItem.SoftwareInstalled?.Split(new[] { "[NEW_LINE]" }, StringSplitOptions.None),
@@ -161,7 +173,6 @@ namespace IT_Inventory.Controllers
             var report = await Report.GetReportAsync(name);
             return report != null ? RedirectToAction("Details", "Configs", new { compName = name}) : RedirectToAction("Index");
         }
-
 
         // GET: Computers/Edit/5
         // edit computer data
@@ -182,6 +193,7 @@ namespace IT_Inventory.Controllers
                 Hdd = comp.HddInvent,
                 MotherBoard = comp.MotherBoardInvent,
                 VideoAdapter = comp.VideoAdapterInvent,
+                Monitor = comp.MonitorInvent,
                 Software = comp.SoftwareInvent.Split(new[] { "[NEW_LINE]" }, StringSplitOptions.None)
             };
             return View(compModel);
@@ -203,6 +215,7 @@ namespace IT_Inventory.Controllers
             comp.HddInvent = compModel.Hdd;
             comp.MotherBoardInvent = compModel.MotherBoard;
             comp.VideoAdapterInvent = compModel.VideoAdapter;
+            comp.MonitorInvent = compModel.Monitor;
             comp.UpdateDate = DateTime.Now;
             var softString = new StringBuilder();
             foreach (var item in compModel.Software)
@@ -211,6 +224,26 @@ namespace IT_Inventory.Controllers
             _db.Entry(comp).State = EntityState.Modified;
             await _db.SaveChangesAsync();
             return RedirectToAction("Index");
+        }
+
+        public async Task<ActionResult> SyncConfig(int? id)
+        {
+            if (id == null)
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            var comp = await _db.Computers.FindAsync(id);
+            if (comp == null)
+                return HttpNotFound();
+            comp.UpdateDate = DateTime.Now;
+            comp.CpuInvent = comp.Cpu;
+            comp.RamInvent = comp.Ram;
+            comp.HddInvent = comp.Hdd;
+            comp.MotherBoardInvent = comp.MotherBoard;
+            comp.VideoAdapterInvent = comp.VideoAdapter;
+            comp.MonitorInvent = comp.Monitor;
+            comp.SoftwareInvent = comp.Software;
+            _db.Entry(comp).State = EntityState.Modified;
+            await _db.SaveChangesAsync();
+            return Redirect(Request.UrlReferrer.ToString());
         }
 
         // GET: Computers/Delete/5

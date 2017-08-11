@@ -1,177 +1,257 @@
-﻿@model IEnumerable<IT_Inventory.Models.SupportRequest>
+﻿@model IT_Inventory.ViewModels.SupportIndexViewModel
 
-@if (!string.IsNullOrEmpty(ViewBag.SearchString))
+@if (!string.IsNullOrEmpty(Model.SearchString))
 {
-    <h4>@ViewBag.SearchString</h4>
+    <h4>@Model.SearchString</h4>
 }
 
-<table class="table">
+@if (Model.SupportRequests.Count > 0)
+{
+    <table class="table">
     <tr>
         <th></th>
         <th>
-            @Html.DisplayNameFor(model => model.CreationTime)
+            @Html.DisplayNameFor(model => model.SupportRequests.First().CreationTime)
         </th>
 
         <th>
-            @Html.DisplayNameFor(model => model.StartTime)
+            @Html.DisplayNameFor(model => model.SupportRequests.First().StartTime)
         </th>
 
         <th>
-            @Html.DisplayNameFor(model => model.FinishTime)
+            @Html.DisplayNameFor(model => model.SupportRequests.First().FinishTime)
         </th>
-        @if (ViewBag.IsItUser)
+        @if (Model.IsItUser)
         {
             <th>
-                @Html.DisplayNameFor(model => model.From)
+                @Html.DisplayNameFor(model => model.SupportRequests.First().From)
             </th>
 
             <th>
-                @Html.DisplayNameFor(model => model.FromComputer)
+                @Html.DisplayNameFor(model => model.SupportRequests.First().FromComputer)
             </th>
         }
         <th>
-            @Html.DisplayNameFor(model => model.Text)
+            @Html.DisplayNameFor(model => model.SupportRequests.First().Text)
         </th>
 
         <th>
-            @Html.DisplayNameFor(model => model.Urgency)
+            @Html.DisplayNameFor(model => model.SupportRequests.First().Urgency)
         </th>
 
         <th>
-            @Html.DisplayNameFor(model => model.Category)
+            @Html.DisplayNameFor(model => model.SupportRequests.First().Category)
         </th>
 
         <th>
-            @Html.DisplayNameFor(model => model.State)
+            @Html.DisplayNameFor(model => model.SupportRequests.First().State)
         </th>
 
         <th>
-            @Html.DisplayNameFor(model => model.To)
+            @Html.DisplayNameFor(model => model.SupportRequests.First().To)
         </th>
 
         <th>
-            @Html.DisplayNameFor(model => model.Mark)
+            @Html.DisplayNameFor(model => model.SupportRequests.First().Mark)
         </th>
         <th></th>
     </tr>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @switch (item.State)
-            {
-                case 0:
-                    <font color="red">&#11044</font>
-                    break;
-                case 1:
-                    <font color="orange">&#11044</font>
-                    break;
-                case 2:
-                    <font color="green">&#11044</font>
-                    break;
-            }
-        </td>
-
-        <td>
-            @item.CreationTime.ToString("g")
-        </td>
-
-        <td>
-            @if (item.StartTime != null)
-            {
-                @(((DateTime) item.StartTime).ToString("g"))
-            }
-        </td>
-
-        <td>
-            @if (item.FinishTime != null)
-            {
-                @(((DateTime) item.FinishTime).ToString("g"))
-            }
-        </td>
-        @if (ViewBag.IsItUser)
+    @for (var i = 0; i < Model.SupportRequests.Count; i++)
+    {
+        var item = Model.SupportRequests[i];
+        if (i > 0 && item.State != Model.SupportRequests[i - 1].State)
         {
-            <td white-space: nowrap>
-                @Html.ActionLink(item.From.ShortName, "Index", new {searchUserId = item.From.Id})
-            </td>
-
-            <td white-space: nowrap>
-                @if (item.FromComputer != null)
-                {
-                    @Html.ActionLink(item.FromComputer.ComputerName, "Index", new {searchCompId = item.FromComputer.Id})
-                }
-            </td>
+            <tr>
+                <td colspan="13" style="border-top-width: 2px">
+                    <h4>
+                        @switch (item.State)
+                        {
+                            case 1:
+                            {
+                                <text>В работе:</text>
+                            }
+                                break;
+                            case 2:
+                            {
+                                <text>Завершенные:</text>
+                            }
+                                break;
+                        }
+                    </h4>
+                </td>
+            </tr>
         }
 
-        <td style="font-size: small">
-            @Html.DisplayFor(modelItem => item.Text)
-        </td>
-
-        <td>
-            @Html.DisplayFor(modelItem => StaticData.RequestUrgency[item.Urgency])
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => StaticData.RequestCategory[item.Category])
-        </td>
-        <td style="@(item.State == 0 ? "color:red" : "")">
-            @Html.DisplayFor(modelItem => StaticData.RequestState[item.State])
-        </td>
-        <td white-space: nowrap>
-            @if (item.To != null)
-            {
-                @Html.DisplayFor(modelItem => item.To.ShortName)
-            }
-        </td>
-        <td>
-            @if (item.Mark > 0)
-            {
-                @Html.DisplayFor(modelItem => item.Mark)
-            }
-        </td>
-        <td>
-            @if (item.File != null)
-            {
-                if (item.File.IsImage)
+        <tr >
+            <td>
+                @switch (item.State)
                 {
-                    @Html.ActionLink("Изображение", "DownloadImage", new { filename = item.File.Path })
-                    @:|
+                    case 0:
+                        <font color="red">&#11044</font>
+                        break;
+                    case 1:
+                        <font color="orange">&#11044</font>
+                        break;
+                    case 2:
+                        <font color="green">&#11044</font>
+                        break;
+                }
+            </td>
+
+            <td>
+                @item.CreationTime.ToString("g")
+            </td>
+
+            <td>
+                @if (item.StartTime != null)
+                {
+                    @(((DateTime) item.StartTime).ToString("g"))
+                }
+            </td>
+
+            <td>
+                @if (item.FinishTime != null)
+                {
+                    @(((DateTime) item.FinishTime).ToString("g"))
+                }
+            </td>
+
+            @if (Model.IsItUser)
+            {
+                <td white-space: nowrap>
+                    @Html.ActionLink(item.From.ShortName, "Index", new {searchUserId = item.From.Id})
+                </td>
+
+                <td white-space: nowrap>
+                    @if (item.FromComputer != null)
+                    {
+                        @Html.ActionLink(item.FromComputer.ComputerName, "Index", new {searchCompId = item.FromComputer.Id})
+                    }
+                </td>
+            }
+
+            <td style="font-size: small">
+                @Html.DisplayFor(modelItem => item.Text)
+            </td>
+
+            <td>
+                @Html.DisplayFor(modelItem => StaticData.RequestUrgency[item.Urgency])
+            </td>
+
+            <td>
+                @Html.DisplayFor(modelItem => StaticData.RequestCategory[item.Category])
+            </td>
+
+            <td style="@(item.State == 0 ? "color:red" : "")">
+                @Html.DisplayFor(modelItem => StaticData.RequestState[item.State])
+            </td>
+
+            <td white-space: nowrap>
+                @if (item.To != null)
+                {
+                    @Html.DisplayFor(modelItem => item.To.ShortName)
+                }
+            </td>
+
+            <td>
+                @if (item.Mark > 0)
+                {
+                    @Html.DisplayFor(modelItem => item.Mark)
+                }
+            </td>
+
+            <td white-space: nowrap>
+                @if (Model.IsItUser)
+                {
+                    if (item.State == 0)
+                    {
+                        <a href='@Url.Action("AcceptRequest", "Support", new {id = item.Id})' style="text-decoration: none">
+                            <img src='@Url.Content("~/Content/icons/ic_check_box_black_24dp_1x.png")' alt="Принять" title="Принять"/>
+                        </a>
+                    }
+                    else if (item.State == 1 && item.To != null && Model.UserId == item.To.Id)
+                    {
+                        <a href='@Url.Action("FinishRequest", "Support", new {id = item.Id})' style="text-decoration: none">
+                            <img src='@Url.Content("~/Content/icons/ic_done_black_24dp_1x.png")' alt="Завершить" title="Завершить"/>
+                        </a>
+                    }
+                }
+
+                <a href='@Url.Action("Details", "Support", new {id = item.Id})' style="text-decoration: none">
+                    <img src='@Url.Content("~/Content/icons/ic_info_outline_black_24dp_1x.png")' alt="Подробно" title="Подробно"/>
+                </a>
+
+                @if (item.File != null)
+                {
+                    if (item.File.IsImage)
+                    {
+                        <a href='@Url.Action("DownloadImage", "Support", new {filename = item.File.Path})' style="text-decoration: none">
+                            <img src='@Url.Content("~/Content/icons/ic_image_black_24dp_1x.png")' alt="Изображение" title="Изображение"/>
+                        </a>
+                    }
+                    else
+                    {
+                        <a href='@Url.Action("DownloadFile", "Support", new {filename = item.File.Path})' style="text-decoration: none">
+                            <img src='@Url.Content("~/Content/icons/ic_insert_drive_file_black_24dp_1x.png")' alt="Файл" title="Файл"/>
+                        </a>
+                    }
+                }
+
+                @if (Model.IsItUser || item.State != 2)
+                {
+                    <a href='@Url.Action("Edit", "Support", new {id = item.Id})' style="text-decoration: none">
+                        <img src='@Url.Content("~/Content/icons/ic_edit_black_24dp_1x.png")' alt="Редактировать" title="Редактировать"/>
+                    </a>
                 }
                 else
                 {
-                    @Html.ActionLink("Файл", "DownloadFile", new {filename = item.File.Path})
-                    @:|
+                    <a href='@Url.Action("Edit", "Support", new {id = item.Id})' style="text-decoration: none">
+                        <img src='@Url.Content("~/Content/icons/ic_thumb_up_black_24dp_1x.png")' alt="Оценить" title="Оценить"/>
+                    </a>
                 }
-            }
 
-            @if (ViewBag.IsItUser || item.State != 2)
-            {
-                @Html.ActionLink("Редактировать", "Edit", new {id = item.Id})
-                @:|
-            }
-            else
-            {
-                @Html.ActionLink("Оценить", "Edit", new {id = item.Id})
-                @:|
-            }
-
-
-            @Html.ActionLink("Подробно", "Details", new {id = item.Id})
-            @if (ViewBag.IsItUser)
-            {
-                @:|
-                if (item.State == 0)
+                @if (Model.IsItUser)
                 {
-                    @Html.ActionLink("Принять", "AcceptRequest", new {id = item.Id})
-                    @:|
+                    <a href='@Url.Action("Delete", "Support", new {id = item.Id})' style="text-decoration: none">
+                        <img src='@Url.Content("~/Content/icons/ic_delete_forever_black_24dp_1x.png")' alt="Удалить" title="Удалить"/>
+                    </a>
                 }
-                else if (item.State == 1 && item.To != null && ViewBag.UserId == item.To.Id)
-                {
-                    @Html.ActionLink("Завершить", "FinishRequest", new {id = item.Id})
-                    @:|
-                }
-                @Html.ActionLink("Удалить", "Delete", new {id = item.Id})
-            }
-        </td>
-    </tr>
+            </td>
+        </tr>
+    }
+    </table>
 }
-</table>
+
+<!-- pager -->
+@if (Model.Pager != null && Model.Pager.EndPage > 1)
+{
+    <ul class="pagination">
+        @if (Model.Pager.CurrentPage > 1)
+        {
+            <li>
+                @Html.ActionLink("Первая", "Index", new { state = ViewBag.State, searchUserId = ViewBag.SearchUserId, searchCompId = ViewBag.SearchCompId, page = 1 })
+            </li>
+            <li>
+                @Html.ActionLink("Предыдущая", "Index", new { state = ViewBag.State, searchUserId = ViewBag.SearchUserId, searchCompId = ViewBag.SearchCompId, page = Model.Pager.CurrentPage - 1 })
+            </li>
+        }
+
+        @for (var pageNum = Model.Pager.StartPage; pageNum <= Model.Pager.EndPage; pageNum++)
+        {
+            <li class="@(pageNum == Model.Pager.CurrentPage ? "active" : "")">
+                @Html.ActionLink(pageNum.ToString(), "Index", new { state = ViewBag.State, searchUserId = ViewBag.SearchUserId, searchCompId = ViewBag.SearchCompId, page = pageNum })
+            </li>
+        }
+
+        @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
+        {
+            <li>
+                @Html.ActionLink("Следующая", "Index", new { state = ViewBag.State, searchUserId = ViewBag.SearchUserId, searchCompId = ViewBag.SearchCompId, page = Model.Pager.CurrentPage + 1 })
+            </li>
+            <li>
+                @Html.ActionLink("Последняя", "Index", new { state = ViewBag.State, searchUserId = ViewBag.SearchUserId, searchCompId = ViewBag.SearchCompId, page = Model.Pager.TotalPages })
+            </li>
+        }
+    </ul>
+}

@@ -6,17 +6,40 @@
 
 <h2>@ViewBag.Title</h2>
 
-<p>
-    @Html.ActionLink("Всё оборудование", "Index", null, new { @class = "btn btn-primary btn-lg", href = "/Items/Index" })
-    @Html.ActionLink("Добавить", "Create", new {id = 8}, new {@class = "btn btn-default btn-lg"})
-</p>
+@Html.ActionLink("Всё оборудование", "Index", null, new { @class = "btn btn-primary", href = "/Items/Index" })
+@Html.ActionLink("Добавить командировочный ноутбук" , "Create", new { id = 8 }, new { @class = "btn btn-success" })
+
+@foreach (var office in StaticData.GetOffices(true))
+{
+    @Html.ActionLink(office.Name, "Index", new { id = 8, officeId = office.Id }, office.Id == Model.OfficeId ? new { @class = "btn btn-warning" } : new { @class = "btn btn-default" })
+    <text>&nbsp;</text>
+}
+
+<ul class="pagination">
+    @foreach (var type in StaticData.GetTypes())
+    {
+        <li class="@(type.Id == 8 ? "active" : "")">
+            @(Model.OfficeId != 0
+                    ? Html.ActionLink(type.Name, "Index", new { id = type.Id, officeId = Model.OfficeId }, type.Id != 8 ? new { Style = "color:black" } : null)
+                    : Html.ActionLink(type.Name, "Index", new { id = type.Id }, type.Id != 8 ? new { Style = "color:black" } : null))
+        </li>
+    }
+</ul>
+
+
+
+
+
 <table class="table">
     <tr>
         <th>
             @Html.DisplayNameFor(model => model.Items.First().Name)
         </th>
         <th>
-            Кому выдан
+            
+        </th>
+        <th>
+            Кому был выдан
         </th>
         <th>
             ОС
@@ -30,6 +53,12 @@
                 </th>
             }
         }
+        @if (Model.OfficeId == 0)
+        {
+            <th>
+                @Html.DisplayNameFor(model => model.Items.First().Location)
+            </th>
+        }
         <th></th>
     </tr>
 
@@ -38,6 +67,13 @@
         <td>
             @item.Name
         </td>
+        <td>
+            @if (item.Quantity > 0)
+            {
+                <input type="checkbox" checked="checked" onclick="return false;" />
+            }
+        </td>
+
         <td white-space: nowrap>
             @if (item.Quantity == 0 && item.Histories.Any(h => !h.Recieved))
             {
@@ -45,15 +81,17 @@
             }
             else
             {
-                @Html.Label("В наличии")
+                @StaticData.LastOwnerShortName(item.Id)
             }
         </td>
+
         <td>
             @if (item.AttributeValues.FirstOrDefault(a => a.Attribute.Id == 14) != null)
             {
                 @item.AttributeValues.FirstOrDefault(a => a.Attribute.Id == 14).Value
             }
         </td>
+
         @if (Model.Items.FirstOrDefault() != null)
         {
             foreach (var attribute in Model.Items.FirstOrDefault().ItemType.Attributes.Where(a => a.Id != 14))
@@ -66,12 +104,53 @@
                 </td>
             }
         }
-        <td style="color:black">
-            @(item.Quantity != 0 ? Html.ActionLink("Выдать ", "Grant", new {id = item.Id}) : Html.ActionLink("Вернуть", "RecieveOneNotebook", new {id = item.Id}))
-            |
-            @Html.ActionLink("История", "Index", "Histories", new {id = item.Id}, null) |
-            @Html.ActionLink("Редактировать", "Edit", new {id = item.Id}) |
-            @Html.ActionLink("Удалить", "Delete", new {id = item.Id})
+
+        @if (Model.OfficeId == 0)
+        {
+            <td>
+                @if (item.Location == null)
+                {
+                    <text>Железноводская</text>
+                }
+                else
+                {
+                    @Html.DisplayFor(modelItem => item.Location.Name)
+                }
+            </td>
+        }
+
+        <td style="color:black" white-space: nowrap align="right">
+            @if (item.Quantity != 0)
+            {
+                <a href='@Url.Action("Grant", new { id = item.Id })' style="text-decoration:none">
+                    <img src='@Url.Content("~/Content/icons/ic_remove_circle_outline_black_24dp_1x.png")' alt="Выдать" title="Выдать" />
+                </a>
+            }
+            else
+            {
+                <a href='@Url.Action("RecieveOneNotebook", new { id = item.Id })' style="text-decoration:none">
+                    <img src='@Url.Content("~/Content/icons/ic_add_circle_outline_black_24dp_1x.png")' alt="Вернуть" title="Вернуть" />
+                </a>
+            }
+
+            <a href='@Url.Action("Index", "Histories", new {id = item.Id})' style="text-decoration: none">
+                <img src='@Url.Content("~/Content/icons/ic_history_black_24dp_1x.png")' alt="История" title="История"/>
+            </a>
+
+            @if (item.Quantity > 0)
+                {
+                <a href='@Url.Action("Transfer", new {id = item.Id})' style="text-decoration: none">
+                    <img src='@Url.Content("~/Content/icons/ic_compare_arrows_black_24dp_1x.png")' alt="Переместить на другой склад" title="Переместить на другой склад" />
+                </a>
+            }
+
+            <a href='@Url.Action("Edit", new {id = item.Id})' style="text-decoration: none">
+                <img src='@Url.Content("~/Content/icons/ic_edit_black_24dp_1x.png")' alt="Редактировать" title="Редактировать"/>
+            </a>
+
+            <a href='@Url.Action("Delete", new { id = item.Id })' style="text-decoration:none">
+                <img src='@Url.Content("~/Content/icons/ic_delete_forever_black_24dp_1x.png")' alt="Удалить" title="Удалить" />
+            </a>
         </td>
     </tr>
 }

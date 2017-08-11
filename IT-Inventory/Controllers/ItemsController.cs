@@ -18,31 +18,81 @@ namespace IT_Inventory.Controllers
 
         // GET: Items
         // list of all items (id==null) or items of specific type (id)
-        public async Task<ActionResult> Index(int? id, int page = 1, bool urgent = false)
+        public async Task<ActionResult> Index(int? id, int? officeId, int page = 1, bool urgent = false)
         {
             var model = new ItemIndexViewModel();
-
             switch (id)
             {
                 // all items
                 case null:
                     List<Item> items;
                     if (urgent == false)
-                        items = await _db.Items.OrderBy(i => i.ItemType.Name).ThenBy(i => i.Name).ToListAsync();
+                    {
+                        switch (officeId)
+                        {
+                            case null:
+                                items = await _db.Items.OrderBy(i => i.ItemType.Name).ThenBy(i => i.Name).ToListAsync();
+                                break;
+                            case 1:
+                                items = await _db.Items.Where(i => i.Location == null || i.Location.Id == 1).OrderBy(i => i.ItemType.Name).ThenBy(i => i.Name).ToListAsync();
+                                model.OfficeId = 1;
+                                model.OfficeName = "Железноводская";
+                                break;
+                            default:
+                                items = await _db.Items.Where(i => i.Location.Id == officeId).OrderBy(i => i.ItemType.Name).ThenBy(i => i.Name).ToListAsync();
+                                model.OfficeId = (int) officeId;
+                                model.OfficeName = _db.Offices.FirstOrDefault(o => o.Id == officeId)?.Name;
+                                break;
+                        }
+                    }
                     else
-                        items = await _db.Items.Where(i => i.Quantity <= i.MinQuantity).OrderBy(i => i.ItemType.Name).ThenBy(i => i.Name).ToListAsync();
-                    var pager = new Pager(items.Count, page, 16);
+                        items = await _db.Items.Where(i => (i.Location == null || i.Location.Id == 1) && i.Quantity <= i.MinQuantity)
+                                    .OrderBy(i => i.ItemType.Name).ThenBy(i => i.Name).ToListAsync();
+                    var pager = new Pager(items.Count, page, 15);
                     model.Items = items.Skip((pager.CurrentPage - 1) * pager.PageSize).Take(pager.PageSize);
                     model.Pager = pager;
                     model.IsUrgent = urgent;
                     return View(model);
-                // trip notebooks
+                // trip notebooks ordered by name
                 case 8:
-                    model.Items = await _db.Items.Where(i => i.ItemType.Id == id).OrderBy(i => i.AttributeValues.FirstOrDefault(a => a.Attribute.Id == 8).Value).ToListAsync();
+                    switch (officeId)
+                    {
+                        case null:
+                            model.Items = await _db.Items.Where(i => i.ItemType.Id == id)
+                                .OrderBy(i => i.AttributeValues.FirstOrDefault(a => a.Attribute.Id == 8).Value).ToListAsync();
+                            break;
+                        case 1:
+                            model.Items = await _db.Items.Where(i => i.ItemType.Id == id && (i.Location == null || i.Location.Id == 1))
+                                .OrderBy(i => i.AttributeValues.FirstOrDefault(a => a.Attribute.Id == 8).Value).ToListAsync();
+                            model.OfficeId = 1;
+                            model.OfficeName = "Железноводская";
+                            break;
+                        default:
+                            model.Items = await _db.Items.Where(i => i.ItemType.Id == id && i.Location.Id == officeId)
+                                .OrderBy(i => i.AttributeValues.FirstOrDefault(a => a.Attribute.Id == 8).Value).ToListAsync();
+                            model.OfficeId = (int)officeId;
+                            model.OfficeName = _db.Offices.FirstOrDefault(o => o.Id == officeId)?.Name;
+                            break;
+                    }
                     return View("IndexOfNotebook", model);
-                // items of type
+                // items of a type
                 default:
-                    model.Items = await _db.Items.Where(i => i.ItemType.Id == id).OrderBy(i => i.Name).ToListAsync();
+                    switch (officeId)
+                    {
+                        case null:
+                            model.Items = await _db.Items.Where(i => i.ItemType.Id == id).OrderBy(i => i.Name).ToListAsync();
+                            break;
+                        case 1:
+                            model.Items = await _db.Items.Where(i => i.ItemType.Id == id &&(i.Location == null || i.Location.Id == 1)).OrderBy(i => i.Name).ToListAsync();
+                            model.OfficeId = 1;
+                            model.OfficeName = "Железноводская";
+                            break;
+                        default:
+                            model.Items = await _db.Items.Where(i => i.ItemType.Id == id && i.Location.Id == officeId).OrderBy(i => i.Name).ToListAsync();
+                            model.OfficeId = (int)officeId;
+                            model.OfficeName = _db.Offices.FirstOrDefault(o => o.Id == officeId)?.Name;
+                            break;
+                    }
                     model.Type = await _db.ItemTypes.FindAsync(id);
                     return View("IndexOfType", model);
             }
@@ -105,43 +155,38 @@ namespace IT_Inventory.Controllers
         // get complete viewmodel from view and create new model item
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create(ItemViewModel item)
+        public async Task<ActionResult> Create(ItemViewModel model)
         {
             if (!ModelState.IsValid)
-                return View(item);
+                return View(model);
             // check quantities
-            if (item.Quantity < 0)
+            if (model.Quantity < 0)
             {
                 // return view with error message
-                ModelState.AddModelError(string.Empty, "Неправильное количество (" + item.Quantity + ")!");
-                return View(item);
+                ModelState.AddModelError(string.Empty, "Неправильное количество (" + model.Quantity + ")!");
+                return View(model);
             }
-            if (item.MinQuantity < -1)
+            if (model.MinQuantity < -1)
             {
                 // return view with error message
-                ModelState.AddModelError(string.Empty, "Неправильное количество (" + item.MinQuantity + ")!");
-                return View(item);
+                ModelState.AddModelError(string.Empty, "Неправильное количество (" + model.MinQuantity + ")!");
+                return View(model);
             }
-            //if (_db.Items.FirstOrDefault(i => i.Name == item.Name) != null)
-            //{
-            //    // return view with error message
-            //    ModelState.AddModelError(string.Empty, "Элемент с таким именем уже существует в базе (" + item.Name + ")!");
-            //    return View(item);
-            //}
 
             // create new model item
             // if trip notebook:
-            if (item.ItemTypeId == 8)
+            if (model.ItemTypeId == 8)
             {
-                item.Quantity = 1;
-                item.MinQuantity = 0;
+                model.Quantity = 1;
+                model.MinQuantity = 0;
             }
             var newItem = new Item
             {
-                Name = item.Name,
-                Quantity = item.Quantity,
-                MinQuantity = item.MinQuantity,
-                ItemType = await _db.ItemTypes.FindAsync(item.ItemTypeId)
+                Name = model.Name,
+                Quantity = model.Quantity,
+                MinQuantity = model.MinQuantity,
+                ItemType = await _db.ItemTypes.FindAsync(model.ItemTypeId),
+                Location = await _db.Offices.FindAsync(model.TargetOfficeId)
             };
             // add to db
             _db.Items.Add(newItem);
@@ -149,7 +194,7 @@ namespace IT_Inventory.Controllers
             var newHistory = new History
             {
                 Recieved = true,
-                Quantity = item.Quantity,
+                Quantity = model.Quantity,
                 Date = DateTime.Now,
                 Item = newItem
             };
@@ -158,13 +203,13 @@ namespace IT_Inventory.Controllers
             // add history item to item history list
             newItem.Histories.Add(newHistory);
             // create attribute values from attribute viewmodels
-            foreach (var attributeValue in item.AttributeValues)
+            foreach (var attributeValue in model.AttributeValues)
             {
                 if (attributeValue.IsNumber && !StaticData.IsNumber(attributeValue.Value))
                 {
                     // return view with error message
                     ModelState.AddModelError(string.Empty, attributeValue.Name +  " не может быть " + attributeValue.Value + "!");
-                    return View(item);
+                    return View(model);
                 }
                 var newValue = new ItemAttributeValue
                 {
@@ -336,6 +381,11 @@ namespace IT_Inventory.Controllers
             var editItem = await _db.Items.FindAsync(item.Id);
             if (editItem == null)
                 return HttpNotFound();
+            var login = User.Identity.Name;
+            var accountName = login.Substring(5, login.Length - 5);
+            var person = _db.Persons.FirstOrDefault(p => p.AccountName == accountName);
+            if (person == null)
+                return RedirectToAction("Index");
             // increase quantity
             editItem.Quantity += item.Quantity;
             // create new history item
@@ -344,7 +394,8 @@ namespace IT_Inventory.Controllers
                 Recieved = true,
                 Date = DateTime.Now,
                 Item = editItem,
-                Quantity = item.Quantity
+                Quantity = item.Quantity,
+                WhoTook = person
             };
             // add new history item to db
             _db.Histories.Add(newHistory);
@@ -363,13 +414,11 @@ namespace IT_Inventory.Controllers
             if (id == null)
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             var item = _db.Items.Find(id);
+            if (item == null)
+                return HttpNotFound();
             item.Quantity++;
             _db.Entry(item).State = EntityState.Modified;
             await _db.SaveChangesAsync();
-            //var model = new ItemIndexViewModel
-            //{
-            //    Items = await _db.Items.Where(i => i.ItemType.Id == id).OrderBy(i => i.Name).ToListAsync()
-            //};
             return RedirectToAction("Index", new { id = 8 } );
         }
 
@@ -415,7 +464,7 @@ namespace IT_Inventory.Controllers
             if (editItem.Quantity < item.Quantity)
             {
                 // return view with error message
-                ModelState.AddModelError(string.Empty, "Нельзя выдать больше, чем есть в наличии (" + editItem.Quantity + ")!");
+                ModelState.AddModelError(string.Empty, "Нельзя выдать больше, чем есть в наличии (" + editItem.Quantity + " шт.)!");
                 return View(item);
             }
             // find the persons (who gave and who took) in db
@@ -444,6 +493,116 @@ namespace IT_Inventory.Controllers
             return RedirectToAction("Index");
         }
 
+        // GET: Items/Transfer/5
+        // transfer an item to another location - first step
+        // creates and passes viewmodel to the view
+        public async Task<ActionResult> Transfer(int? id)
+        {
+            if (id == null)
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            // find item in db
+            var item = await _db.Items.FindAsync(id);
+            if (item == null)
+                return HttpNotFound();
+            // create viewmodel based on item with necessary data
+            var itemModel = new ItemViewModel
+            {
+                Id = (int)id,
+                Name = item.Name,
+                Quantity = 1,
+                ItemTypeId = item.ItemType.Id,
+                SourceOfficeId = item.Location?.Id ?? 1,
+                SourceOfficeName = item.Location == null ? "Железноводская" : item.Location.Name
+            };
+            return View(itemModel);
+        }
+
+        // POST: Items/Transfer/5
+        // transfer an item to another location - second step
+        // get viewmodel from view and modify model item location
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Transfer(ItemViewModel item)
+        {
+            if (!ModelState.IsValid)
+                return View(item);
+            //find transferred item in db
+            var itemInOldOffice = await _db.Items.FindAsync(item.Id);
+            if (itemInOldOffice == null)
+                return HttpNotFound();
+            //if trip notebook
+            if (item.ItemTypeId == 8)
+                item.Quantity = 1;
+            //check if we transfer more than we have
+            if (itemInOldOffice.Quantity < item.Quantity)
+            {
+                // return view with error message
+                ModelState.AddModelError(string.Empty, "Нельзя переместить больше, чем есть в наличии (" + itemInOldOffice.Quantity + " шт.)!");
+                return View(item);
+            }
+
+            //find item in target location
+            Item itemInNewOffice;
+            if (item.TargetOfficeId == 1)
+                //for the main office location may be null
+                itemInNewOffice = await _db.Items.Where(i => i.Name == item.Name && (i.Location == null || i.Location.Id == 1)).FirstOrDefaultAsync();
+            else
+                itemInNewOffice = await _db.Items.Where(i => i.Name == item.Name && i.Location.Id == item.TargetOfficeId).FirstOrDefaultAsync();
+
+            //item doesn't exist in target location or it's a trip notebook - create new item
+            if (item.ItemTypeId == 8 || itemInNewOffice == null)
+            {
+                itemInNewOffice = new Item
+                {
+                    Name = item.Name,
+                    Quantity = item.Quantity,
+                    MinQuantity = itemInOldOffice.MinQuantity,
+                    ItemType = await _db.ItemTypes.FindAsync(itemInOldOffice.ItemType.Id),
+                    Location = await _db.Offices.FindAsync(item.TargetOfficeId)
+                };
+                _db.Items.Add(itemInNewOffice);
+                await _db.SaveChangesAsync();
+                //copy attribute-value pairs from source item
+                foreach (var attr in itemInOldOffice.AttributeValues)
+                {
+                    var newAttrValuePair = new ItemAttributeValue
+                    {
+                        Attribute = await _db.ItemAttributes.FindAsync(attr.Attribute.Id),
+                        ParentItem = itemInNewOffice,
+                        Value = attr.Value
+                    };
+                    _db.ItemAttributeValues.Add(newAttrValuePair);
+                    itemInNewOffice.AttributeValues.Add(newAttrValuePair);
+                }
+                //cartridge
+                if (item.ItemTypeId == 11)
+                    foreach (var printer in itemInOldOffice.Printers)
+                        itemInNewOffice.Printers.Add(await _db.Printers.FindAsync(printer.Id));
+            }
+            else
+                itemInNewOffice.Quantity += item.Quantity;
+
+            // decrease source item quantity
+            //if trip notebook - delete
+            if (item.ItemTypeId == 8)
+            {
+                foreach (var attr in _db.ItemAttributeValues.Where(a => a.ParentItem.Id == item.Id))
+                    _db.ItemAttributeValues.Remove(attr);
+                _db.Items.Remove(itemInOldOffice);
+            }
+            else
+            {
+                itemInOldOffice.Quantity -= item.Quantity;
+                _db.Entry(itemInOldOffice).State = EntityState.Modified;
+            }
+
+            _db.Entry(itemInNewOffice).State = EntityState.Modified;
+            await _db.SaveChangesAsync();
+            return RedirectToAction("Index");
+        }
+
+
+
         // GET: Items/Delete/5
         // delete item - first step
         // pass the item model to view
@@ -467,11 +626,13 @@ namespace IT_Inventory.Controllers
             if (item == null)
                 return RedirectToAction("Index");
             // check if current user belongs to admin group
-            //if (!User.IsInRole(@"RIVS\InventoryAdmin"))
-            //{
-            //    ModelState.AddModelError(string.Empty, "У Вас нет прав на удаление! Обратитесь к системному администратору!");
-            //    return View(item);
-            //}
+            if (!User.IsInRole(@"RIVS\InventoryAdmin"))
+            {
+                ModelState.AddModelError(string.Empty, "У Вас нет прав на удаление! Обратитесь к системному администратору!");
+                return View(item);
+            }
+            foreach (var attr in _db.ItemAttributeValues.Where(a => a.ParentItem.Id == id))
+                _db.ItemAttributeValues.Remove(attr);
             _db.Items.Remove(item);
             await _db.SaveChangesAsync();
             return RedirectToAction("Index");
@@ -486,6 +647,20 @@ namespace IT_Inventory.Controllers
             var log = "Inventory warning mail sent to: " + mail.Mail.To;
             await log.WriteToLogAsync(EventLogEntryType.Information, "Mailer");
             return RedirectToAction("Index");
+        }
+
+        //get collection of hardware name-quantity strings of a category
+        [HttpPost]
+        public ActionResult GetItemsOfCategory(string category)
+        {
+            SelectList itemSelect = null;
+            int catId;
+            if (!string.IsNullOrEmpty(category) && int.TryParse(category, out catId))
+            {
+                var items = _db.Items.Where(i => i.ItemType.Id == catId && i.Quantity > 0).OrderBy(i => i.Name).AsEnumerable();
+                itemSelect = new SelectList(items, "Id", "NameQuantity");
+            }
+            return Json(itemSelect, JsonRequestBehavior.AllowGet);
         }
 
         protected override void Dispose(bool disposing)

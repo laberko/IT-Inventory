@@ -54,7 +54,7 @@
                 <div class="col-md-10">
                     @if (Model.AttributeValues[i].AttributeId == 2)
                     {
-                        @Html.DropDownListFor(model => model.AttributeValues[i].Value, StaticData.SelectColors(), "", new { @class = "btn btn-default dropdown-toggle" })
+                        @Html.DropDownListFor(model => model.AttributeValues[i].Value, StaticData.SelectColors(), "", new { @class = "btn btn-default dropdown-toggle"} )
                     }
                     else
                     {

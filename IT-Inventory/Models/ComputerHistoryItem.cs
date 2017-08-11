@@ -24,6 +24,8 @@ namespace IT_Inventory.Models
 
         public string HistoryVideoAdapter { get; set; }
 
+        public string HistoryMonitor { get; set; }
+
         public string HistorySoftware { get; set; }
 
         public string Changes { get; set; }

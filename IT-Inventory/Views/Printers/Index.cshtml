@@ -45,7 +45,6 @@
         <th>
             @Html.DisplayNameFor(model => model.Cartridges)
         </th>
-
         <th></th>
     </tr>
 
@@ -65,24 +64,31 @@
                 <tr>
                     @foreach (var cartridge in item.Cartridges.Where(c => c.AttributeValues.FirstOrDefault(a => a.Attribute.Id == 2) != null).OrderBy(c => c.AttributeValues.FirstOrDefault(a => a.Attribute.Id == 2).Value))
                     {
-                        <td align="center">
-                            &nbsp;<font color=@cartridge.AttributeValues.FirstOrDefault(a => a.Attribute.Id == 2).Value>&#11044</font>&nbsp;<br/>
-                        @*</td>
-                        <td>*@
-                            <font size="4">@Html.ActionLink(cartridge.Quantity.ToString(), "Grant", "Items", new {id = cartridge.Id}, new { style = cartridge.Quantity <= cartridge.MinQuantity ? "color:red" : ""})</font>
+                        <td valign="middle">
+                            <font size="4" color=@cartridge.AttributeValues.FirstOrDefault(a => a.Attribute.Id == 2).Value>&nbsp;&nbsp;&#11044</font>
+                            <font size="4">@Html.ActionLink(cartridge.Quantity.ToString(), "Grant", "Items", new {id = cartridge.Id}, 
+                                          new { style = cartridge.Quantity <= cartridge.MinQuantity ? "color:red" : "", title = cartridge.Name + " (" + cartridge.LocationName + ")"})</font>
                         </td>
                     }
                 </tr>
             </table>
         </td>
-        <td style="color:black">
-            @Html.ActionLink("Редактировать", "Edit", new { id=item.Id }) |
-            @Html.ActionLink("Подробно", "Details", new {id = item.Id}) <br/>
+        <td style="color:black" white-space: nowrap align="right">
+            <a href='@Url.Action("Edit", new { id = item.Id })' style="text-decoration:none">
+                <img src='@Url.Content("~/Content/icons/ic_edit_black_24dp_1x.png")' alt="Редактировать" title="Редактировать" />
+            </a>
+            <a href='@Url.Action("Details", new { id = item.Id })' style="text-decoration:none">
+                <img src='@Url.Content("~/Content/icons/ic_info_outline_black_24dp_1x.png")' alt="Подробно" title="Подробно" />
+            </a>
             @if (!string.IsNullOrEmpty(item.Ip))
             {
-                @Html.ActionLink("Управлять", "Manage", new { ip = item.Ip } , new { target = "_blank" })@: |
+                <a href='@Url.Action("Manage", new { ip = item.Ip })' style="text-decoration:none" target="_blank">
+                    <img src='@Url.Content("~/Content/icons/ic_build_black_24dp_1x.png")' alt="Управлять" title="Управлять" />
+                </a>
             }
-            @Html.ActionLink("Удалить", "Delete", new { id = item.Id })
+            <a href='@Url.Action("Delete", new { id = item.Id })' style="text-decoration:none">
+                <img src='@Url.Content("~/Content/icons/ic_delete_forever_black_24dp_1x.png")' alt="Удалить" title="Удалить" />
+            </a>
         </td>
     </tr>
 }

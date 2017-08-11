@@ -179,22 +179,10 @@ namespace IT_Inventory
             {
                 try
                 {
-                    //foreach (var comp in db.Computers)
-                    //{
-                    //    comp.FillInventedData();
-                    //    db.Entry(comp).State = EntityState.Modified;
-                    //}
-                    //db.SaveChanges();
-
-                    //foreach (var history in db.ComputerHistory.AsEnumerable())
-                    //{
-                    //    db.ComputerHistory.Remove(history);
-                    //}
-                    //db.SaveChanges();
-
                     var logNonEmpty = false;
-                    var rootDir = new DirectoryInfo(@"\\rivs.org\it\ConfigReporting\ConfigReports");
-                    var allComputers = new List<Computer>();        //all computers from aida reports
+                    const string rootPath = @"\\rivs.org\it\ConfigReporting\ConfigReports";
+                    var rootDir = new DirectoryInfo(rootPath);
+                    var realComputers = new List<Computer>();        //all computers from aida reports
                     var log = new StringBuilder();
                     foreach (var dir in rootDir.GetDirectories().Where(dir => !dir.Name.Contains("SERVER-")))
                     {
@@ -209,18 +197,64 @@ namespace IT_Inventory
                             Hdd = report.Hdd,
                             MotherBoard = report.MotherBoard,
                             VideoAdapter = report.VideoAdapter,
+                            Monitor = report.Monitor,
                             Software = report.Software,
-                            Owner = await db.Persons.FirstOrDefaultAsync(p => p.AccountName == report.UserName)
+                            Owner = await db.Persons.FirstOrDefaultAsync(p => p.AccountName == report.UserName),
+                            LastReportDate = report.ReportDate,
+                            MbId = report.MbId
                         };
-                        allComputers.Add(comp);
+                        realComputers.Add(comp);
                     }
+
+
+                    var duplicateMbIds = realComputers.GroupBy(c => c.MbId).Where(g => g.Count() > 1).Select(g => g.Key).ToArray();
+                    if (duplicateMbIds.Length > 0)
+                    {
+                        log.AppendLine("Дублирующиеся записи компьютеров:");
+                        foreach (var id in duplicateMbIds)
+                        {
+                            //take the newest comp from db
+                            var existingComp = await db.Computers.Where(c => c.MbId == id).OrderByDescending(c => c.LastReportDate).FirstOrDefaultAsync();
+                            if (existingComp == null)
+                                continue;
+                            //for each of the rest (nonexisting) computers
+                            foreach (var comp in realComputers.Where(c => c.MbId == id).OrderByDescending(c => c.LastReportDate).Skip(1).ToArray())
+                            {
+                                realComputers.Remove(comp);
+                                var reportDir = new DirectoryInfo(Path.Combine(rootPath, comp.ComputerName));
+                                reportDir.Delete(true);
+                                var nonExistingComp = await db.Computers.FirstOrDefaultAsync(c => c.ComputerName == comp.ComputerName);
+                                if (nonExistingComp == null)
+                                    continue;
+                                log.AppendLine(comp.ComputerName);
+                                logNonEmpty = true;
+                                //transfer support requests to the existing computer
+                                foreach (var request in nonExistingComp.SupportRequests.ToArray())
+                                {
+                                    request.FromComputer = existingComp;
+                                    existingComp.SupportRequests.Add(request);
+                                    nonExistingComp.SupportRequests.Remove(request);
+                                    db.Entry(request).State = EntityState.Modified;
+                                }
+                                //transfer history to the existing computer
+                                foreach (var history in db.ComputerHistory.Where(h => h.HistoryComputer.Id == nonExistingComp.Id && h.Changes != "Новый").ToArray())
+                                {
+                                    history.HistoryComputer = existingComp;
+                                    db.Entry(history).State = EntityState.Modified;
+                                }
+                            }
+                            db.Entry(existingComp).State = EntityState.Modified;
+                        }
+                        db.SaveChanges();
+                    }
+
                     //cleanup database from non-existing computers
                     var nonExistingCompNames = (from comp in db.Computers.AsEnumerable()
-                                                where allComputers.FirstOrDefault(c => c.ComputerName == comp.ComputerName) == null
+                                                where realComputers.FirstOrDefault(c => c.ComputerName == comp.ComputerName) == null
                                                 select comp.ComputerName).ToArray();
                     if (nonExistingCompNames.Length > 0)
                     {
-                        log.AppendLine("Удалены компьютеры:");
+                        log.AppendLine("Удалены несуществующие компьютеры:");
                         foreach (var compName in nonExistingCompNames)
                         {
                             var nonExisting = await db.Computers.FirstOrDefaultAsync(c => c.ComputerName == compName);
@@ -234,12 +268,13 @@ namespace IT_Inventory
                         }
                     }
 
+                    //add new or edit existing computers in db
                     log.AppendLine("Добавлены или изменены компьютеры:");
-                    foreach (var comp in allComputers)
+                    foreach (var comp in realComputers)
                     {
                         //find computer in db by name
                         var existingComputer = await db.Computers.FirstOrDefaultAsync(c => c.ComputerName == comp.ComputerName);
-                        //computer not found
+                        //computer not found - add new
                         if (existingComputer == null)
                         {
                             comp.FillInventedData();
@@ -251,22 +286,28 @@ namespace IT_Inventory
                         //computer found but has changes in configuration
                         else if (!existingComputer.Equals(comp))
                         {
+                            //fill missing data
                             existingComputer.FillInventedData();
                             var changes = existingComputer.CopyConfig(comp);
-                            db.ComputerHistory.Add(existingComputer.NewHistory(changes[0], changes[1], changes[2]));
+                            //write changes to db only if we have some info about them
+                            if (!string.IsNullOrEmpty(changes[0]) && changes[0].Length >= 4)
+                            {
+                                db.ComputerHistory.Add(existingComputer.NewHistory(changes[0], changes[1], changes[2]));
+                                log.AppendLine(comp.ComputerName);
+                                logNonEmpty = true;
+                            }
                             db.Entry(existingComputer).State = EntityState.Modified;
-                            log.AppendLine(comp.ComputerName);
-                            logNonEmpty = true;
                         }
-                        //else if (existingComputer.UpdateDate == null)
-                        //{
-                        //    var history = existingComputer.NewHistory();
-                        //    db.ComputerHistory.Add(history);
-                        //    existingComputer.UpdateDate = DateTime.Now;
-                        //    db.Entry(existingComputer).State = EntityState.Modified;
-                        //}
+                        //computer found but data is not full
+                        else if (existingComputer.FillInventedData())
+                        {
+                            db.Entry(existingComputer).State = EntityState.Modified;
+                        }
+
+
+
                     }
-                    await db.SaveChangesAsync();
+                    db.SaveChanges();
                     if (logNonEmpty)
                         await log.ToString().WriteToLogAsync(source: "Computers");
                 }
@@ -285,7 +326,7 @@ namespace IT_Inventory
                     //send mail only after 9:00 once in 3 days
                     if (DateTime.Now.Hour <= 9)
                         return;
-                    foreach (var mail in db.SentMails.OrderByDescending(m => m.Date))
+                    foreach (var mail in db.SentMails.Where(m => m.Type == MailType.Inventory).OrderByDescending(m => m.Date))
                     {
                         var mailDate = mail.Date;
                         var span = (DateTime.Now - mailDate);
@@ -392,6 +433,17 @@ namespace IT_Inventory
             var host = Dns.GetHostEntry(address);
             return host.HostName.Split('.').First();
         }
+        public static string GetItemFullName(int id)
+        {
+            using (var db = new InventoryModel())
+            {
+                var item = db.Items.FirstOrDefault(i => i.Id == id);
+                if (item == null)
+                    return string.Empty;
+                return item.ItemType.Name + " " + item.Name;
+            }
+
+        }
         public static bool IsIp(string ipString)
         {
             IPAddress address;
@@ -460,6 +512,16 @@ namespace IT_Inventory
                     history => history.Quantity);
             }
         }
+        public static string LastOwnerShortName(int itemId)
+        {
+            using (var db = new InventoryModel())
+            {
+                var item = db.Items.Find(itemId);
+                if (item == null || item.Histories.All(h => h.Recieved))
+                    return string.Empty;
+                return item.Histories.Where(h => h.Recieved == false).OrderByDescending(h => h.Date).First().WhoTook.ShortName;
+            }
+        }
         public static IEnumerable<ItemType> GetTypes()
         {
             using (var db = new InventoryModel())
@@ -470,7 +532,7 @@ namespace IT_Inventory
                 return list;
             }
         }
-        public static IEnumerable<Office> GetOffices()
+        public static IEnumerable<Office> GetOffices(bool nonEmptyStorage = false)
         {
             using (var db = new InventoryModel())
             {
@@ -479,7 +541,9 @@ namespace IT_Inventory
                     //Zheleznovodskaya first
                     db.Offices.FirstOrDefault(o => o.Id == 1)
                 };
-                offices.AddRange(db.Offices.Where(o => o.Id != 1).OrderBy(o => o.Name));
+                offices.AddRange(nonEmptyStorage
+                    ? db.Offices.Where(o => o.Id != 1 && db.Items.Any(i => i.Location == o)).OrderBy(o => o.Name)
+                    : db.Offices.Where(o => o.Id != 1).OrderBy(o => o.Name));
                 return offices;
             }
         }
@@ -493,9 +557,11 @@ namespace IT_Inventory
                         select printer).OrderBy(p => p.Name).ToList();
             }
         }
-        public static IEnumerable<SelectListItem> SelectOffices()
+        public static IEnumerable<SelectListItem> SelectOffices(int exceptionId = 0)
         {
-            return new SelectList(GetOffices(), "Id", "Name");
+            return exceptionId == 0 
+                ? new SelectList(GetOffices(), "Id", "Name") 
+                : new SelectList(GetOffices().Where(o => o.Id != exceptionId), "Id", "Name");
         }
         public static IEnumerable<SelectListItem> SelectColors()
         {
@@ -537,6 +603,20 @@ namespace IT_Inventory
                 return new SelectList(people, "Id", "FullName");
             }
         }
+        public static IEnumerable<SelectListItem> SelectHardware(int category = 0)
+        {
+            using (var db = new InventoryModel())
+            {
+                var itemList = category == 0 
+                    ? db.Items.Where(i => i.Quantity > 0).OrderBy(i => i.Name).ToList() 
+                    : db.Items.Where(i => i.ItemType.Id == category && i.Quantity > 0).OrderBy(i => i.Name).ToList();
+                return new SelectList(itemList, "Id", "NameQuantity");
+            }
+        }
+        public static IEnumerable<SelectListItem> SelectHardwareTypes()
+        {
+            return new SelectList(GetTypes(), "Id", "Name");
+        }
         public static async Task<SupportMailViewModel> GetSupportMailViewModel(int requestId)
         {
             using (var db = new InventoryModel())
@@ -563,8 +643,8 @@ namespace IT_Inventory
                     SoftwareRemoved = request.SoftwareRemoved,
                     SoftwareRepaired = request.SoftwareRepaired,
                     SoftwareUpdated = request.SoftwareUpdated,
-                    HardwareInstalled = request.HardwareInstalled,
-                    HardwareReplaced = request.HardwareReplaced,
+                    HardwareInstalled = GetItemFullName(request.HardwareId),
+                    //HardwareReplaced = request.HardwareReplaced,
                     OtherActions = request.OtherActions,
                     Comment = request.Comment,
                     Mark = request.Mark,

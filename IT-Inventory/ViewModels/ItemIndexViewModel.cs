@@ -9,5 +9,7 @@ namespace IT_Inventory.ViewModels
         public Pager Pager { get; set; }
         public ItemType Type { get; set; }
         public bool IsUrgent { get; set; }
+        public string OfficeName { get; set; }
+        public int OfficeId { get; set; }
     }
 }

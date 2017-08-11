@@ -84,22 +84,6 @@
             </div>
 
             <div class="form-group">
-                @Html.LabelFor(model => model.HardwareInstalled, htmlAttributes: new { @class = "control-label col-md-2" })
-                <div class="col-md-10">
-                    @Html.EditorFor(model => model.HardwareInstalled, new { htmlAttributes = new { @class = "form-control" } })
-                    @Html.ValidationMessageFor(model => model.HardwareInstalled, "", new { @class = "text-danger" })
-                </div>
-            </div>
-
-            <div class="form-group">
-                @Html.LabelFor(model => model.HardwareReplaced, htmlAttributes: new { @class = "control-label col-md-2" })
-                <div class="col-md-10">
-                    @Html.EditorFor(model => model.HardwareReplaced, new { htmlAttributes = new { @class = "form-control" } })
-                    @Html.ValidationMessageFor(model => model.HardwareReplaced, "", new { @class = "text-danger" })
-                </div>
-            </div>
-
-            <div class="form-group">
                 @Html.LabelFor(model => model.OtherActions, htmlAttributes: new { @class = "control-label col-md-2" })
                 <div class="col-md-10">
                     @Html.EditorFor(model => model.OtherActions, new { htmlAttributes = new { @class = "form-control" } })

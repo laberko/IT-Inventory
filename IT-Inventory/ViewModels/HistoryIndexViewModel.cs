@@ -9,9 +9,10 @@ namespace IT_Inventory.ViewModels
         public Pager Pager { get; set; }
         public int MonthGrant { get; set; }
         public int MonthRecieve { get; set; }
-        public int? Id { get; set; }
-        public string PersonName { get; set; }
+        public int? ItemId { get; set; }
         public string ItemName { get; set; }
+        public int? PersonId { get; set; }
+        public string PersonName { get; set; }
         public bool GrantHistory { get; set; }
     }
 }

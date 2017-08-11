@@ -18,7 +18,7 @@
 <div id="table"></div>
 <script type="text/javascript">
 	$.ajax({
-				url: '@Url.Action("Index", "Support", new { state = ViewBag.State, searchUserId = ViewBag.SearchUserId, searchCompId = ViewBag.SearchCompId })',
+				url: '@Url.Action("Index", "Support", new { state = ViewBag.State, searchUserId = ViewBag.SearchUserId, searchCompId = ViewBag.SearchCompId, page = ViewBag.Page })',
 				contentType: 'application/html; charset=utf-8',
 				type: 'GET',
 				dataType: 'html',
@@ -27,7 +27,7 @@
 			.done(function(result) {
 				$('#table').html(result);
 				setInterval(function() {
-					$("#table").load('@Url.Action("Index", "Support", new { state = ViewBag.State, searchUserId = ViewBag.SearchUserId, searchCompId = ViewBag.SearchCompId })');
+					$("#table").load('@Url.Action("Index", "Support", new { state = ViewBag.State, searchUserId = ViewBag.SearchUserId, searchCompId = ViewBag.SearchCompId, page = ViewBag.Page })');
 				}, 30000);
 			});
 </script>

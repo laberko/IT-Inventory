@@ -41,11 +41,14 @@ namespace IT_Inventory.ViewModels
         [Display(Name = "Удалено ПО")]
         public string SoftwareRemoved { get; set; }
 
-        [Display(Name = "Установлено оборудование")]
-        public string HardwareInstalled { get; set; }
+        [Display(Name = "Выдано")]
+        public string HardwareId { get; set; }
 
-        [Display(Name = "Заменено оборудование")]
-        public string HardwareReplaced { get; set; }
+        [Display(Name = "Тип оборудования")]
+        public int? HardwareCategory { get; set; }
+        
+        [Display(Name = "Количество")]
+        public int HardwareQuantity { get; set; }
 
         [Display(Name = "Другие действия")]
         public string OtherActions { get; set; }

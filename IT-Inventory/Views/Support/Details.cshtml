@@ -131,23 +131,13 @@
                 </dd>
             }
 
-            if (!string.IsNullOrEmpty(Model.HardwareInstalled))
+            if (Model.HardwareId > 0)
             {
                 <dt style="white-space: nowrap;">
-                    @Html.DisplayNameFor(model => model.HardwareInstalled)
+                    @Html.DisplayNameFor(model => model.HardwareId)
                 </dt>
                 <dd>
-                    @Html.DisplayFor(model => model.HardwareInstalled)
-                </dd>
-            }
-
-            if (!string.IsNullOrEmpty(Model.HardwareReplaced))
-            {
-                <dt style="white-space: nowrap;">
-                    @Html.DisplayNameFor(model => model.HardwareReplaced)
-                </dt>
-                <dd>
-                    @Html.DisplayFor(model => model.HardwareReplaced)
+                    @(StaticData.GetItemFullName(Model.HardwareId) + " (" + Model.HardwareQuantity + " шт.)")
                 </dd>
             }
 

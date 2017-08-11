@@ -10,60 +10,80 @@
 @using (Html.BeginForm())
 {
     @Html.AntiForgeryToken()
-    
+
     <div class="form-horizontal">
-        <h4>@Model.From.FullName</h4>
-        <hr />
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @if (Model.From != null)
+        {
+            <h4>@Model.From.FullName</h4>
+        }
+        <hr/>
+        @Html.ValidationSummary(true, "", new {@class = "text-danger"})
         @Html.HiddenFor(model => model.Id)
 
         <div class="form-group">
-            @Html.LabelFor(model => model.SoftwareInstalled, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.SoftwareInstalled, htmlAttributes: new {@class = "control-label col-md-2"})
             <div class="col-md-10">
-                @Html.EditorFor(model => model.SoftwareInstalled, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.SoftwareInstalled, "", new { @class = "text-danger" })
+                @Html.EditorFor(model => model.SoftwareInstalled, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.ValidationMessageFor(model => model.SoftwareInstalled, "", new {@class = "text-danger"})
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.SoftwareRepaired, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.SoftwareRepaired, htmlAttributes: new {@class = "control-label col-md-2"})
             <div class="col-md-10">
-                @Html.EditorFor(model => model.SoftwareRepaired, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.SoftwareRepaired, "", new { @class = "text-danger" })
+                @Html.EditorFor(model => model.SoftwareRepaired, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.ValidationMessageFor(model => model.SoftwareRepaired, "", new {@class = "text-danger"})
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.SoftwareUpdated, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.SoftwareUpdated, htmlAttributes: new {@class = "control-label col-md-2"})
             <div class="col-md-10">
-                @Html.EditorFor(model => model.SoftwareUpdated, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.SoftwareUpdated, "", new { @class = "text-danger" })
+                @Html.EditorFor(model => model.SoftwareUpdated, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.ValidationMessageFor(model => model.SoftwareUpdated, "", new {@class = "text-danger"})
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.SoftwareRemoved, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.SoftwareRemoved, htmlAttributes: new {@class = "control-label col-md-2"})
             <div class="col-md-10">
-                @Html.EditorFor(model => model.SoftwareRemoved, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.SoftwareRemoved, "", new { @class = "text-danger" })
+                @Html.EditorFor(model => model.SoftwareRemoved, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.ValidationMessageFor(model => model.SoftwareRemoved, "", new {@class = "text-danger"})
+            </div>
+        </div>
+
+        <hr/>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.HardwareCategory, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-10">
+                @Html.DropDownListFor(model => model.HardwareCategory, StaticData.SelectHardwareTypes(), "", new { @class = "btn btn-default dropdown-toggle", id="category" })
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.HardwareInstalled, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.HardwareInstalled, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.HardwareInstalled, "", new { @class = "text-danger" })
+            @Html.LabelFor(model => model.HardwareId, htmlAttributes: new {@class = "control-label col-md-2"})
+            <div class="col-md-10" id="itemsDiv">
+                @Html.DropDownListFor(model => model.HardwareId, Model.HardwareCategory == null ? new List<SelectListItem>() : StaticData.SelectHardware((int)Model.HardwareCategory), "", new { @class = "btn btn-default dropdown-toggle", id = "HardwareId" })
             </div>
         </div>
 
+
+
+
+
+
         <div class="form-group">
-            @Html.LabelFor(model => model.HardwareReplaced, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.HardwareQuantity, htmlAttributes: new {@class = "control-label col-md-2"})
             <div class="col-md-10">
-                @Html.EditorFor(model => model.HardwareReplaced, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.HardwareReplaced, "", new { @class = "text-danger" })
+                @Html.EditorFor(model => model.HardwareQuantity, new {htmlAttributes = new {@class = "form-control"}})
+                @Html.ValidationMessageFor(model => model.HardwareQuantity, "", new {@class = "text-danger"})
             </div>
         </div>
+
+
+
+        <hr/>
 
         <div class="form-group">
             @Html.LabelFor(model => model.OtherActions, htmlAttributes: new {@class = "control-label col-md-2"})
@@ -74,7 +94,7 @@
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Comment, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.Comment, htmlAttributes: new {@class = "control-label col-md-2"})
             <div class="col-md-10">
                 @Html.TextAreaFor(model => model.Comment, 10, 55, null)
             </div>
@@ -82,7 +102,7 @@
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Завершить" class="btn btn-default" />
+                <input type="submit" value="Завершить" class="btn btn-default"/>
             </div>
         </div>
     </div>
@@ -91,6 +111,40 @@
 <div>
     @Html.ActionLink("Назад к списку", "Index")
 </div>
+
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $('#category').change(function () {
+            $.ajax({
+                type: "post",
+                url: "/Items/GetItemsOfCategory",
+                data: { category: $('#category').val() },
+                datatype: "json",
+                traditional: true,
+                success: function (data) {
+                    var item = "<select id='HardwareId' name='HardwareId' class='btn btn-default dropdown-toggle'>";
+                    item = item + '<option value=""></option>';
+                    for (var i = 0; i < data.length; i++)
+                    {
+                        item = item + '<option value=' + data[i].Value + '>' + data[i].Text + '</option>';
+                    }
+                    item = item + '</select>';
+
+
+
+                    $('#itemsDiv').html(item);
+                }
+            });
+        });
+    });
+</script>  
+
+
+
+
+
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")

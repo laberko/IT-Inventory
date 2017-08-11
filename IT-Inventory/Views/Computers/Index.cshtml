@@ -45,56 +45,100 @@
             @Html.DisplayNameFor(model => model.Computers.First().VideoAdapter)
         </th>
         <th>
+            @Html.DisplayNameFor(model => model.Computers.First().Monitor)
+        </th>
+        <th>
             @Html.DisplayNameFor(model => model.Computers.First().UpdateDate)
         </th>
 
         <th></th>
     </tr>
 
-@foreach (var item in Model.Computers) {
-    <tr>
-        <td white-space: nowrap>
-            @Html.DisplayFor(modelItem => item.ComputerName)
-        </td>
-        <td white-space: nowrap>
-            @Html.DisplayFor(modelItem => item.Owner)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Cpu)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Ram) ГБ
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Hdd)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.MotherBoard)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.VideoAdapter)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.UpdateDate)
-        </td>
-        <td>
-            @if (item.HasModifications)
-            {
-                @Html.ActionLink("Изменения", "Modifications", "Support", new { compId = item.Id }, null) @:|
-            }
-            @if (item.HasRequests)
-            {
-                @Html.ActionLink("Заявки", "Index", "Support", new {searchCompId = item.Id}, null) @:|
-            }
-            @Html.ActionLink("Редактировать", "Edit", new {id = item.Id}) |
-            @Html.ActionLink("Удалить", "Delete", new {id = item.Id}) |
-            @Html.ActionLink("История", "HistoryIndex", new { id = item.Id }) |
-            @Html.ActionLink("Фактически", "Details", new {id = item.Id}) |
-            @Html.ActionLink("Отчет", "AidaDetails", new {name = item.ComputerName})
-        </td>
-    </tr>
-}
+    @foreach (var item in Model.Computers)
+    {
+        <tr>
+            <td white-space: nowrap>
+                @Html.DisplayFor(modelItem => item.ComputerName)
+            </td>
+            <td white-space: nowrap>
+                @Html.DisplayFor(modelItem => item.Owner)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Cpu)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Ram) ГБ
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Hdd)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MotherBoard)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.VideoAdapter)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Monitor)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.UpdateDate)
+            </td>
+            <td white-space: nowrap align="right">
+                @if (item.HasModifications)
+                {
+                    @*@Html.ActionLink("Изменения", "Modifications", "Support", new {compId = item.Id}, null)
+                    @:|*@
+
+                    <a href='@Url.Action("Modifications", "Support", new { compId = item.Id })' style="text-decoration:none">
+                        <img src='@Url.Content("~/Content/icons/ic_speaker_notes_black_24dp_1x.png")' alt="История техподдержки" title="История техподдержки" />
+                    </a>
+                }
+
+                @if (item.HasRequests)
+                {
+                    @*@Html.ActionLink("Заявки", "Index", "Support", new {searchCompId = item.Id}, null)
+                    @:|*@
+
+                    <a href='@Url.Action("Index", "Support", new { searchCompId = item.Id })' style="text-decoration:none">
+                        <img src='@Url.Content("~/Content/icons/ic_announcement_black_24dp_1x.png")' alt="Заявки в техподдержку" title="Заявки в техподдержку" />
+                    </a>
+                }
+
+                @*@Html.ActionLink("Редактировать", "Edit", new {id = item.Id}) |*@
+                @*@Html.ActionLink("Удалить", "Delete", new {id = item.Id}) |*@
+                @*@Html.ActionLink("История", "HistoryIndex", new {id = item.Id}) |*@
+                @*@Html.ActionLink("Фактически", "Details", new {id = item.Id}) |*@
+                @*@Html.ActionLink("Отчет", "AidaDetails", new {name = item.ComputerName})*@
+
+                <a href='@Url.Action("HistoryIndex", new { id = item.Id })' style="text-decoration:none">
+                    <img src='@Url.Content("~/Content/icons/ic_history_black_24dp_1x.png")' alt="История зафиксированных изменений" title="История зафиксированных изменений" />
+                </a>
+
+                <a href='@Url.Action("Edit", new { id = item.Id })' style="text-decoration:none">
+                    <img src='@Url.Content("~/Content/icons/ic_edit_black_24dp_1x.png")' alt="Редактировать" title="Редактировать" />
+                </a>
+
+                <a href='@Url.Action("SyncConfig", new { id = item.Id })' style="text-decoration: none">
+                    <img src='@Url.Content("~/Content/icons/ic_compare_arrows_black_24dp_1x.png")' alt="Обновить запись" title="Обновить запись" />
+                </a>
+                
+                <a href='@Url.Action("Details", new { id = item.Id })' style="text-decoration: none">
+                    <img src='@Url.Content("~/Content/icons/ic_info_outline_black_24dp_1x.png")' alt="Фактическая конфигурация" title="Фактическая конфигурация"/>
+                </a>
+
+                <a href='@Url.Action("AidaDetails", new { name = item.ComputerName })' style="text-decoration:none">
+                    <img src='@Url.Content("~/Content/icons/ic_format_list_bulleted_black_24dp_1x.png")' alt="Подробный отчет о конфигурации" title="Подробный отчет о конфигурации" />
+                </a>
+
+                <a href='@Url.Action("Delete", new { id = item.Id })' style="text-decoration:none">
+                    <img src='@Url.Content("~/Content/icons/ic_delete_forever_black_24dp_1x.png")' alt="Удалить" title="Удалить" />
+                </a>
+            </td>
+        </tr>
+    }
 </table>
+
 <!-- pager -->
 @if (Model.Pager != null && Model.Pager.EndPage > 1)
 {
@@ -102,27 +146,27 @@
         @if (Model.Pager.CurrentPage > 1)
         {
             <li>
-                @Html.ActionLink("Первая", "Index", new { depCode = Model.DepCode, page = 1 })
+                @Html.ActionLink("Первая", "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, page = 1 })
             </li>
             <li>
-                @Html.ActionLink("Предыдущая", "Index", new { depCode = Model.DepCode, page = Model.Pager.CurrentPage - 1 })
+                @Html.ActionLink("Предыдущая", "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, page = Model.Pager.CurrentPage - 1 })
             </li>
         }
 
         @for (var pageNum = Model.Pager.StartPage; pageNum <= Model.Pager.EndPage; pageNum++)
         {
             <li class="@(pageNum == Model.Pager.CurrentPage ? "active" : "")">
-                @Html.ActionLink(pageNum.ToString(), "Index", new { depCode = Model.DepCode, page = pageNum })
+                @Html.ActionLink(pageNum.ToString(), "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, page = pageNum })
             </li>
         }
 
         @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
         {
             <li>
-                @Html.ActionLink("Следующая", "Index", new { depCode = Model.DepCode, page = Model.Pager.CurrentPage + 1 })
+                @Html.ActionLink("Следующая", "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, page = Model.Pager.CurrentPage + 1 })
             </li>
             <li>
-                @Html.ActionLink("Последняя", "Index", new { depCode = Model.DepCode, page = Model.Pager.TotalPages })
+                @Html.ActionLink("Последняя", "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, page = Model.Pager.TotalPages })
             </li>
         }
     </ul>

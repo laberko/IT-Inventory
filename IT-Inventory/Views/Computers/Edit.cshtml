@@ -65,6 +65,15 @@
         </div>
 
         <div class="form-group">
+            @Html.LabelFor(model => model.Monitor, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Monitor, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Monitor, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+
+        <div class="form-group">
             @Html.LabelFor(model => model.Software, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
                 @Html.TextAreaFor(model => model.SoftwareString, 20, 20, new { style = "width: 75%; max-width: 75%;" })

@@ -58,6 +58,15 @@
             @Html.DisplayFor(model => model.VideoAdapter)
         </dd>
 
+        <dt>
+            @Html.DisplayNameFor(model => model.Monitor)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Monitor)
+        </dd>
+
+
         @if (Model.InstalledSoftware != null && Model.InstalledSoftware.Length > 1)
         {
             <dt>
