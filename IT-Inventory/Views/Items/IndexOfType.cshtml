@@ -4,16 +4,24 @@
     ViewBag.Title = Model.Type.Name;
 }
 
-<h2>@ViewBag.Title</h2>
+<table width="100%">
+    <tr>
+        <td>
+            <h2>@ViewBag.Title</h2>
+        </td>
+        <td align="right">
+            <h2></h2>
+            @Html.ActionLink("Всё оборудование", "Index", null, new { @class = "btn btn-primary", href = "/Items/Index" })
+            @Html.ActionLink("Добавить " + Model.Type.Name.ToLower(), "Create", new { id = Model.Type.Id }, new { @class = "btn btn-success" })
 
-    @Html.ActionLink("Всё оборудование", "Index", null, new { @class = "btn btn-primary", href = "/Items/Index" })
-    @Html.ActionLink("Добавить " + Model.Type.Name.ToLower(), "Create", new { id = Model.Type.Id }, new { @class = "btn btn-success" })
-
-    @foreach (var office in StaticData.GetOffices(true))
-    {
-        @Html.ActionLink(office.Name, "Index", new { id = Model.Type.Id, officeId = office.Id }, office.Id == Model.OfficeId ? new { @class = "btn btn-warning" } : new { @class = "btn btn-default" })
-        <text>&nbsp;</text>
-    }
+            @foreach (var office in StaticData.GetOffices(true))
+            {
+                @Html.ActionLink(office.Name, "Index", new { id = Model.Type.Id, officeId = office.Id }, office.Id == Model.OfficeId ? new { @class = "btn btn-warning" } : new { @class = "btn btn-default" })
+                <text>&nbsp;</text>
+            }
+        </td>
+    </tr>
+</table>
 
 <ul class="pagination">
     @foreach (var type in StaticData.GetTypes())
@@ -84,14 +92,14 @@
                     if (attribute.Id == 2)
                     {
                         <td>
-                            <font color=@item.AttributeValues.FirstOrDefault(a => a.Attribute == attribute).Value>&#11044</font>
+                            <font size="4" color=@item.AttributeValues.FirstOrDefault(a => a.Attribute == attribute).Value>&#11044</font>
                         </td>
                     }
                     else if (attribute.Id == 10)
                     {
                         <td>
                             <a href='@Url.Action("GoToSite", new {url = @item.AttributeValues.FirstOrDefault(a => a.Attribute == attribute).Value})' style="text-decoration:none" target="_blank">
-                                <img src='@Url.Content("~/Content/icons/ic_language_black_24dp_1x.png")' alt="Описание" title="Описание" />
+                                <i class="material-icons md-48" style="color:black" title="Описание">language</i>
                             </a>
                         </td>
                     }
@@ -125,34 +133,35 @@
             @if (item.Quantity > 0)
             {
                 <a href='@Url.Action("Grant", new { id = item.Id })' style="text-decoration:none">
-                    <img src='@Url.Content("~/Content/icons/ic_remove_circle_outline_black_24dp_1x.png")' alt="Выдать" title="Выдать" />
+                    <i class="material-icons md-48" style="color:black" title="Выдать">remove_circle_outline</i>
                 </a>
             }
 
             <a href='@Url.Action("Recieve", new {id = item.Id})' style="text-decoration: none">
-                <img src='@Url.Content("~/Content/icons/ic_add_circle_outline_black_24dp_1x.png")' alt="Принять" title="Принять"/>
+                <i class="material-icons md-48" style="color:black" title="Принять">add_circle_outline</i>
             </a>
 
             <a href='@Url.Action("Index", "Histories", new {id = item.Id})' style="text-decoration: none">
-                <img src='@Url.Content("~/Content/icons/ic_history_black_24dp_1x.png")' alt="История" title="История"/>
+                <i class="material-icons md-48" style="color:black" title="История (приход/расход)">history</i>
             </a>
 
             @if (item.Quantity > 0)
                 {
                 <a href='@Url.Action("Transfer", new {id = item.Id})' style="text-decoration: none">
-                    <img src='@Url.Content("~/Content/icons/ic_compare_arrows_black_24dp_1x.png")' alt="Переместить на другой склад" title="Переместить на другой склад" />
+                    <i class="material-icons md-48" style="color:black" title="Переместить на другой склад">compare_arrows</i>
                 </a>
             }
 
             <a href='@Url.Action("Edit", new {id = item.Id})' style="text-decoration: none">
-                <img src='@Url.Content("~/Content/icons/ic_edit_black_24dp_1x.png")' alt="Редактировать" title="Редактировать"/>
+                <i class="material-icons md-48" style="color:black" title="Редактировать">edit</i>
             </a>
 
-            <a href='@Url.Action("Details", new { id = item.Id })' style="text-decoration:none">
-                <img src='@Url.Content("~/Content/icons/ic_info_outline_black_24dp_1x.png")' alt="Подробно" title="Подробно" />
+            <a href='@Url.Action("Details", new {id = item.Id})' style="text-decoration: none">
+                <i class="material-icons md-48" style="color: black" title="Подробно">info_outline</i>
             </a>
+
             <a href='@Url.Action("Delete", new { id = item.Id })' style="text-decoration:none">
-                <img src='@Url.Content("~/Content/icons/ic_delete_forever_black_24dp_1x.png")' alt="Удалить" title="Удалить" />
+                <i class="material-icons md-48" style="color:black" title="Удалить">delete_forever</i>
             </a>
         </td>
     </tr>

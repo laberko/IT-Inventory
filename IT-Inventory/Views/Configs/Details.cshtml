@@ -15,23 +15,6 @@
         <h2>@page.Title</h2>
         }
 
-        @*if (page.Item != null)
-        {
-            <table class="table">
-                @foreach (var item in page.Item)
-                {
-                    <tr>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Title)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Value)
-                        </td>
-                    </tr>
-                }
-             </table>
-         }*@
-
         if(page.Group != null)
         {
             foreach(var group in page.Group)

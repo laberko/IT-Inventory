@@ -21,7 +21,8 @@ namespace IT_Inventory.Models
         public DbSet<ComputerHistoryItem> ComputerHistory { get; set; }
         public DbSet<SentMail> SentMails { get; set; }
         public DbSet<SupportFile> SupportFiles { get; set; }
-
+        public DbSet<Weather> Weathers { get; set; }
+        public DbSet<Course> Courses { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -30,12 +31,6 @@ namespace IT_Inventory.Models
                 .HasMany(v => v.AttributeValues)
                 .WithOptional()
                 .WillCascadeOnDelete(true);
-            //modelBuilder
-            //    .Entity<Person>()
-            //    .HasMany(v => v.SupportRequests)
-            //    .WithOptional()
-            //    .WillCascadeOnDelete(true);
-
         }
     }
 }

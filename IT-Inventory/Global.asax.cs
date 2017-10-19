@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
@@ -15,16 +14,6 @@ namespace IT_Inventory
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
-
-
-            //const string logPath = "C:\\ProgramData\\Inventory\\";
-            //const string logFile = "Error.log";
-            //using (var outFile = new StreamWriter(Path.Combine(logPath, logFile), true))
-            //{
-            //    outFile.WriteLineAsync("Test!");
-            //}
-
-
 
             if (_worker == null)
             {

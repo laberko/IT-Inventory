@@ -4,7 +4,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Net;
-using System.Text;
 using System.Web.Mvc;
 using IT_Inventory.Models;
 using IT_Inventory.ViewModels;
@@ -17,10 +16,11 @@ namespace IT_Inventory.Controllers
         private readonly InventoryModel _db = new InventoryModel();
 
         // GET: Computers
-        // manually edited computers data
-        public ActionResult Index(string depCode, int? personId, string searchSoft = "", int page = 1)
+        // computers data
+        public ActionResult Index(string depCode, int? personId, string searchSoft = "", int page = 1, bool modified = false, bool notebooks = false)
         {
             List<Computer> dbComputers;
+            Pager pager = null;
             if (personId == null)
                 dbComputers = depCode == null 
                     ? _db.Computers.OrderBy(c => c.ComputerName).ToList() 
@@ -30,32 +30,48 @@ namespace IT_Inventory.Controllers
 
             if (searchSoft != "")
                 dbComputers = dbComputers.Where(c => c.Software.IndexOf(searchSoft, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+            if (modified)
+                dbComputers = dbComputers.Where(c => c.IsConfigChanged()).ToList();
+            if (notebooks)
+                dbComputers = dbComputers.Where(c => c.IsNotebook).ToList();
+            if (!modified)
+                pager = new Pager(dbComputers.Count, page, 8);
 
-            var pager = new Pager(dbComputers.Count, page, 8);
             var computers = dbComputers.Select(comp => new ComputerViewModel
             {
                 Id = comp.Id,
+                IsNotebook = comp.IsNotebook,
+                IsConfigChanged = comp.IsConfigChanged(),
                 ComputerName = comp.ComputerName,
-                Cpu = comp.CpuInvent,
-                Ram = comp.RamInvent,
-                Hdd = comp.HddInvent,
-                MotherBoard = comp.MotherBoardInvent,
-                VideoAdapter = comp.VideoAdapterInvent,
-                Monitor = comp.MonitorInvent,
+                Cpu = comp.Cpu,
+                Ram = comp.Ram,
+                RamFixed = comp.Ram != comp.RamFixed ? comp.RamFixed : 0,
+                Hdd = comp.Hdd,
+                HddFixed = comp.Hdd != comp.HddFixed ? comp.HddFixed : string.Empty,
+                MotherBoard = comp.MotherBoard,
+                MotherBoardFixed = comp.MotherBoard != comp.MotherBoardFixed ? comp.MotherBoardFixed : string.Empty,
+                VideoAdapter = comp.VideoAdapter,
+                VideoAdapterFixed = comp.VideoAdapter != comp.VideoAdapterFixed ? comp.VideoAdapterFixed : string.Empty,
+                Monitor = string.IsNullOrEmpty(comp.Monitor) ? "(нет)" : comp.Monitor,
+                MonitorFixed = comp.Monitor != comp.MonitorFixed ? comp.MonitorFixed : string.Empty,
                 Owner = comp.Owner == null ? string.Empty : comp.Owner.ShortName,
+                OwnerId = comp.Owner?.Id ?? 0,
                 HasRequests = comp.SupportRequests.Count > 0,
                 HasModifications = comp.HasModifications,
-                UpdateDate = comp.UpdateDate?.ToString("g") ?? string.Empty
-            });
+                LastReportDate = comp.UpdateDate?.ToString("g") ?? string.Empty
+            }).ToList();
 
             var computersViewModel = new ComputerIndexViewModel
             {
-                Computers = computers.Skip((pager.CurrentPage - 1) * pager.PageSize).Take(pager.PageSize),
+                Computers = pager == null ? computers : computers.Skip((pager.CurrentPage - 1) * pager.PageSize).Take(pager.PageSize),
                 Pager = pager,
                 DepCodes = _db.Computers.AsEnumerable().Select(c => c.ComputerName.Split('-').First()).Distinct().OrderBy(c => c).ToArray(),
                 DepCode = depCode,
                 SearchSoft = searchSoft == "" ? null : searchSoft,
-                PersonSearch = personId != null
+                PersonSearch = personId != null,
+                HasModifiedComputers = _db.Computers.FirstOrDefaultAsync(c => c.IsConfigChanged()) != null,
+                ModifiedComputers = modified,
+                Notebooks = notebooks
             };
             return View(computersViewModel);
         }
@@ -98,13 +114,14 @@ namespace IT_Inventory.Controllers
                     Ram = history.HistoryRam,
                     Hdd = history.HistoryHdd,
                     MotherBoard = history.HistoryMotherBoard,
-                    VideoAdapter = history.HistoryVideoAdapter,
+                    VideoAdapter = history.HistoryVideoAdapter.ShortVideoAdapterName(),
                     Monitor = history.HistoryMonitor,
                     UpdateDate = history.HistoryUpdated?.ToString("g") ?? string.Empty,
                     Changes = history.Changes,
                     OwnerName = history.HistoryComputerOwner == null ? string.Empty : history.HistoryComputerOwner.ShortName,
                     ComputerName = history.HistoryComputer == null ? string.Empty : history.HistoryComputer.ComputerName,
-                    CompId = history.HistoryComputer?.Id ?? 0
+                    CompId = history.HistoryComputer?.Id ?? 0,
+                    OldName = history.OldName
                 }).ToList();
 
             return View(historyModels);
@@ -122,6 +139,7 @@ namespace IT_Inventory.Controllers
             var compModel = new ComputerViewModel
             {
                 Id = comp.Id,
+                MbId = comp.MbId,
                 ComputerName = comp.ComputerName,
                 Cpu = comp.Cpu,
                 Ram = comp.Ram,
@@ -148,6 +166,7 @@ namespace IT_Inventory.Controllers
 
             var historyModel = new ComputerHistoryViewModel
             {
+                MbId = historyItem.HistoryComputer.MbId,
                 CompId = historyItem.HistoryComputer.Id,
                 ComputerName = historyItem.HistoryComputer.ComputerName,
                 UpdateDate = historyItem.HistoryUpdated?.ToString("D") ?? string.Empty,
@@ -161,7 +180,8 @@ namespace IT_Inventory.Controllers
                 Software = historyItem.HistorySoftware.Split(new[] { "[NEW_LINE]" }, StringSplitOptions.None),
                 Changes = historyItem.Changes,
                 InstalledSoftware = historyItem.SoftwareInstalled?.Split(new[] { "[NEW_LINE]" }, StringSplitOptions.None),
-                RemovedSoftware = historyItem.SoftwareRemoved?.Split(new[] { "[NEW_LINE]" }, StringSplitOptions.None)
+                RemovedSoftware = historyItem.SoftwareRemoved?.Split(new[] { "[NEW_LINE]" }, StringSplitOptions.None),
+                OldName = historyItem.OldName
             };
             return View(historyModel);
         }
@@ -176,75 +196,75 @@ namespace IT_Inventory.Controllers
 
         // GET: Computers/Edit/5
         // edit computer data
-        public async Task<ActionResult> Edit(int? id)
-        {
-            if (id == null)
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            var comp = await _db.Computers.FindAsync(id);
-            if (comp == null)
-                return HttpNotFound();
-            var compModel = new ComputerViewModel
-            {
-                Id = comp.Id,
-                ComputerName = comp.ComputerName,
-                OwnerId = comp.Owner?.Id ?? 0,
-                Cpu = comp.CpuInvent,
-                Ram = comp.RamInvent,
-                Hdd = comp.HddInvent,
-                MotherBoard = comp.MotherBoardInvent,
-                VideoAdapter = comp.VideoAdapterInvent,
-                Monitor = comp.MonitorInvent,
-                Software = comp.SoftwareInvent.Split(new[] { "[NEW_LINE]" }, StringSplitOptions.None)
-            };
-            return View(compModel);
-        }
+        //public async Task<ActionResult> Edit(int? id)
+        //{
+        //    if (id == null)
+        //        return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+        //    var comp = await _db.Computers.FindAsync(id);
+        //    if (comp == null)
+        //        return HttpNotFound();
+        //    var compModel = new ComputerViewModel
+        //    {
+        //        Id = comp.Id,
+        //        ComputerName = comp.ComputerName,
+        //        OwnerId = comp.Owner?.Id ?? 0,
+        //        Cpu = comp.CpuInvent,
+        //        Ram = comp.RamInvent,
+        //        Hdd = comp.HddInvent,
+        //        MotherBoard = comp.MotherBoardInvent,
+        //        VideoAdapter = comp.VideoAdapterInvent,
+        //        Monitor = comp.MonitorInvent,
+        //        Software = comp.SoftwareInvent.Split(new[] { "[NEW_LINE]" }, StringSplitOptions.None)
+        //    };
+        //    return View(compModel);
+        //}
 
         // POST: Computers/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit(ComputerViewModel compModel)
-        {
-            if (!ModelState.IsValid)
-                return View(compModel);
-            var comp = await _db.Computers.FindAsync(compModel.Id);
-            if (comp == null)
-                return HttpNotFound();
-            comp.Owner = await _db.Persons.FindAsync(compModel.OwnerId);
-            comp.CpuInvent = compModel.Cpu;
-            comp.RamInvent = compModel.Ram;
-            comp.HddInvent = compModel.Hdd;
-            comp.MotherBoardInvent = compModel.MotherBoard;
-            comp.VideoAdapterInvent = compModel.VideoAdapter;
-            comp.MonitorInvent = compModel.Monitor;
-            comp.UpdateDate = DateTime.Now;
-            var softString = new StringBuilder();
-            foreach (var item in compModel.Software)
-                softString.Append(item + "[NEW_LINE]");
-            comp.SoftwareInvent = softString.ToString();
-            _db.Entry(comp).State = EntityState.Modified;
-            await _db.SaveChangesAsync();
-            return RedirectToAction("Index");
-        }
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<ActionResult> Edit(ComputerViewModel compModel)
+        //{
+        //    if (!ModelState.IsValid)
+        //        return View(compModel);
+        //    var comp = await _db.Computers.FindAsync(compModel.Id);
+        //    if (comp == null)
+        //        return HttpNotFound();
+        //    comp.Owner = await _db.Persons.FindAsync(compModel.OwnerId);
+        //    comp.CpuInvent = compModel.Cpu;
+        //    comp.RamInvent = compModel.Ram;
+        //    comp.HddInvent = compModel.Hdd;
+        //    comp.MotherBoardInvent = compModel.MotherBoard;
+        //    comp.VideoAdapterInvent = compModel.VideoAdapter;
+        //    comp.MonitorInvent = compModel.Monitor;
+        //    comp.UpdateDate = DateTime.Now;
+        //    var softString = new StringBuilder();
+        //    foreach (var item in compModel.Software)
+        //        softString.Append(item + "[NEW_LINE]");
+        //    comp.SoftwareInvent = softString.ToString();
+        //    _db.Entry(comp).State = EntityState.Modified;
+        //    await _db.SaveChangesAsync();
+        //    return RedirectToAction("Index");
+        //}
 
-        public async Task<ActionResult> SyncConfig(int? id)
-        {
-            if (id == null)
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            var comp = await _db.Computers.FindAsync(id);
-            if (comp == null)
-                return HttpNotFound();
-            comp.UpdateDate = DateTime.Now;
-            comp.CpuInvent = comp.Cpu;
-            comp.RamInvent = comp.Ram;
-            comp.HddInvent = comp.Hdd;
-            comp.MotherBoardInvent = comp.MotherBoard;
-            comp.VideoAdapterInvent = comp.VideoAdapter;
-            comp.MonitorInvent = comp.Monitor;
-            comp.SoftwareInvent = comp.Software;
-            _db.Entry(comp).State = EntityState.Modified;
-            await _db.SaveChangesAsync();
-            return Redirect(Request.UrlReferrer.ToString());
-        }
+        //public async Task<ActionResult> SyncConfig(int? id)
+        //{
+        //    if (id == null)
+        //        return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+        //    var comp = await _db.Computers.FindAsync(id);
+        //    if (comp == null)
+        //        return HttpNotFound();
+        //    comp.UpdateDate = DateTime.Now;
+        //    comp.CpuInvent = comp.Cpu;
+        //    comp.RamInvent = comp.Ram;
+        //    comp.HddInvent = comp.Hdd;
+        //    comp.MotherBoardInvent = comp.MotherBoard;
+        //    comp.VideoAdapterInvent = comp.VideoAdapter;
+        //    comp.MonitorInvent = comp.Monitor;
+        //    comp.SoftwareInvent = comp.Software;
+        //    _db.Entry(comp).State = EntityState.Modified;
+        //    await _db.SaveChangesAsync();
+        //    return Redirect(Request.UrlReferrer.ToString());
+        //}
 
         // GET: Computers/Delete/5
         public async Task<ActionResult> Delete(int? id)

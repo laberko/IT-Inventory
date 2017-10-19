@@ -29,8 +29,12 @@
             @Html.DisplayFor(modelItem => item.IsNumber)
         </td>
         <td>
-            @Html.ActionLink("Редактировать", "Edit", new { id=item.Id }) |
-            @Html.ActionLink("Удалить", "Delete", new { id=item.Id })
+            <a href='@Url.Action("Edit", new { id = item.Id })' style="text-decoration: none">
+                <i class="material-icons md-48" style="color:black" title="Редактировать">edit</i>
+            </a>
+            <a href='@Url.Action("Delete", new { id = item.Id })' style="text-decoration:none">
+                <i class="material-icons md-48" style="color:black" title="Удалить">delete_forever</i>
+            </a>
         </td>
     </tr>
 }

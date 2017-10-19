@@ -19,7 +19,7 @@ namespace IT_Inventory
 {
     public static class StaticData
     {
-        public static void RefreshUsers()
+        public static async void RefreshUsers()
         {
             using (var db = new InventoryModel())
             {
@@ -36,6 +36,7 @@ namespace IT_Inventory
 
                 try
                 {
+                    var startTime = DateTime.Now;
                     var adUsers = new List<Person>();
                     var newUsers = new List<string>();
                     var log = new StringBuilder();
@@ -56,120 +57,252 @@ namespace IT_Inventory
                                 if (resultEntry.Properties.Contains("DisplayName") &&
                                     !resultEntry.Properties.Contains("st") &&
                                     resultEntry.Properties.Contains("department") &&
+                                    resultEntry.Properties.Contains("title") &&
                                     resultEntry.Properties.Contains("company"))
-                                    //add ituser for testing
-                                    //|| resultEntry.Properties.Contains("DisplayName") && (resultEntry.Properties["DisplayName"].Value.ToString() == "ituser"))
                                 {
-                                    Department dep = null;
-                                    if (resultEntry.Properties.Contains("company"))
+                                    //get the first department
+                                    var dep1Name = resultEntry.Properties["company"].Value.ToString();
+                                    var dep1 = db.Departments.FirstOrDefault(d => d.Name == dep1Name);
+                                    if (dep1 == null)
                                     {
-                                        var depName = resultEntry.Properties["company"].Value.ToString();
-                                        dep = db.Departments.FirstOrDefault(d => d.Name == depName);
-                                        if (dep == null)
+                                        var newDep = new Department
+                                        {
+                                            Name = dep1Name
+                                        };
+                                        db.Departments.Add(newDep);
+                                        dep1 = newDep;
+                                    }
+                                    //user has a second department
+                                    Department dep2 = null;
+                                    if (resultEntry.Properties.Contains("division"))
+                                    {
+                                        var dep2Name = resultEntry.Properties["division"].Value.ToString();
+                                        dep2 = db.Departments.FirstOrDefault(d => d.Name == dep2Name);
+                                        if (dep2 == null)
                                         {
                                             var newDep = new Department
                                             {
-                                                Name = depName
+                                                Name = dep2Name
                                             };
                                             db.Departments.Add(newDep);
-                                            dep = newDep;
+                                            dep2 = newDep;
                                         }
                                     }
-                                    adUsers.Add(new Person
-                                    {
+                                        //index in department
+                                        int depIndex;
+                                        DateTime birthday;
+                                        adUsers.Add(new Person
+                                        {
                                         FullName = resultEntry.Properties["DisplayName"].Value.ToString(),
                                         AccountName = resultEntry.Properties["sAMAccountName"].Value.ToString(),
-                                        Dep = dep,
-                                        Email = resultEntry.Properties.Contains("mail") 
-                                            ? resultEntry.Properties["mail"].Value.ToString() 
+                                        Email = resultEntry.Properties.Contains("mail")
+                                            ? resultEntry.Properties["mail"].Value.ToString()
                                             : string.Empty,
-                                        PhoneNumber = resultEntry.Properties.Contains("telephoneNumber") 
-                                            ? resultEntry.Properties["telephoneNumber"].Value.ToString() 
-                                            : string.Empty
-                                        //IsItUser = resultEntry.Properties["department"].Value.ToString() == "Департамент информационных технологий"
+                                        PhoneNumber = resultEntry.Properties.Contains("telephoneNumber")
+                                            ? resultEntry.Properties["telephoneNumber"].Value.ToString()
+                                            : string.Empty,
+                                        Position = resultEntry.Properties["title"].Value.ToString(),
+                                        Birthday = (resultEntry.Properties.Contains("description")
+                                                    && DateTime.TryParse(
+                                                        resultEntry.Properties["description"].Value.ToString(),
+                                                        out birthday))
+                                            ? birthday as DateTime?
+                                            : null,
+                                        CreationDate = resultEntry.Properties.Contains("whenCreated")
+                                            ? resultEntry.Properties["whenCreated"].Value as DateTime?
+                                            : null,
+                                        Dep = dep1,
+                                        //index in the first department
+                                        Dep1Index = (resultEntry.Properties.Contains("postalCode")
+                                                        && int.TryParse(
+                                                            resultEntry.Properties["postalCode"].Value.ToString(),
+                                                            out depIndex))
+                                            ? depIndex
+                                            : 0,
+                                        Dep2 = dep2,
+                                        //index in the second department (if not null)
+                                        Dep2Index = (dep2 != null
+                                                        && resultEntry.Properties.Contains("countryCode")
+                                                        && int.TryParse(
+                                                            resultEntry.Properties["countryCode"].Value.ToString(),
+                                                            out depIndex))
+                                            ? depIndex
+                                            : 0,
+                                        //user's group in department
+                                        Group = resultEntry.Properties["department"].Value.ToString(),
+                                        //picture in bytes
+                                        PhotoBytes = resultEntry.Properties.Contains("thumbnailPhoto")
+                                            ? (byte[])resultEntry.Properties["thumbnailPhoto"].Value
+                                            : null
                                     });
                                 }
                             }
                         }
                     }
+
                     //add non-existing users to db or replace changed fields
+                    var usersString = new StringBuilder();
                     foreach (var user in adUsers)
                     {
                         //find ad user in db
-                        var existingPerson = db.Persons.FirstOrDefault(p => p.AccountName == user.AccountName);
+                        var existingPerson = await db.Persons.FirstOrDefaultAsync(p => p.AccountName == user.AccountName);
                         var modified = false;
+                        //new user
                         if (existingPerson == null)
                         {
                             db.Persons.Add(user);
                             newUsers.Add(user.FullName);
                         }
-                        //full name changed
-                        else if (existingPerson.FullName != user.FullName)
+                        //user exists - check if something changed
+                        else
                         {
-                            existingPerson.FullName = user.FullName;
-                            modified = true;
+                            //full name changed
+                            if (existingPerson.FullName != user.FullName)
+                            {
+                                existingPerson.FullName = user.FullName;
+                                modified = true;
+                            }
+                            //"existing" status changed changed
+                            if (existingPerson.NonExisting != user.NonExisting)
+                            {
+                                existingPerson.NonExisting = user.NonExisting;
+                                modified = true;
+                            }
+                            //e-mail changed
+                            if (existingPerson.Email != user.Email)
+                            {
+                                existingPerson.Email = user.Email;
+                                modified = true;
+                            }
+                            //phone number changed
+                            if (existingPerson.PhoneNumber != user.PhoneNumber)
+                            {
+                                existingPerson.PhoneNumber = user.PhoneNumber;
+                                modified = true;
+                            }
+                            //position changed
+                            if (existingPerson.Position != user.Position)
+                            {
+                                existingPerson.Position = user.Position;
+                                modified = true;
+                            }
+                            //birthday changed
+                            if (existingPerson.Birthday != user.Birthday)
+                            {
+                                existingPerson.Birthday = user.Birthday;
+                                modified = true;
+                            }
+                            //creation date changed
+                            if (existingPerson.CreationDate != user.CreationDate)
+                            {
+                                existingPerson.CreationDate = user.CreationDate;
+                                modified = true;
+                            }
+                            //the first department changed
+                            if (existingPerson.Dep != user.Dep)
+                            {
+                                existingPerson.Dep = user.Dep;
+                                modified = true;
+                            }
+                            //the first department index changed
+                            if (existingPerson.Dep1Index != user.Dep1Index)
+                            {
+                                existingPerson.Dep1Index = user.Dep1Index;
+                                modified = true;
+                            }
+                            //the second department changed
+                            if (existingPerson.Dep2 != user.Dep2)
+                            {
+                                existingPerson.Dep2 = user.Dep2;
+                                modified = true;
+                            }
+                            //the second department index changed
+                            if (existingPerson.Dep2Index != user.Dep2Index)
+                            {
+                                existingPerson.Dep2Index = user.Dep2Index;
+                                modified = true;
+                            }
+                            //group changed
+                            if (existingPerson.Group != user.Group)
+                            {
+                                existingPerson.Group = user.Group;
+                                modified = true;
+                            }
+                            //picture changed
+                            if (existingPerson.PhotoBytes != user.PhotoBytes)
+                            {
+                                existingPerson.PhotoBytes = user.PhotoBytes;
+                                modified = true;
+                            }
                         }
-                        //e-mail changed
-                        else if (existingPerson.Email != user.Email)
-                        {
-                            existingPerson.Email = user.Email;
-                            modified = true;
-                        }
-                        //phone number changed
-                        else if (existingPerson.PhoneNumber != user.PhoneNumber)
-                        {
-                            existingPerson.PhoneNumber = user.PhoneNumber;
-                            modified = true;
-                        }
-                        //departmant changed
-                        else if (existingPerson.Dep != user.Dep)
-                        {
-                            existingPerson.Dep = user.Dep;
-                            modified = true;
-                        }
+
                         if (modified)
                             db.Entry(existingPerson).State = EntityState.Modified;
-                    }
-                    //remove non-existing users from db
-                    //var nonExistingIds = (from user in db.Persons.AsEnumerable()
-                    //                      where adUsers.FirstOrDefault(u => u.AccountName == user.AccountName) == null
-                    //                      select user.Id).ToArray();
-                    //if (nonExistingIds.Length > 0)
-                    //{
-                    //    log.AppendLine("Удалены пользователи:");
-                    //    foreach (var id in nonExistingIds)
-                    //    {
-                    //        var nonExistingUser = db.Persons.Find(id);
-                    //        if (nonExistingUser == null)
-                    //            continue;
-                    //        foreach (var history in db.Histories
-                    //            .Where(h => h.WhoTook.Id == nonExistingUser.Id || h.WhoGave.Id == nonExistingUser.Id).ToList())
-                    //            db.Histories.Remove(history);
-                    //        foreach (var comp in db.Computers.Where(c => c.Owner.Id == nonExistingUser.Id).ToList())
-                    //        {
-                    //            comp.Owner = null;
-                    //            db.Entry(comp).State = EntityState.Modified;
-                    //        }
-                    //        db.Persons.Remove(nonExistingUser);
-                    //        log.AppendLine(nonExistingUser.FullName);
-                    //    }
-                    //}
 
-                    db.SaveChanges();
+                        //add string to file
+                        if (user.Position != "-")
+                            usersString.AppendLine(user.AccountName + ";" +
+                                         user.FullName + ";" +
+                                         user.Email + ";" +
+                                         user.Dep.Name + ";" +
+                                         user.Position + ";" +
+                                         user.PhoneNumber + ";");
+                    }
+
+                    const string path = @"\\rivs.org\it\ConfigReporting\users.txt";
+                    File.WriteAllText(path, usersString.ToString());
+
+                    //non-existing users
+                    var nonExistingIds = (from user in db.Persons.AsEnumerable()
+                                          where !user.NonExisting && adUsers.FirstOrDefault(u => u.AccountName == user.AccountName) == null
+                                          select user.Id).ToArray();
+                    if (nonExistingIds.Length > 0)
+                    {
+                        log.AppendLine("Несуществующие (уволенные) пользователи:");
+                        foreach (var id in nonExistingIds)
+                        {
+                            var nonExistingUser = db.Persons.Find(id);
+                            if (nonExistingUser == null)
+                                continue;
+                            nonExistingUser.NonExisting = true;
+                            db.Entry(nonExistingUser).State = EntityState.Modified;
+                            log.AppendLine(nonExistingUser.FullName);
+                        }
+
+                        //log.AppendLine("Удалены пользователи:");
+                        //foreach (var id in nonExistingIds)
+                        //{
+                        //    var nonExistingUser = db.Persons.Find(id);
+                        //    if (nonExistingUser == null)
+                        //        continue;
+                        //    foreach (var history in db.Histories
+                        //        .Where(h => h.WhoTook.Id == nonExistingUser.Id || h.WhoGave.Id == nonExistingUser.Id).ToList())
+                        //        db.Histories.Remove(history);
+                        //    foreach (var comp in db.Computers.Where(c => c.Owner.Id == nonExistingUser.Id).ToList())
+                        //    {
+                        //        comp.Owner = null;
+                        //        db.Entry(comp).State = EntityState.Modified;
+                        //    }
+                        //    db.Persons.Remove(nonExistingUser);
+                        //    log.AppendLine(nonExistingUser.FullName);
+                        //}
+                    }
+
+                    await db.SaveChangesAsync();
                     if (newUsers.Count > 0)
                     {
                         log.AppendLine("Добавлены новые пользователи:");
                         foreach (var user in newUsers)
                             log.AppendLine(user);
                     }
-                    if (log.Length > 0)
-                        Task.Run(() => log.ToString().WriteToLogAsync(source:"Users"));
+                    if (log.Length == 0)
+                        return;
+                    log.AppendLine("Синхронизация пользователей заняла " + (int)((DateTime.Now - startTime).TotalSeconds) + " секунд.");
+                    await log.ToString().WriteToLogAsync(source: "Users");
                 }
                 catch (Exception ex)
                 {
                     ex.WriteToLogAsync(source: "Users");
-                    //var error = ex.Message + ex.InnerException?.Message + ex.InnerException?.InnerException?.Message;
-                    //Task.Run(() => error.WriteToLogAsync(EventLogEntryType.Error, "Users"));
                 }
             }
         }
@@ -179,6 +312,7 @@ namespace IT_Inventory
             {
                 try
                 {
+                    var startTime = DateTime.Now;
                     var logNonEmpty = false;
                     const string rootPath = @"\\rivs.org\it\ConfigReporting\ConfigReports";
                     var rootDir = new DirectoryInfo(rootPath);
@@ -191,6 +325,7 @@ namespace IT_Inventory
                             continue;
                         var comp = new Computer
                         {
+                            IsNotebook = report.IsNotebook,
                             ComputerName = report.CompName,
                             Cpu = report.Cpu,
                             Ram = report.Ram,
@@ -201,54 +336,85 @@ namespace IT_Inventory
                             Software = report.Software,
                             Owner = await db.Persons.FirstOrDefaultAsync(p => p.AccountName == report.UserName),
                             LastReportDate = report.ReportDate,
+                            UpdateDate = DateTime.Now,
                             MbId = report.MbId
                         };
                         realComputers.Add(comp);
                     }
 
-
+                    //searching for duplicate computers with the same ID
                     var duplicateMbIds = realComputers.GroupBy(c => c.MbId).Where(g => g.Count() > 1).Select(g => g.Key).ToArray();
                     if (duplicateMbIds.Length > 0)
                     {
                         log.AppendLine("Дублирующиеся записи компьютеров:");
-                        foreach (var id in duplicateMbIds)
+                        foreach (var duplicateId in duplicateMbIds)
                         {
-                            //take the newest comp from db
-                            var existingComp = await db.Computers.Where(c => c.MbId == id).OrderByDescending(c => c.LastReportDate).FirstOrDefaultAsync();
-                            if (existingComp == null)
+                            //take the newest duplicate comp from list which probably is the existing one
+                            var existingRealComp = realComputers.Where(c => c.MbId == duplicateId).OrderByDescending(c => c.LastReportDate).FirstOrDefault();
+                            if (existingRealComp == null)
                                 continue;
-                            //for each of the rest (nonexisting) computers
-                            foreach (var comp in realComputers.Where(c => c.MbId == id).OrderByDescending(c => c.LastReportDate).Skip(1).ToArray())
+
+                            //the rest (nonexisting) computers from list
+                            var nonExistingComputers = realComputers.Where(c => c.MbId == duplicateId && c.ComputerName != existingRealComp.ComputerName).ToArray();
+
+                            log.AppendLine(nonExistingComputers.Length == 1
+                                ? "  (вероятно, был переименован)"
+                                : "  (вероятно, не-уникальные ID материнских плат)");
+                            log.AppendLine(" - новейшая запись: " + existingRealComp.ComputerName + " (ID: " + existingRealComp.MbId + ")");
+                            logNonEmpty = true;
+
+                            //find the newest duplicate (existing) comp in db
+                            var existingCompInDb = await db.Computers.Where(c => c.MbId == duplicateId && c.ComputerName == existingRealComp.ComputerName).FirstOrDefaultAsync();
+                            //the newest was not found in db means it is the fresh copy of a renamed computer so we need to add it
+                            if (existingCompInDb == null)
                             {
-                                realComputers.Remove(comp);
-                                var reportDir = new DirectoryInfo(Path.Combine(rootPath, comp.ComputerName));
-                                reportDir.Delete(true);
-                                var nonExistingComp = await db.Computers.FirstOrDefaultAsync(c => c.ComputerName == comp.ComputerName);
-                                if (nonExistingComp == null)
+                                db.Computers.Add(existingRealComp);
+                                log.AppendLine(" - добавлен в базу: " + existingRealComp.ComputerName + " (ID: " + existingRealComp.MbId + ")");
+                                db.SaveChanges();
+                                existingCompInDb = await db.Computers.Where(c => c.MbId == duplicateId && c.ComputerName == existingRealComp.ComputerName).FirstOrDefaultAsync();
+                                if (existingCompInDb == null)
                                     continue;
-                                log.AppendLine(comp.ComputerName);
-                                logNonEmpty = true;
-                                //transfer support requests to the existing computer
-                                foreach (var request in nonExistingComp.SupportRequests.ToArray())
+                                if (nonExistingComputers.Length != 0)
                                 {
-                                    request.FromComputer = existingComp;
-                                    existingComp.SupportRequests.Add(request);
-                                    nonExistingComp.SupportRequests.Remove(request);
+                                    var oldName = nonExistingComputers.OrderByDescending(c => c.LastReportDate).First().ComputerName;
+                                    db.ComputerHistory.Add(existingCompInDb.NewHistory("Переименован", oldName: oldName));
+                                }
+                            }
+
+                            //for each of the rest (nonexisting) computers in list
+                            foreach (var oldComp in nonExistingComputers)
+                            {
+                                log.AppendLine(" - дубликат: " + oldComp.ComputerName + " (ID: " + oldComp.MbId + ")");
+                                //remove nonexisting computer from list
+                                realComputers.Remove(oldComp);
+                                //remove the folder containing report
+                                var reportDir = new DirectoryInfo(Path.Combine(rootPath, oldComp.ComputerName));
+                                reportDir.Delete(true);
+
+                                var nonExistingCompInDb = await db.Computers.FirstOrDefaultAsync(c => c.ComputerName == oldComp.ComputerName);
+                                if (nonExistingCompInDb == null)
+                                    continue;
+                                //transfer support requests to the existing computer
+                                foreach (var request in nonExistingCompInDb.SupportRequests.ToArray())
+                                {
+                                    request.FromComputer = existingCompInDb;
+                                    existingCompInDb.SupportRequests.Add(request);
+                                    nonExistingCompInDb.SupportRequests.Remove(request);
                                     db.Entry(request).State = EntityState.Modified;
                                 }
                                 //transfer history to the existing computer
-                                foreach (var history in db.ComputerHistory.Where(h => h.HistoryComputer.Id == nonExistingComp.Id && h.Changes != "Новый").ToArray())
+                                foreach (var history in db.ComputerHistory.Where(h => h.HistoryComputer.Id == nonExistingCompInDb.Id).ToArray())
                                 {
-                                    history.HistoryComputer = existingComp;
+                                    history.HistoryComputer = existingCompInDb;
                                     db.Entry(history).State = EntityState.Modified;
                                 }
+                                db.Entry(existingCompInDb).State = EntityState.Modified;
                             }
-                            db.Entry(existingComp).State = EntityState.Modified;
                         }
                         db.SaveChanges();
                     }
 
-                    //cleanup database from non-existing computers
+                    //cleanup database from non-existing computers (including duplicates)
                     var nonExistingCompNames = (from comp in db.Computers.AsEnumerable()
                                                 where realComputers.FirstOrDefault(c => c.ComputerName == comp.ComputerName) == null
                                                 select comp.ComputerName).ToArray();
@@ -262,10 +428,11 @@ namespace IT_Inventory
                                 continue;
                             foreach (var history in db.ComputerHistory.Where(h => h.HistoryComputer.ComputerName == compName).AsEnumerable())
                                 db.ComputerHistory.Remove(history);
-                            db.Computers.Remove(nonExisting);
-                            log.AppendLine(compName);
+                            log.AppendLine(" - " + compName + " (ID: " + nonExisting.MbId + ")");
                             logNonEmpty = true;
+                            db.Computers.Remove(nonExisting);
                         }
+                        db.SaveChanges();
                     }
 
                     //add new or edit existing computers in db
@@ -277,39 +444,57 @@ namespace IT_Inventory
                         //computer not found - add new
                         if (existingComputer == null)
                         {
-                            comp.FillInventedData();
+                            comp.FillFixedData();
                             db.Computers.Add(comp);
                             db.ComputerHistory.Add(comp.NewHistory());
-                            log.AppendLine(comp.ComputerName);
+                            log.AppendLine(" - новый: " + comp.ComputerName + " (ID: " + comp.MbId + ")");
                             logNonEmpty = true;
+                            continue;
                         }
                         //computer found but has changes in configuration
-                        else if (!existingComputer.Equals(comp))
+                        if (!existingComputer.Equals(comp))
                         {
-                            //fill missing data
-                            existingComputer.FillInventedData();
                             var changes = existingComputer.CopyConfig(comp);
                             //write changes to db only if we have some info about them
                             if (!string.IsNullOrEmpty(changes[0]) && changes[0].Length >= 4)
                             {
                                 db.ComputerHistory.Add(existingComputer.NewHistory(changes[0], changes[1], changes[2]));
-                                log.AppendLine(comp.ComputerName);
+                                log.AppendLine(" - изменен: " + comp.ComputerName + " (" + changes[0] + ")");
                                 logNonEmpty = true;
                             }
                             db.Entry(existingComputer).State = EntityState.Modified;
                         }
-                        //computer found but data is not full
-                        else if (existingComputer.FillInventedData())
-                        {
+                        //fixed computer data is not filled
+                        if (existingComputer.FillFixedData())
                             db.Entry(existingComputer).State = EntityState.Modified;
-                        }
-
-
-
                     }
                     db.SaveChanges();
-                    if (logNonEmpty)
-                        await log.ToString().WriteToLogAsync(source: "Computers");
+
+                    //find duplicate names in db
+                    var duplicateNamesInDb = db.Computers.AsEnumerable().GroupBy(c => c.ComputerName).Where(g => g.Count() > 1).Select(g => g.Key).ToArray();
+                    if (duplicateNamesInDb.Length > 0)
+                    {
+                        log.AppendLine("В базе обнаружены компьютеры с одинаковыми именами:");
+                        foreach (var name in duplicateNamesInDb)
+                        {
+                            var duplicates = db.Computers.AsEnumerable().Where(c => c.ComputerName == name).OrderByDescending(c => c.UpdateDate).ToList();
+                            foreach (var comp in duplicates)
+                                log.AppendLine(" - " + name + " (ID: " + comp.MbId + ")");
+                            foreach (var comp in duplicates.Skip(1))
+                            {
+                                var compInDb = await db.Computers.FindAsync(comp.Id);
+                                if (compInDb != null)
+                                    db.Computers.Remove(compInDb);
+                            }
+                        }
+                        logNonEmpty = true;
+                        db.SaveChanges();
+                    }
+
+                    if (!logNonEmpty)
+                        return;
+                    log.AppendLine("Синхронизация компьютеров заняла " + (int)((DateTime.Now - startTime).TotalSeconds) + " секунд.");
+                    await log.ToString().WriteToLogAsync(source: "Computers");
                 }
                 catch (Exception ex)
                 {
@@ -415,6 +600,8 @@ namespace IT_Inventory
             if (string.IsNullOrEmpty(fullName))
                 return string.Empty;
             var nameParts = (fullName.Split(' '));
+            if (nameParts[0] == "Комната")
+                return fullName;
             var shortName = string.Empty;
             for (var i = 0; i < nameParts.Length; i++)
             {
@@ -443,6 +630,17 @@ namespace IT_Inventory
                 return item.ItemType.Name + " " + item.Name;
             }
 
+        }
+        public static string ShortVideoAdapterName(this string adapterName)
+        {
+            return adapterName.Replace("(Microsoft Corporation - WDDM 1.0)", "")
+                .Replace("(Microsoft Corporation WDDM 1.1)", "")
+                .Replace("(Microsoft Corporation - WDDM)", "")
+                .Replace("(Microsoft Corporation - WDDM v1.1)","")
+                .Replace("( - WDDM 1.1)", "")
+                .Replace("( - WDDM 1.0)", "")
+                .Replace("Express Chipset Family", "")
+                .Replace("Series", "");
         }
         public static bool IsIp(string ipString)
         {
@@ -598,8 +796,8 @@ namespace IT_Inventory
             using (var db = new InventoryModel())
             {
                 var people = isInIt
-                    ? db.Persons.Where(p => p.Dep.Name == "Департамент информационных технологий").OrderBy(p => p.FullName).ToList()
-                    : db.Persons.OrderBy(p => p.FullName).ToList();
+                    ? db.Persons.Where(p => !p.NonExisting && p.Dep.Name == "Департамент информационных технологий").OrderBy(p => p.FullName).ToList()
+                    : db.Persons.Where(p => !p.NonExisting).OrderBy(p => p.FullName).ToList();
                 return new SelectList(people, "Id", "FullName");
             }
         }
@@ -644,7 +842,6 @@ namespace IT_Inventory
                     SoftwareRepaired = request.SoftwareRepaired,
                     SoftwareUpdated = request.SoftwareUpdated,
                     HardwareInstalled = GetItemFullName(request.HardwareId),
-                    //HardwareReplaced = request.HardwareReplaced,
                     OtherActions = request.OtherActions,
                     Comment = request.Comment,
                     Mark = request.Mark,

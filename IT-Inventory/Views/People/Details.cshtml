@@ -1,0 +1,85 @@
+﻿@model IT_Inventory.Models.Person
+
+@{
+    ViewBag.Title = Model.FullName;
+}
+
+<h2>@ViewBag.Title</h2>
+
+<div>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Dep)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DepartmentString)
+        </dd>
+
+        @if (Model.IsInGroup)
+        {
+            <dt>
+                @Html.DisplayNameFor(model => model.Group)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.Group)
+            </dd>
+        }
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Position)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Position)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Birthday)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.BirthdayString)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CreationDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CreationString)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Email)
+        </dt>
+
+        <dd>
+            <a href="mailto:@Model.Email">@Model.Email</a>
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.PhoneNumber)
+        </dt>
+
+        <dd>
+            <a href="tel:+@Model.PhoneNumber">@Model.PhoneNumber</a>
+        </dd>
+
+        @if (Model.PhotoBytes != null)
+        {
+            <dt>
+            </dt>
+            <dd>
+                <br/>
+                <img src="@Url.Action("GetPicture", new {id = Model.Id})" alt="@Model.FullName"/>
+            </dd>
+        }
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Назад к списку", null, null, null, new { href = Request.UrlReferrer })
+</p>

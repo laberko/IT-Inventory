@@ -46,7 +46,6 @@ namespace IT_Inventory.Controllers
                 if (comp != null)
                 {
                     requests = comp.SupportRequests
-                        .Where(r => r.Modifications != null)
                         .OrderBy(r => r.State)
                         .ThenByDescending(r => r.CreationTime).AsEnumerable();
                     model.SearchString = comp.ComputerName;
@@ -72,7 +71,6 @@ namespace IT_Inventory.Controllers
                     .OrderBy(r => r.State)
                     .ThenByDescending(r => r.CreationTime).AsEnumerable();
 
-
             List<SupportRequest> requestList;
             
             //non-IT user - show only user's requests
@@ -93,7 +91,7 @@ namespace IT_Inventory.Controllers
                     : requests.ToList();
             }
 
-            var pager = new Pager(requestList.Count, page, 10);
+            var pager = new Pager(requestList.Count, page);
             model.Pager = pager;
             model.SupportRequests = requestList.Skip((pager.CurrentPage - 1) * pager.PageSize).Take(pager.PageSize).ToList();
             return PartialView("IndexPartial", model);
@@ -299,8 +297,6 @@ namespace IT_Inventory.Controllers
             requestViewModel.SoftwareRemoved = supportRequest.SoftwareRemoved;
             requestViewModel.SoftwareRepaired = supportRequest.SoftwareRepaired;
             requestViewModel.SoftwareUpdated = supportRequest.SoftwareUpdated;
-            //requestViewModel.HardwareId = supportRequest.HardwareId;
-            //requestViewModel.HardwareReplaced = supportRequest.HardwareReplaced;
             requestViewModel.OtherActions = supportRequest.OtherActions;
             requestViewModel.ToId = supportRequest.To?.Id ?? 0;
             requestViewModel.From = supportRequest.From;
@@ -627,7 +623,6 @@ namespace IT_Inventory.Controllers
         {
             return File(filename, "image/jpeg");
         }
-
 
         protected override void Dispose(bool disposing)
         {

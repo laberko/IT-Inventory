@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.Net.Compilers.2.3.1\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.2.3.1\build\Microsoft.Net.Compilers.props')" />
-  <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.5\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.5\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
+  <Import Project="..\packages\Microsoft.Net.Compilers.2.4.0\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.2.4.0\build\Microsoft.Net.Compilers.props')" />
+  <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.7\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.7\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -73,8 +73,8 @@
       <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.5\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.7\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
@@ -168,50 +168,28 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201706061240474_50.cs" />
-    <Compile Include="Migrations\201706061240474_50.Designer.cs">
-      <DependentUpon>201706061240474_50.cs</DependentUpon>
+    <Compile Include="Migrations\201710171336573_70.cs" />
+    <Compile Include="Migrations\201710171336573_70.Designer.cs">
+      <DependentUpon>201710171336573_70.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201706061243146_51.cs" />
-    <Compile Include="Migrations\201706061243146_51.Designer.cs">
-      <DependentUpon>201706061243146_51.cs</DependentUpon>
+    <Compile Include="Migrations\201710171408289_71.cs" />
+    <Compile Include="Migrations\201710171408289_71.Designer.cs">
+      <DependentUpon>201710171408289_71.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201706091034342_52.cs" />
-    <Compile Include="Migrations\201706091034342_52.Designer.cs">
-      <DependentUpon>201706091034342_52.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201706091040411_53.cs" />
-    <Compile Include="Migrations\201706091040411_53.Designer.cs">
-      <DependentUpon>201706091040411_53.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201707201245028_54.cs" />
-    <Compile Include="Migrations\201707201245028_54.Designer.cs">
-      <DependentUpon>201707201245028_54.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201707211405304_55.cs" />
-    <Compile Include="Migrations\201707211405304_55.Designer.cs">
-      <DependentUpon>201707211405304_55.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201707281232045_56.cs" />
-    <Compile Include="Migrations\201707281232045_56.Designer.cs">
-      <DependentUpon>201707281232045_56.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201708080648072_57.cs" />
-    <Compile Include="Migrations\201708080648072_57.Designer.cs">
-      <DependentUpon>201708080648072_57.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201708110741314_58.cs" />
-    <Compile Include="Migrations\201708110741314_58.Designer.cs">
-      <DependentUpon>201708110741314_58.cs</DependentUpon>
+    <Compile Include="Migrations\201710171414364_72.cs" />
+    <Compile Include="Migrations\201710171414364_72.Designer.cs">
+      <DependentUpon>201710171414364_72.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ComputerHistoryItem.cs" />
     <Compile Include="Models\Computer.cs" />
+    <Compile Include="Models\Course.cs" />
     <Compile Include="Models\Item.cs" />
     <Compile Include="Models\Printer.cs" />
     <Compile Include="Models\SentMail.cs" />
     <Compile Include="Models\SupportFile.cs" />
     <Compile Include="Models\SupportRequest.cs" />
+    <Compile Include="Models\Weather.cs" />
     <Compile Include="Pager.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -239,6 +217,7 @@
     <Compile Include="Models\Person.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModels\PeopleIndexViewModel.cs" />
+    <Compile Include="ViewModels\PersonStruct.cs" />
     <Compile Include="ViewModels\PrinterViewModel.cs" />
     <Compile Include="Report.cs" />
     <Compile Include="ViewModels\ReportViewModel.cs" />
@@ -252,44 +231,7 @@
     <Content Include="Content\bootstrap-theme.min.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
-    <Content Include="Content\icons\ic_add_circle_outline_black_24dp_1x.png" />
-    <Content Include="Content\icons\ic_add_circle_outline_black_24dp_2x.png" />
-    <Content Include="Content\icons\ic_announcement_black_24dp_1x.png" />
-    <Content Include="Content\icons\ic_announcement_black_24dp_2x.png" />
-    <Content Include="Content\icons\ic_build_black_24dp_1x.png" />
-    <Content Include="Content\icons\ic_build_black_24dp_2x.png" />
-    <Content Include="Content\icons\ic_check_box_black_24dp_1x.png" />
-    <Content Include="Content\icons\ic_check_box_black_24dp_2x.png" />
-    <Content Include="Content\icons\ic_compare_arrows_black_24dp_1x.png" />
-    <Content Include="Content\icons\ic_compare_arrows_black_24dp_2x.png" />
-    <Content Include="Content\icons\ic_delete_forever_black_24dp_1x.png" />
-    <Content Include="Content\icons\ic_delete_forever_black_24dp_2x.png" />
-    <Content Include="Content\icons\ic_desktop_windows_black_24dp_1x.png" />
-    <Content Include="Content\icons\ic_desktop_windows_black_24dp_2x.png" />
-    <Content Include="Content\icons\ic_done_black_24dp_1x.png" />
-    <Content Include="Content\icons\ic_done_black_24dp_2x.png" />
-    <Content Include="Content\icons\ic_edit_black_24dp_1x.png" />
-    <Content Include="Content\icons\ic_edit_black_24dp_2x.png" />
-    <Content Include="Content\icons\ic_format_list_bulleted_black_24dp_1x.png" />
-    <Content Include="Content\icons\ic_format_list_bulleted_black_24dp_2x.png" />
-    <Content Include="Content\icons\ic_history_black_24dp_1x.png" />
-    <Content Include="Content\icons\ic_history_black_24dp_2x.png" />
-    <Content Include="Content\icons\ic_image_black_24dp_1x.png" />
-    <Content Include="Content\icons\ic_image_black_24dp_2x.png" />
-    <Content Include="Content\icons\ic_info_outline_black_24dp_1x.png" />
-    <Content Include="Content\icons\ic_info_outline_black_24dp_2x.png" />
-    <Content Include="Content\icons\ic_insert_drive_file_black_24dp_1x.png" />
-    <Content Include="Content\icons\ic_insert_drive_file_black_24dp_2x.png" />
-    <Content Include="Content\icons\ic_language_black_24dp_1x.png" />
-    <Content Include="Content\icons\ic_language_black_24dp_2x.png" />
-    <Content Include="Content\icons\ic_remove_circle_outline_black_24dp_1x.png" />
-    <Content Include="Content\icons\ic_remove_circle_outline_black_24dp_2x.png" />
-    <Content Include="Content\icons\ic_shopping_cart_black_24dp_1x.png" />
-    <Content Include="Content\icons\ic_shopping_cart_black_24dp_2x.png" />
-    <Content Include="Content\icons\ic_speaker_notes_black_24dp_1x.png" />
-    <Content Include="Content\icons\ic_speaker_notes_black_24dp_2x.png" />
-    <Content Include="Content\icons\ic_thumb_up_black_24dp_1x.png" />
-    <Content Include="Content\icons\ic_thumb_up_black_24dp_2x.png" />
+    <Content Include="Content\noPhoto.jpg" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
@@ -397,6 +339,7 @@
     <Content Include="Views\Email\UrgentItems.html.cshtml" />
     <Content Include="Views\Support\IndexPartial.cshtml" />
     <Content Include="Views\Items\Transfer.cshtml" />
+    <Content Include="Views\People\Details.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -405,32 +348,14 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201706061240474_50.resx">
-      <DependentUpon>201706061240474_50.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201710171336573_70.resx">
+      <DependentUpon>201710171336573_70.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201706061243146_51.resx">
-      <DependentUpon>201706061243146_51.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201710171408289_71.resx">
+      <DependentUpon>201710171408289_71.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201706091034342_52.resx">
-      <DependentUpon>201706091034342_52.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201706091040411_53.resx">
-      <DependentUpon>201706091040411_53.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201707201245028_54.resx">
-      <DependentUpon>201707201245028_54.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201707211405304_55.resx">
-      <DependentUpon>201707211405304_55.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201707281232045_56.resx">
-      <DependentUpon>201707281232045_56.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201708080648072_57.resx">
-      <DependentUpon>201708080648072_57.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201708110741314_58.resx">
-      <DependentUpon>201708110741314_58.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201710171414364_72.resx">
+      <DependentUpon>201710171414364_72.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
@@ -465,8 +390,8 @@
     <PropertyGroup>
       <ErrorText>Данный проект ссылается на пакеты NuGet, отсутствующие на этом компьютере. Используйте восстановление пакетов NuGet, чтобы скачать их.  Дополнительную информацию см. по адресу: http://go.microsoft.com/fwlink/?LinkID=322105. Отсутствует следующий файл: {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.5\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.5\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Net.Compilers.2.3.1\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Net.Compilers.2.3.1\build\Microsoft.Net.Compilers.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.7\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.7\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Net.Compilers.2.4.0\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Net.Compilers.2.4.0\build\Microsoft.Net.Compilers.props'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

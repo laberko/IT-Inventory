@@ -29,11 +29,6 @@ namespace IT_Inventory
             await Task.Run(() => StaticData.SendUrgentItemsMail());
         }
 
-        public void StopJobs()
-        {
-            _30Timer?.Stop();
-        }
-
         private async void On30MinTimer(object sender, ElapsedEventArgs e)
         {
             _log = "30 minute job started!";

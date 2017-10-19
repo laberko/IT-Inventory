@@ -33,5 +33,7 @@ namespace IT_Inventory.Models
         public string SoftwareInstalled { get; set; }
 
         public string SoftwareRemoved { get; set; }
+
+        public string OldName { get; set; }
     }
 }

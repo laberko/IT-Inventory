@@ -48,7 +48,7 @@ namespace IT_Inventory.Controllers
                     else
                         items = await _db.Items.Where(i => (i.Location == null || i.Location.Id == 1) && i.Quantity <= i.MinQuantity)
                                     .OrderBy(i => i.ItemType.Name).ThenBy(i => i.Name).ToListAsync();
-                    var pager = new Pager(items.Count, page, 15);
+                    var pager = new Pager(items.Count, page, 14);
                     model.Items = items.Skip((pager.CurrentPage - 1) * pager.PageSize).Take(pager.PageSize);
                     model.Pager = pager;
                     model.IsUrgent = urgent;
@@ -644,7 +644,7 @@ namespace IT_Inventory.Controllers
             var mailer = new EmailController();
             var mail = mailer.UrgentItemsWarning();
             mail.DeliverAsync();
-            var log = "Inventory warning mail sent to: " + mail.Mail.To;
+            var log = "Сообщение о нехватке оборудования на складе отправлено на адреса: " + mail.Mail.To;
             await log.WriteToLogAsync(EventLogEntryType.Information, "Mailer");
             return RedirectToAction("Index");
         }

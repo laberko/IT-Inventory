@@ -20,17 +20,17 @@
     }
 </ul>
 
-
 <table class="table">
     <tr>
+        <th></th>
         <th>
             @Html.DisplayNameFor(model => model.People.First().FullName)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.People.First().AccountName)
+            @Html.DisplayNameFor(model => model.People.First().Dep)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.People.First().Dep)
+            @Html.DisplayNameFor(model => model.People.First().Position)
         </th>
         <th>
             @Html.DisplayNameFor(model => model.People.First().Email)
@@ -46,61 +46,75 @@
     </tr>
     @foreach (var item in Model.People)
     {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FullName)
+        <tr style="@(item.NonExisting ? "color:LightGray" : "")"  >
+
+            <td style="vertical-align:middle;">
+                    <a href='@Url.Action("Details", new {id = item.Id})' style="text-decoration: none">
+                        <img height="64px" width="64px" src="@Url.Action("GetPicture", new {id = item.Id})" />
+                    </a>
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.AccountName)
+
+            <td style="vertical-align:middle;" white-space: nowrap>
+                @if (item.NonExisting)
+                {
+                    @Html.DisplayFor(modelItem => item.FullName)
+                    <text> (уволен)</text>
+                }
+                else
+                {
+                    @Html.DisplayFor(modelItem => item.FullName)
+                }
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Dep.Name)
+
+            <td style="vertical-align:middle;">
+                @Html.DisplayFor(modelItem => item.DepartmentString)
             </td>
-            <td>
+            <td style="vertical-align:middle;">
+                @Html.DisplayFor(modelItem => item.Position)
+            </td>
+            <td style="vertical-align:middle;">
                 <a href="mailto:@item.Email">@item.Email</a>
             </td>
-            <td>
+            <td style="vertical-align:middle;">
                 <a href="tel:+@item.PhoneNumber">@item.PhoneNumber</a>
             </td>
 
-            <td>
+            <td style="vertical-align:middle;">
+                <a href='@Url.Action("Details", new {id = item.Id})' style="text-decoration: none">
+                    <i class="material-icons md-48" style="color: black" title="Подробно">info_outline</i>
+                </a>
+            </td>
+
+            <td style="vertical-align:middle;">
                 @if (StaticData.CountComputers(item.Id) > 0)
                 {
-                    @*@Html.ActionLink("Компьютер(ы)", "Index", "Computers", new {personId = item.Id}, null)*@
-
-                    <a href='@Url.Action("Index", "Computers", new { personId = item.Id })' style="text-decoration:none">
-                        <img src='@Url.Content("~/Content/icons/ic_desktop_windows_black_24dp_1x.png")' alt="Компьютер(ы)" title="Компьютер(ы)" />
+                    <a href='@Url.Action("Index", "Computers", new {personId = item.Id})' style="text-decoration: none">
+                        <i class="material-icons md-48" style="color: black" title="Компьютер(ы)">desktop_windows</i>
                     </a>
                 }
             </td>
-            <td>
 
+            <td style="vertical-align:middle;">
                 @if (StaticData.CountUserGrant(item.Id) > 0)
                 {
-                    @*@Html.ActionLink("История (выдано)", "Index", "Histories", new {peopleId = item.Id}, null)*@
-
-                    <a href='@Url.Action("Index", "Histories", new { peopleId = item.Id })' style="text-decoration:none">
-                        <img src='@Url.Content("~/Content/icons/ic_shopping_cart_black_24dp_1x.png")' alt="Выданное оборудование (история)" title="Выданное оборудование (история)" />
+                    <a href='@Url.Action("Index", "Histories", new {peopleId = item.Id})' style="text-decoration: none">
+                        <i class="material-icons md-48" style="color: black" title="Выданное оборудование (история)">shopping_cart</i>
                     </a>
                 }
             </td>
-            <td>
 
+            <td style="vertical-align:middle;">
                 @if (item.SupportRequests.Count > 0)
                 {
-                    @*@Html.ActionLink("Заявки", "Index", "Support", new { searchUserId = item.Id }, null)*@
-
-                    <a href='@Url.Action("Index", "Support", new { searchUserId = item.Id })' style="text-decoration:none">
-                        <img src='@Url.Content("~/Content/icons/ic_announcement_black_24dp_1x.png")' alt="Заявки в техподдержку" title="Заявки в техподдержку" />
+                    <a href='@Url.Action("Index", "Support", new {searchUserId = item.Id})' style="text-decoration: none">
+                        <i class="material-icons md-48" style="color: black" title="Заявки в техподдержку">announcement</i>
                     </a>
                 }
             </td>
-            <td>
 
-                @*@Html.ActionLink("Удалить", "Delete", new {id = item.Id})*@
-
-                <a href='@Url.Action("Delete", new { id = item.Id })' style="text-decoration:none">
-                    <img src='@Url.Content("~/Content/icons/ic_delete_forever_black_24dp_1x.png")' alt="Удалить" title="Удалить" />
+            <td style="vertical-align:middle;">
+                <a href='@Url.Action("Delete", new {id = item.Id})' style="text-decoration: none">
+                    <i class="material-icons md-48" style="color:black" title="Удалить">delete_forever</i>
                 </a>
             </td>
         </tr>

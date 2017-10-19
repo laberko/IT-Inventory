@@ -54,9 +54,7 @@
                 @for (var i = 0; i < 6; i++)
                 {
                     <p>
-                        @Html.DropDownListFor(model => model.CartridgeIds[i], StaticData.SelectCartridges(),
-                       Model.CartridgeIds.Count < i ?  :  , 
-                       new { @class = "btn btn-default dropdown-toggle" })
+                        @Html.DropDownListFor(model => model.CartridgeIds[i], StaticData.SelectCartridges(), "",new { @class = "btn btn-default dropdown-toggle" })
                     </p>
                 }
             </div>

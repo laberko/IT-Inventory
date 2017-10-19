@@ -34,9 +34,11 @@
             @Html.DisplayFor(modelItem => item.ReportDateString)
         </td>
 
-
         <td>
-            @Html.ActionLink("Отчет", "Details", new { compName = item.CompName })
+            <a href='@Url.Action("Details", new { compName = item.CompName })' style="text-decoration: none">
+                <i class="material-icons md-48" style="color:black" title="Подробный отчет о конфигурации">format_list_bulleted</i>
+            </a>
+
         </td>
     </tr>
 }

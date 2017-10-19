@@ -120,7 +120,9 @@
             @if (Model.IsItUser)
             {
                 <td white-space: nowrap>
-                    @Html.ActionLink(item.From.ShortName, "Index", new {searchUserId = item.From.Id})
+                    @(!string.IsNullOrEmpty(Model.SearchString) 
+                        ? Html.ActionLink(item.From.ShortName, "Details", "People", new {id = item.From.Id}, null) 
+                        : Html.ActionLink(item.From.ShortName, "Index", new {searchUserId = item.From.Id}))
                 </td>
 
                 <td white-space: nowrap>
@@ -167,19 +169,19 @@
                     if (item.State == 0)
                     {
                         <a href='@Url.Action("AcceptRequest", "Support", new {id = item.Id})' style="text-decoration: none">
-                            <img src='@Url.Content("~/Content/icons/ic_check_box_black_24dp_1x.png")' alt="Принять" title="Принять"/>
+                            <i class="material-icons md-48" style="color:black" title="Принять">check_box</i>
                         </a>
                     }
                     else if (item.State == 1 && item.To != null && Model.UserId == item.To.Id)
                     {
                         <a href='@Url.Action("FinishRequest", "Support", new {id = item.Id})' style="text-decoration: none">
-                            <img src='@Url.Content("~/Content/icons/ic_done_black_24dp_1x.png")' alt="Завершить" title="Завершить"/>
+                            <i class="material-icons md-48" style="color:black" title="Завершить">done</i>
                         </a>
                     }
                 }
 
                 <a href='@Url.Action("Details", "Support", new {id = item.Id})' style="text-decoration: none">
-                    <img src='@Url.Content("~/Content/icons/ic_info_outline_black_24dp_1x.png")' alt="Подробно" title="Подробно"/>
+                    <i class="material-icons md-48" style="color:black" title="Подробно">info_outline</i>
                 </a>
 
                 @if (item.File != null)
@@ -187,13 +189,13 @@
                     if (item.File.IsImage)
                     {
                         <a href='@Url.Action("DownloadImage", "Support", new {filename = item.File.Path})' style="text-decoration: none">
-                            <img src='@Url.Content("~/Content/icons/ic_image_black_24dp_1x.png")' alt="Изображение" title="Изображение"/>
+                            <i class="material-icons md-48" style="color:black" title="Изображение">image</i>
                         </a>
                     }
                     else
                     {
                         <a href='@Url.Action("DownloadFile", "Support", new {filename = item.File.Path})' style="text-decoration: none">
-                            <img src='@Url.Content("~/Content/icons/ic_insert_drive_file_black_24dp_1x.png")' alt="Файл" title="Файл"/>
+                            <i class="material-icons md-48" style="color:black" title="Файл">insert_drive_file</i>
                         </a>
                     }
                 }
@@ -201,20 +203,20 @@
                 @if (Model.IsItUser || item.State != 2)
                 {
                     <a href='@Url.Action("Edit", "Support", new {id = item.Id})' style="text-decoration: none">
-                        <img src='@Url.Content("~/Content/icons/ic_edit_black_24dp_1x.png")' alt="Редактировать" title="Редактировать"/>
+                        <i class="material-icons md-48" style="color:black" title="Редактировать">edit</i>
                     </a>
                 }
                 else
                 {
                     <a href='@Url.Action("Edit", "Support", new {id = item.Id})' style="text-decoration: none">
-                        <img src='@Url.Content("~/Content/icons/ic_thumb_up_black_24dp_1x.png")' alt="Оценить" title="Оценить"/>
+                        <i class="material-icons md-48" style="color:black" title="Оценить">thumb_up</i>
                     </a>
                 }
 
                 @if (Model.IsItUser)
                 {
                     <a href='@Url.Action("Delete", "Support", new {id = item.Id})' style="text-decoration: none">
-                        <img src='@Url.Content("~/Content/icons/ic_delete_forever_black_24dp_1x.png")' alt="Удалить" title="Удалить"/>
+                        <i class="material-icons md-48" style="color:black" title="Удалить">delete_forever</i>
                     </a>
                 }
             </td>

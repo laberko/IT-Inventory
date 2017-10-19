@@ -10,6 +10,12 @@ namespace IT_Inventory.ViewModels
         [Display(Name = "Имя компьютера")]
         public string ComputerName { get; set; }
 
+        [Display(Name = "Предыдущее имя")]
+        public string OldName { get; set; }
+
+        [Display(Name = "ID компьютера")]
+        public string MbId { get; set; }
+
         [Display(Name = "Владелец")]
         public string OwnerName { get; set; }
 

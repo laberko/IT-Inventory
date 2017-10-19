@@ -5,7 +5,13 @@
 }
 
 <h2>@ViewBag.Title</h2>
-<h3>Внесенные изменения: @Model.Changes</h3>
+<h4>ID компьютера: @Model.MbId</h4>
+<h3>Внесенные изменения: @Model.Changes
+    @if (!string.IsNullOrEmpty(Model.OldName))
+    {
+        <text> (был @Model.OldName)</text>
+    }
+</h3>
 
 <div>
     <hr />

@@ -1,7 +1,7 @@
 ﻿@model IT_Inventory.ViewModels.ComputerViewModel
 
 @{
-    ViewBag.Title = "Фактические данные о компьютере " + Model.ComputerName;
+    ViewBag.Title = "Конфигурация компьютера " + Model.ComputerName;
 }
 
 <h2>@ViewBag.Title</h2>
@@ -15,6 +15,14 @@
 
         <dd>
             @Html.DisplayFor(model => model.Owner)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MbId)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MbId)
         </dd>
 
         <dt>

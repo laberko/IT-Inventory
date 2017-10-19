@@ -1,173 +1,269 @@
 ﻿@model IT_Inventory.ViewModels.ComputerIndexViewModel
 
-@{
+@if (Model.ModifiedComputers)
+{
+    ViewBag.Title = "Компьютеры с изменениями конфигураций";
+}
+else if(Model.Notebooks)
+{
+    ViewBag.Title = "Ноутбуки";
+}
+else
+{
     ViewBag.Title = "Компьютеры";
 }
 
-<h2>@ViewBag.Title</h2>
+<table width="100%">
+    <tr>
+        <td>
+            <h2>@ViewBag.Title</h2>
+        </td>
+        <td align="right">
+            <h2></h2>
+            @if (Model.PersonSearch == false)
+            {
+                if (Model.Notebooks)
+                {
+                    @Html.ActionLink("Все компьютеры", "Index", string.IsNullOrEmpty(Model.DepCode) ? null : new { depCode = Model.DepCode }, new { @class = "btn btn-primary" })
+                }
+                else if (!string.IsNullOrEmpty(Model.DepCode))
+                {
+                    @Html.ActionLink("Ноутбуки", "Index", new { depCode = Model.DepCode, notebooks = true }, new { @class = "btn btn-primary" })
+                }
+                else if (!Model.ModifiedComputers)
+                {
+                    @Html.ActionLink("Ноутбуки", "Index", new {notebooks = true}, new {@class = "btn btn-primary"})
+                }
+                else
+                {
+                    @Html.ActionLink("Все компьютеры", "Index", null, new { @class = "btn btn-primary" })
+                }
 
-@if (Model.PersonSearch == false)
+                <text>&nbsp;</text>@Html.ActionLink("История изменений", "HistoryIndex", new { days = 7 }, new { @class = "btn btn-success" })
+
+                if (Model.HasModifiedComputers && !Model.ModifiedComputers)
+                {
+                    <text>&nbsp;</text>@Html.ActionLink("Изменения конфигураций", "Index", new { modified = true }, new { @class = "btn btn-warning" })
+                }
+            }
+        </td>
+    </tr>
+</table>
+
+@if (!Model.ModifiedComputers)
 {
     <ul class="pagination">
-        <li>
-            @Html.ActionLink("Изменения (7 дней)", "HistoryIndex", new { days = 7 })
-        </li>
-            @foreach (var code in Model.DepCodes)
-            {
+        @foreach (var code in Model.DepCodes)
+        {
             <li class="@(Model.DepCode == code ? "active" : "")">
-                @Html.ActionLink(code, "Index", new {depCode = code})
+                @Html.ActionLink(code, "Index", new { depCode = code, notebooks = Model.Notebooks })
             </li>
-            }
+        }
     </ul>
+}
+else
+{
+    <p></p>
 }
 
 <table class="table">
-    <tr>
-        <th white-space: nowrap>
-            @Html.DisplayNameFor(model => model.Computers.First().ComputerName)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Computers.First().Owner)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Computers.First().Cpu)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Computers.First().Ram)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Computers.First().Hdd)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Computers.First().MotherBoard)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Computers.First().VideoAdapter)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Computers.First().Monitor)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Computers.First().UpdateDate)
-        </th>
-
-        <th></th>
-    </tr>
-
-    @foreach (var item in Model.Computers)
-    {
         <tr>
-            <td white-space: nowrap>
-                @Html.DisplayFor(modelItem => item.ComputerName)
-            </td>
-            <td white-space: nowrap>
-                @Html.DisplayFor(modelItem => item.Owner)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Cpu)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Ram) ГБ
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Hdd)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.MotherBoard)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.VideoAdapter)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Monitor)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UpdateDate)
-            </td>
-            <td white-space: nowrap align="right">
-                @if (item.HasModifications)
-                {
-                    @*@Html.ActionLink("Изменения", "Modifications", "Support", new {compId = item.Id}, null)
-                    @:|*@
+            <th white-space: nowrap>
+                @Html.DisplayNameFor(model => model.Computers.First().ComputerName)
+            </th>
+            <th colspan="2">
+                @Html.DisplayNameFor(model => model.Computers.First().Owner)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Computers.First().LastReportDate)
+            </th>
+            <th white-space: nowrap>
+                @Html.DisplayNameFor(model => model.Computers.First().MotherBoard)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Computers.First().Cpu)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Computers.First().Ram)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Computers.First().Hdd)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Computers.First().VideoAdapter)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Computers.First().Monitor)
+            </th>
 
-                    <a href='@Url.Action("Modifications", "Support", new { compId = item.Id })' style="text-decoration:none">
-                        <img src='@Url.Content("~/Content/icons/ic_speaker_notes_black_24dp_1x.png")' alt="История техподдержки" title="История техподдержки" />
-                    </a>
-                }
-
-                @if (item.HasRequests)
-                {
-                    @*@Html.ActionLink("Заявки", "Index", "Support", new {searchCompId = item.Id}, null)
-                    @:|*@
-
-                    <a href='@Url.Action("Index", "Support", new { searchCompId = item.Id })' style="text-decoration:none">
-                        <img src='@Url.Content("~/Content/icons/ic_announcement_black_24dp_1x.png")' alt="Заявки в техподдержку" title="Заявки в техподдержку" />
-                    </a>
-                }
-
-                @*@Html.ActionLink("Редактировать", "Edit", new {id = item.Id}) |*@
-                @*@Html.ActionLink("Удалить", "Delete", new {id = item.Id}) |*@
-                @*@Html.ActionLink("История", "HistoryIndex", new {id = item.Id}) |*@
-                @*@Html.ActionLink("Фактически", "Details", new {id = item.Id}) |*@
-                @*@Html.ActionLink("Отчет", "AidaDetails", new {name = item.ComputerName})*@
-
-                <a href='@Url.Action("HistoryIndex", new { id = item.Id })' style="text-decoration:none">
-                    <img src='@Url.Content("~/Content/icons/ic_history_black_24dp_1x.png")' alt="История зафиксированных изменений" title="История зафиксированных изменений" />
-                </a>
-
-                <a href='@Url.Action("Edit", new { id = item.Id })' style="text-decoration:none">
-                    <img src='@Url.Content("~/Content/icons/ic_edit_black_24dp_1x.png")' alt="Редактировать" title="Редактировать" />
-                </a>
-
-                <a href='@Url.Action("SyncConfig", new { id = item.Id })' style="text-decoration: none">
-                    <img src='@Url.Content("~/Content/icons/ic_compare_arrows_black_24dp_1x.png")' alt="Обновить запись" title="Обновить запись" />
-                </a>
-                
-                <a href='@Url.Action("Details", new { id = item.Id })' style="text-decoration: none">
-                    <img src='@Url.Content("~/Content/icons/ic_info_outline_black_24dp_1x.png")' alt="Фактическая конфигурация" title="Фактическая конфигурация"/>
-                </a>
-
-                <a href='@Url.Action("AidaDetails", new { name = item.ComputerName })' style="text-decoration:none">
-                    <img src='@Url.Content("~/Content/icons/ic_format_list_bulleted_black_24dp_1x.png")' alt="Подробный отчет о конфигурации" title="Подробный отчет о конфигурации" />
-                </a>
-
-                <a href='@Url.Action("Delete", new { id = item.Id })' style="text-decoration:none">
-                    <img src='@Url.Content("~/Content/icons/ic_delete_forever_black_24dp_1x.png")' alt="Удалить" title="Удалить" />
-                </a>
-            </td>
+            <th></th>
         </tr>
+
+        @foreach (var item in Model.Computers)
+        {
+            <tr style="@(!Model.ModifiedComputers && item.IsConfigChanged ? "color:red" : "")">
+                <td white-space: nowrap>
+                    @Html.DisplayFor(modelItem => item.ComputerName)
+                    @if (!Model.Notebooks && item.IsNotebook)
+                {
+                        <br />
+                        <text>(ноутбук)</text>
+                    }
+                </td>
+                <td>
+                    <a href='@Url.Action("Details", "People", new { id = item.OwnerId })' style="text-decoration: none">
+                        <img height="64px" width="64px" src="@Url.Action("GetPicture", "People", new { id = item.OwnerId })" />
+                    </a>
+                </td>
+                <td white-space: nowrap>
+                    @Html.DisplayFor(modelItem => item.Owner)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.LastReportDate)
+                </td>
+                @if (item.IsConfigChanged)
+                {
+                    <td>
+                        @Html.DisplayFor(modelItem => item.MotherBoard.Split('(')[0])
+                        @if (!string.IsNullOrEmpty(item.MotherBoardFixed))
+                        {
+                            <b>
+                                <br />
+                                Была:<br />@Html.DisplayFor(modelItem => item.MotherBoardFixed.Split('(')[0])
+                            </b>
+                        }
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Cpu)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Ram) ГБ
+                        @if (item.RamFixed != 0)
+                        {
+                            <b>
+                                <br />
+                                Было:<br />@Html.DisplayFor(modelItem => item.RamFixed) ГБ
+                            </b>
+                        }
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Hdd)
+                        @if (!string.IsNullOrEmpty(item.HddFixed))
+                        {
+                            <b>
+                                <br />
+                                Был:<br />@Html.DisplayFor(modelItem => item.HddFixed)
+                            </b>
+                        }
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.VideoAdapter)
+                        @if (!string.IsNullOrEmpty(item.VideoAdapterFixed))
+                        {
+                            <b>
+                                <br />
+                                Была:<br />@Html.DisplayFor(modelItem => item.VideoAdapterFixed)
+                            </b>
+                        }
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Monitor)
+                        @if (!string.IsNullOrEmpty(item.MonitorFixed))
+                        {
+                            <b>
+                                <br />
+                                Был:<br />@Html.DisplayFor(modelItem => item.MonitorFixed)
+                            </b>
+                        }
+                    </td>
+                }
+                else
+                {
+                    <td>
+                        @Html.DisplayFor(modelItem => item.MotherBoard.Split('(')[0])
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Cpu)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Ram) ГБ
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Hdd)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.VideoAdapter)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Monitor)
+                    </td>
+                }
+
+                <td white-space: nowrap align="right">
+                    @if (item.HasModifications)
+                    {
+                        <a href='@Url.Action("Modifications", "Support", new { compId = item.Id })' style="text-decoration:none">
+                            <i class="material-icons md-48" style="color:black" title="История техподдержки">speaker_notes</i>
+                        </a>
+                    }
+
+                    @if (item.HasRequests)
+                    {
+                        <a href='@Url.Action("Index", "Support", new { searchCompId = item.Id })' style="text-decoration:none">
+                            <i class="material-icons md-48" style="color:black" title="Заявки в техподдержку">announcement</i>
+                        </a>
+                    }
+
+                    <a href='@Url.Action("HistoryIndex", new { id = item.Id })' style="text-decoration:none">
+                        <i class="material-icons md-48" style="color:black" title="История зафиксированных изменений">history</i>
+                    </a>
+
+                    <a href='@Url.Action("Details", new { id = item.Id })' style="text-decoration: none">
+                        <i class="material-icons md-48" style="color:black" title="Конфигурация">settings</i>
+                    </a>
+
+                    <a href='@Url.Action("AidaDetails", new { name = item.ComputerName })' style="text-decoration:none">
+                        <i class="material-icons md-48" style="color:black" title="Подробный отчет о конфигурации">format_list_bulleted</i>
+
+                    </a>
+
+                    <a href='@Url.Action("Delete", new { id = item.Id })' style="text-decoration:none">
+                        <i class="material-icons md-48" style="color:black" title="Удалить">delete_forever</i>
+                    </a>
+                </td>
+            </tr>
+        }
+    </table>
+
+    <!-- pager -->
+    @if (Model.Pager != null && Model.Pager.EndPage > 1)
+    {
+        <ul class="pagination">
+            @if (Model.Pager.CurrentPage > 1)
+            {
+                <li>
+                    @Html.ActionLink("Первая", "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, page = 1, notebooks = Model.Notebooks })
+                </li>
+                <li>
+                    @Html.ActionLink("Предыдущая", "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, page = Model.Pager.CurrentPage - 1, notebooks = Model.Notebooks })
+                </li>
+            }
+
+            @for (var pageNum = Model.Pager.StartPage; pageNum <= Model.Pager.EndPage; pageNum++)
+            {
+                <li class="@(pageNum == Model.Pager.CurrentPage ? "active" : "")">
+                    @Html.ActionLink(pageNum.ToString(), "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, page = pageNum, notebooks = Model.Notebooks })
+                </li>
+            }
+
+            @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
+            {
+                <li>
+                    @Html.ActionLink("Следующая", "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, page = Model.Pager.CurrentPage + 1, notebooks = Model.Notebooks })
+                </li>
+                <li>
+                    @Html.ActionLink("Последняя", "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, page = Model.Pager.TotalPages, notebooks = Model.Notebooks })
+                </li>
+            }
+        </ul>
     }
-</table>
-
-<!-- pager -->
-@if (Model.Pager != null && Model.Pager.EndPage > 1)
-{
-    <ul class="pagination">
-        @if (Model.Pager.CurrentPage > 1)
-        {
-            <li>
-                @Html.ActionLink("Первая", "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, page = 1 })
-            </li>
-            <li>
-                @Html.ActionLink("Предыдущая", "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, page = Model.Pager.CurrentPage - 1 })
-            </li>
-        }
-
-        @for (var pageNum = Model.Pager.StartPage; pageNum <= Model.Pager.EndPage; pageNum++)
-        {
-            <li class="@(pageNum == Model.Pager.CurrentPage ? "active" : "")">
-                @Html.ActionLink(pageNum.ToString(), "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, page = pageNum })
-            </li>
-        }
-
-        @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
-        {
-            <li>
-                @Html.ActionLink("Следующая", "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, page = Model.Pager.CurrentPage + 1 })
-            </li>
-            <li>
-                @Html.ActionLink("Последняя", "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, page = Model.Pager.TotalPages })
-            </li>
-        }
-    </ul>
-}

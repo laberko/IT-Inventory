@@ -1,6 +1,9 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using System.Web.Hosting;
 using System.Web.Mvc;
 using IT_Inventory.Models;
 using IT_Inventory.ViewModels;
@@ -28,13 +31,25 @@ namespace IT_Inventory.Controllers
             var items = letter == null 
                 ? _db.Persons.OrderBy(p => p.FullName).ToList() 
                 : _db.Persons.AsEnumerable().Where(p => p.FullName.First() == letter.First()).OrderBy(p => p.FullName).ToList();
-            var pager = new Pager(items.Count, page, 16);
+            var pager = new Pager(items.Count, page, 8);
             model.People = items.Skip((pager.CurrentPage - 1) * pager.PageSize).Take(pager.PageSize);
             model.Pager = pager;
             model.FirstLetters = _db.Persons.AsEnumerable().Select(p => p.FullName.First()).Distinct().OrderBy(c => c).ToArray();
             model.Letter = letter;
             return View(model);
         }
+
+        // GET: People/Details/5
+        public async Task<ActionResult> Details(int? id)
+        {
+            if (id == null)
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            var user = await _db.Persons.FindAsync(id);
+            if (user == null)
+                return HttpNotFound();
+            return View(user);
+        }
+
 
         // GET: People/Delete/5
         public async Task<ActionResult> Delete(int? id)
@@ -63,6 +78,40 @@ namespace IT_Inventory.Controllers
             _db.Persons.Remove(user);
             await _db.SaveChangesAsync();
             return RedirectToAction("Index");
+        }
+
+        [AllowAnonymous]
+        public ActionResult GetPeopleJson()
+        {
+            var people = new List<PersonStruct>();
+            foreach (var person in _db.Persons.AsEnumerable())
+            {
+                var user = new PersonStruct
+                {
+                    FullName = person.FullName,
+                    AccountName = person.AccountName,
+                    Email = person.Email,
+                    Department = person.Dep.Name
+                };
+                int.TryParse(person.PhoneNumber, out user.PhoneNumber);
+                people.Add(user);
+            }
+            return Json(people, JsonRequestBehavior.AllowGet);
+        }
+
+        [AllowAnonymous]
+        public async Task<ActionResult> GetPicture(int? id)
+        {
+            if (id == null)
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            if (id == 0)
+                return File(Path.Combine(HostingEnvironment.MapPath(@"~/Content"), "noPhoto.jpg"), "image/jpeg");
+            var user = await _db.Persons.FindAsync(id);
+            if (user == null)
+                return HttpNotFound();
+            if (user.PhotoBytes != null)
+                return File(user.PhotoBytes, "image/jpeg");
+            return File(Path.Combine(HostingEnvironment.MapPath(@"~/Content"), "noPhoto.jpg"), "image/jpeg");
         }
 
         protected override void Dispose(bool disposing)

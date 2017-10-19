@@ -28,25 +28,29 @@ namespace IT_Inventory
             var log = string.Empty;
             try
             {
-                //DateTime fileDate;
                 Report report;
                 
                 var rootDir = new DirectoryInfo(@"\\rivs.org\it\ConfigReporting\ConfigReports");
                 var hostDirs = rootDir.GetDirectories();
                 var hostDir = hostDirs.FirstOrDefault(d => d.Name == hostName.ToUpper());
-                if (hostDir == null)
+                if (hostDir == null || hostDir.GetDirectories().Length == 0)
                     return null;
                 var hostReportDirs = hostDir.GetDirectories().OrderByDescending(d => d.CreationTime).ToList();
                 
-
                 //take only the last report
-                //if (!DateTime.TryParse(hostReportDirs.First().Name, out fileDate))
-                //    return null;
-                var reportFile = hostReportDirs.First().GetFiles().OrderByDescending(f => f.CreationTime).FirstOrDefault();
+                FileInfo reportFile = null;
+                foreach (var dir in hostReportDirs)
+                {
+                    reportFile = dir.GetFiles().OrderByDescending(f => f.CreationTime).FirstOrDefault();
+                    //if some file found - go further
+                    if (reportFile != null)
+                        break;
+                }
+                //if no file found - exit
                 if (reportFile == null)
                     return null;
-                reportFileName = reportFile.FullName;
 
+                reportFileName = reportFile.FullName;
                 using (var fileStream = new FileStream(reportFileName, FileMode.Open))
                 {
                     try
@@ -67,7 +71,6 @@ namespace IT_Inventory
                 report.UserName = Path.GetFileNameWithoutExtension(reportFileName);
                 report.UserFullName = (@"RIVS\" + report.UserName).GetUserName();
                 report.CompName = hostName;
-                //report.FileDate = fileDate;
 
                 //remove folders older than 10 days but keep at least 10 folders
                 var span = new TimeSpan(10, 0, 0, 0);
@@ -104,10 +107,11 @@ namespace IT_Inventory
             }
         }
 
+        public bool IsNotebook => CompName.Contains("-NB") || Page[1].Group[0].Item[0].Value.Contains("(Mobile)");
+
         public string Cpu => Page[1].Group[1].Item[0].Value;
 
         public string MotherBoard => Page[1].Group[1].Item[1].Value;
-
 
         public string MbId
         {
@@ -115,11 +119,28 @@ namespace IT_Inventory
             {
                 try
                 {
+                    //macbook and some hp notebooks
+                    if (Page[3].Group == null)
+                        return Page[3].Device[2].Group[0].Item[3].Value;
+
+                    //get Mb ID
                     var value = Page[1].Group.Length > 9 ? Page[1].Group[9].Item[6].Value : Page[3].Group[0].Item[0].Value;
+
+                    //a couple of old notebooks
                     if (value.Contains("Acer") || value.Contains("MICRO-STAR"))
-                        value = Page[1].Group.FirstOrDefault(g => g.Title == "Сеть").Item.FirstOrDefault(i => i.Title == "Первичный адрес MAC").Value;
+                        value += Page[1].Group[1].Item[4].Value;
+
+                    //some buggy motherboards with ununique ids
+                    if (value == "00020003-00040005-00060007-00080009"
+                        || value == "60E48A46-EBE2DD11-84983085-A93F2287")
+                    {
+                        //value = Page[3].Group[0].Item[0].Value;
+                        value += Page[1].Group.FirstOrDefault(g => g.Title == "Сеть").Item.FirstOrDefault(i => i.Title == "Первичный адрес MAC").Value;
+                    }
+
                     return value;
                 }
+
                 catch
                 {
                     //return mac address at least
@@ -164,7 +185,12 @@ namespace IT_Inventory
             get
             {
                 var page = Page.FirstOrDefault(p => p.Title == "Видео Windows");
-                return page == null ? string.Empty : page.Device[0].Group[0].Item[0].Value;
+                var videoAdapter = page == null ? string.Empty : page.Device[0].Group[0].Item[0].Value;
+                if (videoAdapter.Length > 3)
+                    return videoAdapter;
+                if (Page[1] != null)
+                    return Page[1].Group[2].Item[1].Value;
+                return page?.Device[1] == null ? string.Empty : page.Device[1].Title;
             }
         }
 
