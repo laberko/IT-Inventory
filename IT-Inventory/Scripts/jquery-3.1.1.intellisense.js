@@ -779,7 +779,7 @@ intellisense.annotate(jQuery.fn, {
   'ajaxError': function() {
     /// <signature>
     ///   <summary>Register a handler to be called when Ajax requests complete with an error. This is an Ajax Event.</summary>
-    ///   <param name="handler(event, jqXHR, ajaxSettings, thrownError)" type="Function">The function to be invoked.</param>
+    ///   <param name="handler(event, jqXHR, ajaxsettings, thrownError)" type="Function">The function to be invoked.</param>
     ///   <returns type="jQuery" />
     /// </signature>
   },

@@ -180,6 +180,10 @@
     <Compile Include="Migrations\201710171414364_72.Designer.cs">
       <DependentUpon>201710171414364_72.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201711100821051_73.cs" />
+    <Compile Include="Migrations\201711100821051_73.Designer.cs">
+      <DependentUpon>201711100821051_73.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ComputerHistoryItem.cs" />
     <Compile Include="Models\Computer.cs" />
@@ -356,6 +360,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201710171414364_72.resx">
       <DependentUpon>201710171414364_72.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201711100821051_73.resx">
+      <DependentUpon>201711100821051_73.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

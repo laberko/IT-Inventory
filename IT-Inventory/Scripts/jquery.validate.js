@@ -1120,7 +1120,7 @@ $.extend( $.validator, {
 
 	},
 
-	classRuleSettings: {
+	classRulesettings: {
 		required: { required: true },
 		email: { email: true },
 		url: { url: true },
@@ -1133,9 +1133,9 @@ $.extend( $.validator, {
 
 	addClassRules: function( className, rules ) {
 		if ( className.constructor === String ) {
-			this.classRuleSettings[ className ] = rules;
+			this.classRulesettings[ className ] = rules;
 		} else {
-			$.extend( this.classRuleSettings, className );
+			$.extend( this.classRulesettings, className );
 		}
 	},
 
@@ -1145,8 +1145,8 @@ $.extend( $.validator, {
 
 		if ( classes ) {
 			$.each( classes.split( " " ), function() {
-				if ( this in $.validator.classRuleSettings ) {
-					$.extend( rules, $.validator.classRuleSettings[ this ] );
+				if ( this in $.validator.classRulesettings ) {
+					$.extend( rules, $.validator.classRulesettings[ this ] );
 				}
 			} );
 		}
@@ -1558,8 +1558,8 @@ if ( $.ajaxPrefilter ) {
 	// Proxy ajax
 	ajax = $.ajax;
 	$.ajax = function( settings ) {
-		var mode = ( "mode" in settings ? settings : $.ajaxSettings ).mode,
-			port = ( "port" in settings ? settings : $.ajaxSettings ).port;
+		var mode = ( "mode" in settings ? settings : $.ajaxsettings ).mode,
+			port = ( "port" in settings ? settings : $.ajaxsettings ).port;
 		if ( mode === "abort" ) {
 			if ( pendingRequests[ port ] ) {
 				pendingRequests[ port ].abort();

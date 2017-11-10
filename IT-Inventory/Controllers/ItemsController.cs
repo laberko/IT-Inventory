@@ -601,8 +601,6 @@ namespace IT_Inventory.Controllers
             return RedirectToAction("Index");
         }
 
-
-
         // GET: Items/Delete/5
         // delete item - first step
         // pass the item model to view

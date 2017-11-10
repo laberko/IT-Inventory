@@ -79,7 +79,7 @@
                         <td valign="middle">
                             <font size="4" color=@cartridge.AttributeValues.FirstOrDefault(a => a.Attribute.Id == 2).Value>&nbsp;&nbsp;&nbsp;&#11044</font>
                             <font size="4">@Html.ActionLink(cartridge.Quantity.ToString(), "Grant", "Items", new {id = cartridge.Id}, 
-                                          new { style = cartridge.Quantity <= cartridge.MinQuantity ? "color:red" : "", title = cartridge.Name + " (" + cartridge.LocationName + ")"})</font>
+                                new { style = cartridge.Quantity <= cartridge.MinQuantity ? "color:red" : "", title = cartridge.Name + " (" + cartridge.LocationName + ")"})</font>
                         </td>
                     }
                 </tr>
@@ -87,19 +87,19 @@
         </td>
         <td style="color:black" white-space: nowrap align="right">
             <a href='@Url.Action("Edit", new { id = item.Id })' style="text-decoration:none">
-                <i class="material-icons md-48" style="color:black" title="Редактировать">edit</i>
+                <i class="material-icons md-48" style="color:black" title="Редактировать">&#xE3C9</i>
             </a>
             <a href='@Url.Action("Details", new { id = item.Id })' style="text-decoration:none">
-                <i class="material-icons md-48" style="color:black" title="Подробно">info_outline</i>
+                <i class="material-icons md-48" style="color:black" title="Подробно">&#xE88F</i>
             </a>
             @if (!string.IsNullOrEmpty(item.Ip))
             {
                 <a href='@Url.Action("Manage", new { ip = item.Ip })' style="text-decoration:none" target="_blank">
-                    <i class="material-icons md-48" style="color:black" title="Управлять">build</i>
+                    <i class="material-icons md-48" style="color:black" title="Управлять">&#xE869</i>
                 </a>
             }
             <a href='@Url.Action("Delete", new { id = item.Id })' style="text-decoration:none">
-                <i class="material-icons md-48" style="color:black" title="Удалить">delete_forever</i>
+                <i class="material-icons md-48" style="color:black" title="Удалить">&#xE92B</i>
             </a>
         </td>
     </tr>

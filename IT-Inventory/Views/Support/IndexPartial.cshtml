@@ -169,19 +169,19 @@
                     if (item.State == 0)
                     {
                         <a href='@Url.Action("AcceptRequest", "Support", new {id = item.Id})' style="text-decoration: none">
-                            <i class="material-icons md-48" style="color:black" title="Принять">check_box</i>
+                            <i class="material-icons md-48" style="color:black" title="Принять">&#xE834</i>
                         </a>
                     }
                     else if (item.State == 1 && item.To != null && Model.UserId == item.To.Id)
                     {
                         <a href='@Url.Action("FinishRequest", "Support", new {id = item.Id})' style="text-decoration: none">
-                            <i class="material-icons md-48" style="color:black" title="Завершить">done</i>
+                            <i class="material-icons md-48" style="color:black" title="Завершить">&#xE876</i>
                         </a>
                     }
                 }
 
                 <a href='@Url.Action("Details", "Support", new {id = item.Id})' style="text-decoration: none">
-                    <i class="material-icons md-48" style="color:black" title="Подробно">info_outline</i>
+                    <i class="material-icons md-48" style="color:black" title="Подробно">&#xE88F</i>
                 </a>
 
                 @if (item.File != null)
@@ -189,13 +189,13 @@
                     if (item.File.IsImage)
                     {
                         <a href='@Url.Action("DownloadImage", "Support", new {filename = item.File.Path})' style="text-decoration: none">
-                            <i class="material-icons md-48" style="color:black" title="Изображение">image</i>
+                            <i class="material-icons md-48" style="color:black" title="Изображение">&#xE3F4</i>
                         </a>
                     }
                     else
                     {
                         <a href='@Url.Action("DownloadFile", "Support", new {filename = item.File.Path})' style="text-decoration: none">
-                            <i class="material-icons md-48" style="color:black" title="Файл">insert_drive_file</i>
+                            <i class="material-icons md-48" style="color:black" title="Файл">&#xE24D</i>
                         </a>
                     }
                 }
@@ -203,20 +203,20 @@
                 @if (Model.IsItUser || item.State != 2)
                 {
                     <a href='@Url.Action("Edit", "Support", new {id = item.Id})' style="text-decoration: none">
-                        <i class="material-icons md-48" style="color:black" title="Редактировать">edit</i>
+                        <i class="material-icons md-48" style="color:black" title="Редактировать">&#xE3C9</i>
                     </a>
                 }
                 else
                 {
                     <a href='@Url.Action("Edit", "Support", new {id = item.Id})' style="text-decoration: none">
-                        <i class="material-icons md-48" style="color:black" title="Оценить">thumb_up</i>
+                        <i class="material-icons md-48" style="color:black" title="Оценить">&#xE8DC</i>
                     </a>
                 }
 
                 @if (Model.IsItUser)
                 {
                     <a href='@Url.Action("Delete", "Support", new {id = item.Id})' style="text-decoration: none">
-                        <i class="material-icons md-48" style="color:black" title="Удалить">delete_forever</i>
+                        <i class="material-icons md-48" style="color:black" title="Удалить">&#xE92B</i>
                     </a>
                 }
             </td>

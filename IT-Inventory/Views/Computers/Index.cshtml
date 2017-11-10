@@ -200,35 +200,43 @@ else
                 }
 
                 <td white-space: nowrap align="right">
+                    
+                    @if (item.IsConfigChanged)
+                    {
+                        <a href='@Url.Action("ApproveChanges", new {id = item.Id})' style="text-decoration: none">
+                            <i class="material-icons md-48" style="color: black" title="Одобрить изменения конфигурации">&#xE862</i>
+                        </a>
+                    }
+
                     @if (item.HasModifications)
                     {
-                        <a href='@Url.Action("Modifications", "Support", new { compId = item.Id })' style="text-decoration:none">
-                            <i class="material-icons md-48" style="color:black" title="История техподдержки">speaker_notes</i>
+                        <a href='@Url.Action("Modifications", "Support", new {compId = item.Id})' style="text-decoration: none">
+                            <i class="material-icons md-48" style="color: black" title="История техподдержки">&#xE8CD</i>
                         </a>
                     }
 
                     @if (item.HasRequests)
                     {
-                        <a href='@Url.Action("Index", "Support", new { searchCompId = item.Id })' style="text-decoration:none">
-                            <i class="material-icons md-48" style="color:black" title="Заявки в техподдержку">announcement</i>
+                        <a href='@Url.Action("Index", "Support", new {searchCompId = item.Id})' style="text-decoration: none">
+                            <i class="material-icons md-48" style="color: black" title="Заявки в техподдержку">&#xE85A</i>
                         </a>
                     }
 
-                    <a href='@Url.Action("HistoryIndex", new { id = item.Id })' style="text-decoration:none">
-                        <i class="material-icons md-48" style="color:black" title="История зафиксированных изменений">history</i>
+                    <a href='@Url.Action("HistoryIndex", new {id = item.Id})' style="text-decoration: none">
+                        <i class="material-icons md-48" style="color: black" title="История зафиксированных изменений">&#xE889</i>
                     </a>
 
-                    <a href='@Url.Action("Details", new { id = item.Id })' style="text-decoration: none">
-                        <i class="material-icons md-48" style="color:black" title="Конфигурация">settings</i>
+                    <a href='@Url.Action("Details", new {id = item.Id})' style="text-decoration: none">
+                        <i class="material-icons md-48" style="color: black" title="Конфигурация">&#xE8B8</i>
                     </a>
 
-                    <a href='@Url.Action("AidaDetails", new { name = item.ComputerName })' style="text-decoration:none">
-                        <i class="material-icons md-48" style="color:black" title="Подробный отчет о конфигурации">format_list_bulleted</i>
+                    <a href='@Url.Action("AidaDetails", new {name = item.ComputerName})' style="text-decoration: none">
+                        <i class="material-icons md-48" style="color: black" title="Подробный отчет о конфигурации">&#xE241</i>
 
                     </a>
 
-                    <a href='@Url.Action("Delete", new { id = item.Id })' style="text-decoration:none">
-                        <i class="material-icons md-48" style="color:black" title="Удалить">delete_forever</i>
+                    <a href='@Url.Action("Delete", new {id = item.Id})' style="text-decoration: none">
+                        <i class="material-icons md-48" style="color: black" title="Удалить">&#xE92B</i>
                     </a>
                 </td>
             </tr>

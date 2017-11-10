@@ -8565,7 +8565,7 @@ function inspectPrefiltersOrTransports( structure, options, originalOptions, jqX
 // Fixes #9887
 function ajaxExtend( target, src ) {
 	var key, deep,
-		flatOptions = jQuery.ajaxSettings.flatOptions || {};
+		flatOptions = jQuery.ajaxsettings.flatOptions || {};
 
 	for ( key in src ) {
 		if ( src[ key ] !== undefined ) {
@@ -8746,7 +8746,7 @@ jQuery.extend( {
 	lastModified: {},
 	etag: {},
 
-	ajaxSettings: {
+	ajaxsettings: {
 		url: location.href,
 		type: "GET",
 		isLocal: rlocalProtocol.test( location.protocol ),
@@ -8815,16 +8815,16 @@ jQuery.extend( {
 	},
 
 	// Creates a full fledged settings object into target
-	// with both ajaxSettings and settings fields.
-	// If target is omitted, writes into ajaxSettings.
+	// with both ajaxsettings and settings fields.
+	// If target is omitted, writes into ajaxsettings.
 	ajaxSetup: function( target, settings ) {
 		return settings ?
 
 			// Building a settings object
-			ajaxExtend( ajaxExtend( target, jQuery.ajaxSettings ), settings ) :
+			ajaxExtend( ajaxExtend( target, jQuery.ajaxsettings ), settings ) :
 
-			// Extending ajaxSettings
-			ajaxExtend( jQuery.ajaxSettings, target );
+			// Extending ajaxsettings
+			ajaxExtend( jQuery.ajaxsettings, target );
 	},
 
 	ajaxPrefilter: addToPrefiltersOrTransports( prefilters ),
@@ -9392,7 +9392,7 @@ jQuery.expr.pseudos.visible = function( elem ) {
 
 
 
-jQuery.ajaxSettings.xhr = function() {
+jQuery.ajaxsettings.xhr = function() {
 	try {
 		return new window.XMLHttpRequest();
 	} catch ( e ) {}
@@ -9407,7 +9407,7 @@ var xhrSuccessStatus = {
 		// #1450: sometimes IE returns 1223 when it should be 204
 		1223: 204
 	},
-	xhrSupported = jQuery.ajaxSettings.xhr();
+	xhrSupported = jQuery.ajaxsettings.xhr();
 
 support.cors = !!xhrSupported && ( "withCredentials" in xhrSupported );
 support.ajax = xhrSupported = !!xhrSupported;
@@ -9640,7 +9640,7 @@ jQuery.ajaxSetup( {
 } );
 
 // Detect, normalize options and install callbacks for jsonp requests
-jQuery.ajaxPrefilter( "json jsonp", function( s, originalSettings, jqXHR ) {
+jQuery.ajaxPrefilter( "json jsonp", function( s, originalsettings, jqXHR ) {
 
 	var callbackName, overwritten, responseContainer,
 		jsonProp = s.jsonp !== false && ( rjsonp.test( s.url ) ?
@@ -9699,7 +9699,7 @@ jQuery.ajaxPrefilter( "json jsonp", function( s, originalSettings, jqXHR ) {
 			if ( s[ callbackName ] ) {
 
 				// Make sure that re-using the options doesn't screw things around
-				s.jsonpCallback = originalSettings.jsonpCallback;
+				s.jsonpCallback = originalsettings.jsonpCallback;
 
 				// Save the callback name for future use
 				oldCallbacks.push( callbackName );

@@ -89,21 +89,21 @@
 
         <td white-space: nowrap>
             <a href='@Url.Action("HistoryDetails", new { id = item.Id })' style="text-decoration: none">
-                <i class="material-icons md-48" style="color:black" title="Подробно">info_outline</i>
+                <i class="material-icons md-48" style="color:black" title="Подробно">&#xE88F</i>
             </a>
 
             @if (item.CompId != 0 && string.IsNullOrEmpty(ViewBag.CompName))
             {
                 <a href='@Url.Action("HistoryIndex", new {id = item.CompId})' style="text-decoration: none">
-                    <i class="material-icons md-48" style="color:black" title="История зафиксированных изменений">history</i>
+                    <i class="material-icons md-48" style="color:black" title="История зафиксированных изменений">&#xE889</i>
                 </a>
 
                 <a href='@Url.Action("Details", new { id = item.CompId })' style="text-decoration: none">
-                    <i class="material-icons md-48" style="color:black" title="Конфигурация">settings</i>
+                    <i class="material-icons md-48" style="color:black" title="Конфигурация">&#xE8B8</i>
                 </a>
 
                 <a href='@Url.Action("AidaDetails", new { name = item.ComputerName })' style="text-decoration:none">
-                    <i class="material-icons md-48" style="color:black" title="Подробный отчет о конфигурации">format_list_bulleted</i>
+                    <i class="material-icons md-48" style="color:black" title="Подробный отчет о конфигурации">&#xE241</i>
                 </a>
             }
         </td>

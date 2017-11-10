@@ -25,6 +25,19 @@
             @Html.DisplayFor(model => model.Office.Name)
         </dd>
 
+        <dt>
+            Сотрудники
+        </dt>
+
+        <dd>
+            @foreach (var person in StaticData.GetUsers(Model.Id))
+            {
+                <br/>
+                <a href='@Url.Action("Details", "People", new {id = person.Id})'>
+                    @person.FullName
+                </a>
+            }
+        </dd>
     </dl>
 </div>
 <p>

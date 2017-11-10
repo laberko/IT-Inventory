@@ -57,11 +57,12 @@ namespace IT_Inventory
                                 if (resultEntry.Properties.Contains("DisplayName") &&
                                     !resultEntry.Properties.Contains("st") &&
                                     resultEntry.Properties.Contains("department") &&
-                                    resultEntry.Properties.Contains("title") &&
-                                    resultEntry.Properties.Contains("company"))
+                                    resultEntry.Properties.Contains("title"))
                                 {
-                                    //get the first department
-                                    var dep1Name = resultEntry.Properties["company"].Value.ToString();
+                                    //dep1 = organization
+                                    var dep1Name = resultEntry.Properties.Contains("company") 
+                                        ? resultEntry.Properties["company"].Value.ToString() 
+                                        : resultEntry.Properties["department"].Value.ToString();
                                     var dep1 = db.Departments.FirstOrDefault(d => d.Name == dep1Name);
                                     if (dep1 == null)
                                     {
@@ -70,6 +71,7 @@ namespace IT_Inventory
                                             Name = dep1Name
                                         };
                                         db.Departments.Add(newDep);
+                                        db.SaveChanges();
                                         dep1 = newDep;
                                     }
                                     //user has a second department
@@ -85,14 +87,15 @@ namespace IT_Inventory
                                                 Name = dep2Name
                                             };
                                             db.Departments.Add(newDep);
+                                            db.SaveChanges();
                                             dep2 = newDep;
                                         }
                                     }
-                                        //index in department
-                                        int depIndex;
-                                        DateTime birthday;
-                                        adUsers.Add(new Person
-                                        {
+                                    //index in department
+                                    int depIndex;
+                                    DateTime birthday;
+                                    adUsers.Add(new Person
+                                    {
                                         FullName = resultEntry.Properties["DisplayName"].Value.ToString(),
                                         AccountName = resultEntry.Properties["sAMAccountName"].Value.ToString(),
                                         Email = resultEntry.Properties.Contains("mail")
@@ -755,6 +758,16 @@ namespace IT_Inventory
                         select printer).OrderBy(p => p.Name).ToList();
             }
         }
+
+        public static IEnumerable<Person> GetUsers(int depId)
+        {
+            using (var db = new InventoryModel())
+            {
+                var dep = db.Departments.Find(depId);
+                return dep == null ? null : db.Persons.Where(p => p.Dep.Id == depId || p.Dep2.Id == depId).OrderBy(p => p.FullName).ToList();
+            }
+        }
+
         public static IEnumerable<SelectListItem> SelectOffices(int exceptionId = 0)
         {
             return exceptionId == 0 

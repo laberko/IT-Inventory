@@ -839,7 +839,7 @@ $.extend($.validator, {
 		
 	},
 	
-	classRuleSettings: {
+	classRulesettings: {
 		required: {required: true},
 		email: {email: true},
 		url: {url: true},
@@ -865,16 +865,16 @@ $.extend($.validator, {
 		/// </param>
 
 		className.constructor == String ?
-			this.classRuleSettings[className] = rules :
-			$.extend(this.classRuleSettings, className);
+			this.classRulesettings[className] = rules :
+			$.extend(this.classRulesettings, className);
 	},
 	
 	classRules: function(element) {
 		var rules = {};
 		var classes = $(element).attr('class');
 		classes && $.each(classes.split(' '), function() {
-			if (this in $.validator.classRuleSettings) {
-				$.extend(rules, $.validator.classRuleSettings[this]);
+			if (this in $.validator.classRulesettings) {
+				$.extend(rules, $.validator.classRulesettings[this]);
 			}
 		});
 		return rules;
@@ -1228,8 +1228,8 @@ $.format = $.validator.format;
 		// Proxy ajax
 		var ajax = $.ajax;
 		$.ajax = function(settings) {
-			var mode = ( "mode" in settings ? settings : $.ajaxSettings ).mode,
-				port = ( "port" in settings ? settings : $.ajaxSettings ).port;
+			var mode = ( "mode" in settings ? settings : $.ajaxsettings ).mode,
+				port = ( "port" in settings ? settings : $.ajaxsettings ).port;
 			if (mode == "abort") {
 				if ( pendingRequests[port] ) {
 					pendingRequests[port].abort();

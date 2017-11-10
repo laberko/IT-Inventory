@@ -134,11 +134,11 @@ namespace IT_Inventory.Controllers
             if (department == null)
                 return View(printer);
             editItem.Department = department;
-            if (department.Printers.FirstOrDefault(p => p.Id == printer.Id) == null)
-            {
-                department.Printers.Add(editItem);
-                _db.Entry(department).State = EntityState.Modified;
-            }
+            //if (department.Printers.FirstOrDefault(p => p.Id == printer.Id) == null)
+            //{
+            //    department.Printers.Add(editItem);
+            //    _db.Entry(department).State = EntityState.Modified;
+            //}
             foreach (var cartridge in printer.CartridgeIds
                 .Select(cartridgeId => _db.Items.FirstOrDefault(c => c.Id == cartridgeId))
                 .Where(cartridge => cartridge != null))
@@ -179,6 +179,8 @@ namespace IT_Inventory.Controllers
         public async Task<ActionResult> DeleteConfirmed(int id)
         {
             var printer = await _db.Printers.FindAsync(id);
+            if (printer == null)
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             //if (!User.IsInRole(@"RIVS\InventoryAdmin"))
             //{
             //    ModelState.AddModelError(string.Empty, "У Вас нет прав на удаление! Обратитесь к системному администратору!");

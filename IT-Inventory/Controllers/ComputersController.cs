@@ -246,25 +246,34 @@ namespace IT_Inventory.Controllers
         //    return RedirectToAction("Index");
         //}
 
-        //public async Task<ActionResult> SyncConfig(int? id)
-        //{
-        //    if (id == null)
-        //        return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-        //    var comp = await _db.Computers.FindAsync(id);
-        //    if (comp == null)
-        //        return HttpNotFound();
-        //    comp.UpdateDate = DateTime.Now;
-        //    comp.CpuInvent = comp.Cpu;
-        //    comp.RamInvent = comp.Ram;
-        //    comp.HddInvent = comp.Hdd;
-        //    comp.MotherBoardInvent = comp.MotherBoard;
-        //    comp.VideoAdapterInvent = comp.VideoAdapter;
-        //    comp.MonitorInvent = comp.Monitor;
-        //    comp.SoftwareInvent = comp.Software;
-        //    _db.Entry(comp).State = EntityState.Modified;
-        //    await _db.SaveChangesAsync();
-        //    return Redirect(Request.UrlReferrer.ToString());
-        //}
+        // GET: Computers/ApproveChanges/5
+        public async Task<ActionResult> ApproveChanges(int? id)
+        {
+            if (id == null)
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            var login = User.Identity.Name;
+            var accountName = login.Substring(5, login.Length - 5);
+            var person = _db.Persons.FirstOrDefault(p => p.AccountName == accountName);
+            if (person == null)
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            var comp = await _db.Computers.FindAsync(id);
+            if (comp == null)
+                return HttpNotFound();
+            comp.UpdateDate = DateTime.Now;
+            comp.RamFixed = comp.Ram;
+            comp.HddFixed = comp.Hdd;
+            comp.MotherBoard = comp.MotherBoard;
+            comp.VideoAdapterFixed = comp.VideoAdapter;
+            comp.MonitorFixed = comp.Monitor;
+            _db.Entry(comp).State = EntityState.Modified;
+            var history = comp.NewHistory(person.ShortName + " одобрил изменения");
+            history.HistoryUpdated = DateTime.Now;
+            _db.ComputerHistory.Add(history);
+            await _db.SaveChangesAsync();
+            if (Request.UrlReferrer != null)
+                return Redirect(Request.UrlReferrer.ToString());
+            return RedirectToAction("Index");
+        }
 
         // GET: Computers/Delete/5
         public async Task<ActionResult> Delete(int? id)

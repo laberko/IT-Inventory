@@ -16,7 +16,9 @@
 
             @foreach (var office in StaticData.GetOffices(true))
             {
-                @Html.ActionLink(office.Name, "Index", new { id = 8, officeId = office.Id }, office.Id == Model.OfficeId ? new { @class = "btn btn-warning" } : new { @class = "btn btn-default" })
+                @Html.ActionLink(office.Name, "Index", new { id = 8, officeId = office.Id }, office.Id == Model.OfficeId 
+                    ? new { @class = "btn btn-warning" } 
+                    : new { @class = "btn btn-default" })
                 <text>&nbsp;</text>
             }
         </td>
@@ -127,33 +129,33 @@
             @if (item.Quantity != 0)
             {
                 <a href='@Url.Action("Grant", new { id = item.Id })' style="text-decoration:none">
-                    <i class="material-icons md-48" style="color:black" title="Выдать">remove_circle_outline</i>
+                    <i class="material-icons md-48" style="color:black" title="Выдать">&#xE15D</i>
                 </a>
             }
             else
             {
                 <a href='@Url.Action("RecieveOneNotebook", new { id = item.Id })' style="text-decoration:none">
-                    <i class="material-icons md-48" style="color:black" title="Вернуть">add_circle_outline</i>
+                    <i class="material-icons md-48" style="color:black" title="Вернуть">&#xE148</i>
                 </a>
             }
 
             <a href='@Url.Action("Index", "Histories", new {id = item.Id})' style="text-decoration: none">
-                <i class="material-icons md-48" style="color:black" title="История">history</i>
+                <i class="material-icons md-48" style="color:black" title="История">&#xE889</i>
             </a>
 
             @if (item.Quantity > 0)
                 {
                 <a href='@Url.Action("Transfer", new {id = item.Id})' style="text-decoration: none">
-                    <i class="material-icons md-48" style="color:black" title="Переместить на другой склад">compare_arrows</i>
+                    <i class="material-icons md-48" style="color:black" title="Переместить на другой склад">&#xE915</i>
                 </a>
             }
 
             <a href='@Url.Action("Edit", new {id = item.Id})' style="text-decoration: none">
-                <i class="material-icons md-48" style="color:black" title="Редактировать">edit</i>
+                <i class="material-icons md-48" style="color:black" title="Редактировать">&#xE3C9</i>
             </a>
 
             <a href='@Url.Action("Delete", new { id = item.Id })' style="text-decoration:none">
-                <i class="material-icons md-48" style="color:black" title="Удалить">delete_forever</i>
+                <i class="material-icons md-48" style="color:black" title="Удалить">&#xE92B</i>
             </a>
         </td>
     </tr>

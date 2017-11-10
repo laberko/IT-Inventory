@@ -32,38 +32,38 @@ namespace IT_Inventory.Controllers
         }
 
         // GET: Departments/Create
-        public ActionResult Create()
-        {
-            return View(new DepartmentViewModel());
-        }
+        //public ActionResult Create()
+        //{
+        //    return View(new DepartmentViewModel());
+        //}
 
         // POST: Departments/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create(DepartmentViewModel department)
-        {
-            if (!ModelState.IsValid)
-                return View(department);
-            //department with such name found in db
-            if (_db.Departments.Any(d => d.Name == department.Name))
-                return new HttpStatusCodeResult(HttpStatusCode.Conflict);
-            var office = await _db.Offices.FindAsync(department.OfficeId);
-            if (office == null)
-                return HttpNotFound();
-            var newDep = new Department
-            {
-                Name = department.Name,
-                Office = office
-            };
-            _db.Departments.Add(newDep);
-            if (office.Departments.All(d => d.Name != department.Name))
-            {
-                office.Departments.Add(newDep);
-                _db.Entry(office).State = EntityState.Modified;
-            }
-            await _db.SaveChangesAsync();
-            return RedirectToAction("Index");
-        }
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<ActionResult> Create(DepartmentViewModel department)
+        //{
+        //    if (!ModelState.IsValid)
+        //        return View(department);
+        //    //department with such name found in db
+        //    if (_db.Departments.Any(d => d.Name == department.Name))
+        //        return new HttpStatusCodeResult(HttpStatusCode.Conflict);
+        //    var office = await _db.Offices.FindAsync(department.OfficeId);
+        //    if (office == null)
+        //        return HttpNotFound();
+        //    var newDep = new Department
+        //    {
+        //        Name = department.Name,
+        //        Office = office
+        //    };
+        //    _db.Departments.Add(newDep);
+        //    if (office.Departments.All(d => d.Name != department.Name))
+        //    {
+        //        office.Departments.Add(newDep);
+        //        _db.Entry(office).State = EntityState.Modified;
+        //    }
+        //    await _db.SaveChangesAsync();
+        //    return RedirectToAction("Index");
+        //}
 
         // GET: Departments/Edit/5
         public async Task<ActionResult> Edit(int? id)
