@@ -19,15 +19,6 @@ namespace IT_Inventory.Controllers
         public ActionResult Index(string letter, int page = 1)
         {
             var model = new PeopleIndexViewModel();
-            //sync users table with AD
-            //if (updateList)
-            //{
-            //    StaticData.RefreshUsers();
-            //    model.IsRefreshed = true;
-            //}
-            //else
-            //    model.IsRefreshed = false;
-
             List<Person> items;
             if (letter == null)
                 items = _db.Persons.OrderBy(p => p.FullName).ToList();

@@ -9,6 +9,7 @@ namespace IT_Inventory.Models
         }
         public DbSet<Item> Items { get; set; }
         public DbSet<Department> Departments { get; set; }
+        public DbSet<SubDepartment> SubDepartments { get; set; }
         public DbSet<History> Histories { get; set; }
         public DbSet<Office> Offices { get; set; }
         public DbSet<Person> Persons { get; set; }

@@ -8,6 +8,14 @@ else if(Model.Notebooks)
 {
     ViewBag.Title = "Ноутбуки";
 }
+else if (!string.IsNullOrEmpty(Model.SearchData))
+{
+    ViewBag.Title = "Компьютеры с " + Model.SearchData + " (" + Model.TotalCount + " шт.)";
+}
+else if (!string.IsNullOrEmpty(Model.SearchSoft))
+{
+    ViewBag.Title = "Компьютеры с " + Model.SearchSoft + " (" + Model.TotalCount + " шт.)";
+}
 else
 {
     ViewBag.Title = "Компьютеры";
@@ -22,6 +30,7 @@ else
             <h2></h2>
             @if (Model.PersonSearch == false)
             {
+                @Html.ActionLink("Поиск", "Search", null, new { @class = "btn btn-default" })<text>&nbsp;&nbsp;</text>
                 if (Model.Notebooks)
                 {
                     @Html.ActionLink("Все компьютеры", "Index", string.IsNullOrEmpty(Model.DepCode) ? null : new { depCode = Model.DepCode }, new { @class = "btn btn-primary" })
@@ -39,18 +48,19 @@ else
                     @Html.ActionLink("Все компьютеры", "Index", null, new { @class = "btn btn-primary" })
                 }
 
-                <text>&nbsp;</text>@Html.ActionLink("История изменений", "HistoryIndex", new { days = 7 }, new { @class = "btn btn-success" })
+                @Html.ActionLink("История изменений", "HistoryIndex", new { days = 7 }, new { @class = "btn btn-success" })
 
                 if (Model.HasModifiedComputers && !Model.ModifiedComputers)
                 {
-                    <text>&nbsp;</text>@Html.ActionLink("Изменения конфигураций", "Index", new { modified = true }, new { @class = "btn btn-warning" })
+                    @Html.ActionLink("Изменения конфигураций", "Index", new { modified = true }, new { @class = "btn btn-warning" })
                 }
+
             }
         </td>
     </tr>
 </table>
 
-@if (!Model.ModifiedComputers)
+@if (!Model.ModifiedComputers && string.IsNullOrEmpty(Model.SearchData) && string.IsNullOrEmpty(Model.SearchSoft))
 {
     <ul class="pagination">
         @foreach (var code in Model.DepCodes)
@@ -250,27 +260,27 @@ else
             @if (Model.Pager.CurrentPage > 1)
             {
                 <li>
-                    @Html.ActionLink("Первая", "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, page = 1, notebooks = Model.Notebooks })
+                    @Html.ActionLink("Первая", "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, searchString = Model.SearchData, page = 1, notebooks = Model.Notebooks })
                 </li>
                 <li>
-                    @Html.ActionLink("Предыдущая", "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, page = Model.Pager.CurrentPage - 1, notebooks = Model.Notebooks })
+                    @Html.ActionLink("Предыдущая", "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, searchString = Model.SearchData, page = Model.Pager.CurrentPage - 1, notebooks = Model.Notebooks })
                 </li>
             }
 
             @for (var pageNum = Model.Pager.StartPage; pageNum <= Model.Pager.EndPage; pageNum++)
             {
                 <li class="@(pageNum == Model.Pager.CurrentPage ? "active" : "")">
-                    @Html.ActionLink(pageNum.ToString(), "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, page = pageNum, notebooks = Model.Notebooks })
+                    @Html.ActionLink(pageNum.ToString(), "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, searchString = Model.SearchData, page = pageNum, notebooks = Model.Notebooks })
                 </li>
             }
 
             @if (Model.Pager.CurrentPage < Model.Pager.TotalPages)
             {
                 <li>
-                    @Html.ActionLink("Следующая", "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, page = Model.Pager.CurrentPage + 1, notebooks = Model.Notebooks })
+                    @Html.ActionLink("Следующая", "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, searchString = Model.SearchData, page = Model.Pager.CurrentPage + 1, notebooks = Model.Notebooks })
                 </li>
                 <li>
-                    @Html.ActionLink("Последняя", "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, page = Model.Pager.TotalPages, notebooks = Model.Notebooks })
+                    @Html.ActionLink("Последняя", "Index", new { depCode = Model.DepCode, searchSoft = Model.SearchSoft, searchString = Model.SearchData, page = Model.Pager.TotalPages, notebooks = Model.Notebooks })
                 </li>
             }
         </ul>

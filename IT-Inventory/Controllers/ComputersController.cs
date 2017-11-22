@@ -17,7 +17,7 @@ namespace IT_Inventory.Controllers
 
         // GET: Computers
         // computers data
-        public ActionResult Index(string depCode, int? personId, string searchSoft = "", int page = 1, bool modified = false, bool notebooks = false)
+        public ActionResult Index(string depCode, int? personId, string searchSoft = "", string searchString = "", int page = 1, bool modified = false, bool notebooks = false)
         {
             List<Computer> dbComputers;
             Pager pager = null;
@@ -30,6 +30,8 @@ namespace IT_Inventory.Controllers
 
             if (searchSoft != "")
                 dbComputers = dbComputers.Where(c => c.Software.IndexOf(searchSoft, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+            if (searchString != "")
+                dbComputers.RemoveAll(c => !StaticData.HasStringInData(searchString, c));
             if (modified)
                 dbComputers = dbComputers.Where(c => c.IsConfigChanged()).ToList();
             if (notebooks)
@@ -68,10 +70,12 @@ namespace IT_Inventory.Controllers
                 DepCodes = _db.Computers.AsEnumerable().Select(c => c.ComputerName.Split('-').First()).Distinct().OrderBy(c => c).ToArray(),
                 DepCode = depCode,
                 SearchSoft = searchSoft == "" ? null : searchSoft,
+                SearchData = searchString == "" ? null : searchString,
                 PersonSearch = personId != null,
                 HasModifiedComputers = _db.Computers.FirstOrDefaultAsync(c => c.IsConfigChanged()) != null,
                 ModifiedComputers = modified,
-                Notebooks = notebooks
+                Notebooks = notebooks,
+                TotalCount = computers.Count
             };
             return View(computersViewModel);
         }
@@ -262,7 +266,7 @@ namespace IT_Inventory.Controllers
             comp.UpdateDate = DateTime.Now;
             comp.RamFixed = comp.Ram;
             comp.HddFixed = comp.Hdd;
-            comp.MotherBoard = comp.MotherBoard;
+            comp.MotherBoardFixed = comp.MotherBoard;
             comp.VideoAdapterFixed = comp.VideoAdapter;
             comp.MonitorFixed = comp.Monitor;
             _db.Entry(comp).State = EntityState.Modified;
@@ -273,6 +277,28 @@ namespace IT_Inventory.Controllers
             if (Request.UrlReferrer != null)
                 return Redirect(Request.UrlReferrer.ToString());
             return RedirectToAction("Index");
+        }
+
+        // GET: Computers/Search
+        public ActionResult Search()
+        {
+            return View(new ComputerSearchViewModel());
+        }
+
+        // POST: Computers/Search
+        [HttpPost]
+        public ActionResult Search(ComputerSearchViewModel searchModel, string command)
+        {
+            if (command.Equals("Искать ПО") && !string.IsNullOrEmpty(searchModel.SearchSoftString))
+            {
+                return RedirectToAction("Index", new { searchSoft = searchModel.SearchSoftString });
+            }
+            if (command.Equals("Искать другое") && !string.IsNullOrEmpty(searchModel.SearchDataString))
+            {
+                return RedirectToAction("Index", new { searchString = searchModel.SearchDataString });
+            }
+            ModelState.AddModelError(string.Empty, "Неправильные данные для поиска!");
+            return View();
         }
 
         // GET: Computers/Delete/5

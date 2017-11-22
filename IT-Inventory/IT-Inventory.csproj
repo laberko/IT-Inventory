@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.8\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.8\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
   <Import Project="..\packages\Microsoft.Net.Compilers.2.4.0\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.2.4.0\build\Microsoft.Net.Compilers.props')" />
-  <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.7\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.7\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -66,15 +66,15 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.7\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+    <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.8.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.8\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
@@ -168,21 +168,17 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201710171336573_70.cs" />
-    <Compile Include="Migrations\201710171336573_70.Designer.cs">
-      <DependentUpon>201710171336573_70.cs</DependentUpon>
+    <Compile Include="Migrations\201711170740402_75.cs" />
+    <Compile Include="Migrations\201711170740402_75.Designer.cs">
+      <DependentUpon>201711170740402_75.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201710171408289_71.cs" />
-    <Compile Include="Migrations\201710171408289_71.Designer.cs">
-      <DependentUpon>201710171408289_71.cs</DependentUpon>
+    <Compile Include="Migrations\201711170803025_76.cs" />
+    <Compile Include="Migrations\201711170803025_76.Designer.cs">
+      <DependentUpon>201711170803025_76.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201710171414364_72.cs" />
-    <Compile Include="Migrations\201710171414364_72.Designer.cs">
-      <DependentUpon>201710171414364_72.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201711100821051_73.cs" />
-    <Compile Include="Migrations\201711100821051_73.Designer.cs">
-      <DependentUpon>201711100821051_73.cs</DependentUpon>
+    <Compile Include="Migrations\201711220641484_77.cs" />
+    <Compile Include="Migrations\201711220641484_77.Designer.cs">
+      <DependentUpon>201711220641484_77.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\ComputerHistoryItem.cs" />
@@ -191,6 +187,7 @@
     <Compile Include="Models\Item.cs" />
     <Compile Include="Models\Printer.cs" />
     <Compile Include="Models\SentMail.cs" />
+    <Compile Include="Models\SubDepartment.cs" />
     <Compile Include="Models\SupportFile.cs" />
     <Compile Include="Models\SupportRequest.cs" />
     <Compile Include="Models\Weather.cs" />
@@ -203,6 +200,7 @@
     <Compile Include="StaticData.cs" />
     <Compile Include="ViewModels\ComputerIndexViewModel.cs" />
     <Compile Include="ViewModels\ComputerHistoryViewModel.cs" />
+    <Compile Include="ViewModels\ComputerSearchViewModel.cs" />
     <Compile Include="ViewModels\ComputerViewModel.cs" />
     <Compile Include="ViewModels\DepartmentViewModel.cs" />
     <Compile Include="Models\Department.cs" />
@@ -344,6 +342,7 @@
     <Content Include="Views\Support\IndexPartial.cshtml" />
     <Content Include="Views\Items\Transfer.cshtml" />
     <Content Include="Views\People\Details.cshtml" />
+    <Content Include="Views\Computers\Search.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -352,17 +351,14 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201710171336573_70.resx">
-      <DependentUpon>201710171336573_70.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201711170740402_75.resx">
+      <DependentUpon>201711170740402_75.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201710171408289_71.resx">
-      <DependentUpon>201710171408289_71.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201711170803025_76.resx">
+      <DependentUpon>201711170803025_76.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201710171414364_72.resx">
-      <DependentUpon>201710171414364_72.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201711100821051_73.resx">
-      <DependentUpon>201711100821051_73.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201711220641484_77.resx">
+      <DependentUpon>201711220641484_77.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
@@ -397,8 +393,8 @@
     <PropertyGroup>
       <ErrorText>Данный проект ссылается на пакеты NuGet, отсутствующие на этом компьютере. Используйте восстановление пакетов NuGet, чтобы скачать их.  Дополнительную информацию см. по адресу: http://go.microsoft.com/fwlink/?LinkID=322105. Отсутствует следующий файл: {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.7\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.7\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Net.Compilers.2.4.0\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Net.Compilers.2.4.0\build\Microsoft.Net.Compilers.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.8\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.8\build\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

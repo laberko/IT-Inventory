@@ -32,6 +32,9 @@
             @Html.DisplayNameFor(model => model.People.First().FullName)
         </th>
         <th>
+            @Html.DisplayNameFor(model => model.People.First().Office)
+        </th>
+        <th>
             @Html.DisplayNameFor(model => model.People.First().Dep)
         </th>
         <th>
@@ -47,7 +50,7 @@
         <th></th>
         <th></th>
         <th></th>
-
+        <th></th>
     </tr>
     @foreach (var item in Model.People)
     {
@@ -63,11 +66,20 @@
                 @if (item.NonExisting)
                 {
                     @Html.DisplayFor(modelItem => item.FullName)
-                    <text> (уволен)</text>
+                    <text><br/>(УВОЛЕН)</text>
                 }
                 else
                 {
                     @Html.DisplayFor(modelItem => item.FullName)
+                }
+            </td>
+
+            <td style="vertical-align: middle;" white-space: nowrap>
+                @if (item.Office != null)
+                {
+                    <a href='@Url.Action("Details", "Offices", new {id = item.Office.Id})'>
+                        @item.Office.Name
+                    </a>
                 }
             </td>
 

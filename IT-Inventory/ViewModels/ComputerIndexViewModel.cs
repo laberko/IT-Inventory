@@ -9,6 +9,8 @@ namespace IT_Inventory.ViewModels
         public IEnumerable<string> DepCodes { get; set; }
         public string DepCode { get; set; }
         public string SearchSoft { get; set; }
+        public string SearchData { get; set; }
+        public int TotalCount { get; set; }
         public bool PersonSearch { get; set; }
         public bool HasModifiedComputers { get; set; }
         public bool ModifiedComputers { get; set; }

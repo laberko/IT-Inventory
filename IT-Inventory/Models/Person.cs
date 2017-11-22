@@ -10,12 +10,18 @@ namespace IT_Inventory.Models
         public Person()
         {
             SupportRequests = new HashSet<SupportRequest>();
-            //Computers = new HashSet<Computer>();
         }
 
         [Key]
         public int Id { get; set; }
 
+        //level in Dep
+        public int LevelDep1 { get; set; }
+
+        //level in Dep2
+        public int LevelDep2 { get; set; }
+
+        //person is not working anymore
         public bool NonExisting { get; set; }
 
         [Display(Name = "ФИО")]
@@ -39,24 +45,31 @@ namespace IT_Inventory.Models
         [Display(Name = "Учетная запись создана")]
         public DateTime? CreationDate { get; set; }
 
+        //person's office
+        [Display(Name = "Офис")]
+        public virtual Office Office { get; set; }
+        
+        //main department of the person
         [Display(Name = "Департамент")]
         public virtual Department Dep { get; set; }
 
+        //sub-department in the main department
+        [Display(Name = "Группа")]
+        public virtual SubDepartment SubDep { get; set; }
+
+        //order in Dep or in SubDep if not null
         public int Dep1Index { get; set; }
 
+        //second department
         public virtual Department Dep2 { get; set; }
 
+        //order in Dep2
         public int Dep2Index { get; set; }
 
-        [Display(Name = "Группа")]
-        public string Group { get; set; }
-
+        //person's picture
         public byte[] PhotoBytes { get; set; }
 
         public virtual ICollection<SupportRequest> SupportRequests { get; set; }
-
-        //[Display(Name = "Компьютер(ы)")]
-        //public virtual ICollection<Computer> Computers { get; set; }
 
         [NotMapped]
         public string ShortName => FullName.GetShortName();
@@ -69,16 +82,5 @@ namespace IT_Inventory.Models
 
         [NotMapped]
         public string DepartmentString => Dep2 == null ? Dep.Name : Dep.Name + ", " + Dep2.Name;
-
-        [NotMapped]
-        public bool IsInGroup
-        {
-            get
-            {
-                if (Dep2 == null)
-                    return Dep.Name != Group;
-                return Dep.Name != Group && Dep2.Name != Group;
-            }
-        }
     }
 }

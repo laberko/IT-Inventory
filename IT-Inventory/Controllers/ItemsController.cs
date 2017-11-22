@@ -36,7 +36,7 @@ namespace IT_Inventory.Controllers
                             case 1:
                                 items = await _db.Items.Where(i => i.Location == null || i.Location.Id == 1).OrderBy(i => i.ItemType.Name).ThenBy(i => i.Name).ToListAsync();
                                 model.OfficeId = 1;
-                                model.OfficeName = "Железноводская";
+                                model.OfficeName = "Железноводская, 11";
                                 break;
                             default:
                                 items = await _db.Items.Where(i => i.Location.Id == officeId).OrderBy(i => i.ItemType.Name).ThenBy(i => i.Name).ToListAsync();
@@ -65,7 +65,7 @@ namespace IT_Inventory.Controllers
                             model.Items = await _db.Items.Where(i => i.ItemType.Id == id && (i.Location == null || i.Location.Id == 1))
                                 .OrderBy(i => i.AttributeValues.FirstOrDefault(a => a.Attribute.Id == 8).Value).ToListAsync();
                             model.OfficeId = 1;
-                            model.OfficeName = "Железноводская";
+                            model.OfficeName = "Железноводская, 11";
                             break;
                         default:
                             model.Items = await _db.Items.Where(i => i.ItemType.Id == id && i.Location.Id == officeId)
@@ -85,7 +85,7 @@ namespace IT_Inventory.Controllers
                         case 1:
                             model.Items = await _db.Items.Where(i => i.ItemType.Id == id &&(i.Location == null || i.Location.Id == 1)).OrderBy(i => i.Name).ToListAsync();
                             model.OfficeId = 1;
-                            model.OfficeName = "Железноводская";
+                            model.OfficeName = "Железноводская, 11";
                             break;
                         default:
                             model.Items = await _db.Items.Where(i => i.ItemType.Id == id && i.Location.Id == officeId).OrderBy(i => i.Name).ToListAsync();

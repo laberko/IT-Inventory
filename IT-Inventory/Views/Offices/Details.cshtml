@@ -21,7 +21,7 @@
             @Html.DisplayNameFor(model => model.Departments)
         </dt>
         <dd>
-            @foreach (var item in Model.Departments)
+            @foreach (var item in Model.Departments.OrderBy(d => d.Name))
             {
                 @Html.ActionLink(item.Name, "Details", "Departments", new { id = item.Id }, null)
                 <br/>

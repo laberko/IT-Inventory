@@ -17,14 +17,14 @@
             @Html.DisplayFor(model => model.DepartmentString)
         </dd>
 
-        @if (Model.IsInGroup)
+        @if (Model.SubDep != null)
         {
             <dt>
-                @Html.DisplayNameFor(model => model.Group)
+                @Html.DisplayNameFor(model => model.SubDep)
             </dt>
 
             <dd>
-                @Html.DisplayFor(model => model.Group)
+                @Html.DisplayFor(model => model.SubDep.Name)
             </dd>
         }
 

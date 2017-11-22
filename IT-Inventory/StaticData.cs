@@ -59,11 +59,61 @@ namespace IT_Inventory
                                     resultEntry.Properties.Contains("department") &&
                                     resultEntry.Properties.Contains("title"))
                                 {
-                                    //dep1 = organization
-                                    var dep1Name = resultEntry.Properties.Contains("company") 
-                                        ? resultEntry.Properties["company"].Value.ToString() 
-                                        : resultEntry.Properties["department"].Value.ToString();
+                                    var adDepName = resultEntry.Properties["department"].Value.ToString();
+                                    var adCompanyName = resultEntry.Properties.Contains("company")
+                                        ? resultEntry.Properties["company"].Value.ToString()
+                                        : null;
+
+                                    Office personOffice = null;
+                                    //get office from city value
+                                    if (resultEntry.Properties.Contains("l"))
+                                    {
+                                        switch (resultEntry.Properties["l"].Value.ToString())
+                                        {
+                                            case "Магнитогорск":
+                                                personOffice = db.Offices.FirstOrDefault(o => o.Name == "Магнитогорск");
+                                                break;
+                                            case "Учалы":
+                                                personOffice = db.Offices.FirstOrDefault(o => o.Name == "Учалы");
+                                                break;
+                                            case "Каджаран":
+                                                personOffice = db.Offices.FirstOrDefault(o => o.Name == "Армения");
+                                                break;
+                                            //in SPB get office from street value
+                                            case "Санкт-Петербург":
+                                                if (resultEntry.Properties.Contains("streetAddress"))
+                                                {
+                                                    switch (resultEntry.Properties["streetAddress"].Value.ToString())
+                                                    {
+                                                        case "Площадь Конституции":
+                                                            personOffice = db.Offices.FirstOrDefault(o => o.Name == "Площадь Конституции");
+                                                            break;
+                                                        case "Липовая аллея":
+                                                            personOffice = db.Offices.FirstOrDefault(o => o.Name == "Липовая");
+                                                            break;
+                                                        case "Уральская":
+                                                            personOffice = db.Offices.FirstOrDefault(o => o.Name == "Уральская");
+                                                            break;
+                                                        case "Железноводская, 9":
+                                                            personOffice = db.Offices.FirstOrDefault(o => o.Name == "Железноводская, 9");
+                                                            break;
+                                                    }
+                                                }
+                                                break;
+                                        }
+                                    }
+                                    //get office from country value
+                                    else if (resultEntry.Properties.Contains("c") 
+                                        && resultEntry.Properties["c"].Value.ToString() == "KZ")
+                                        personOffice = db.Offices.FirstOrDefault(o => o.Name == "Казахстан");
+                                    //default office
+                                    if (personOffice == null)
+                                        personOffice = db.Offices.FirstOrDefault(o => o.Name == "Железноводская, 11");
+                                    
+                                    //get deparment values (dep1 = organization)
+                                    var dep1Name = adCompanyName ?? adDepName;
                                     var dep1 = db.Departments.FirstOrDefault(d => d.Name == dep1Name);
+                                    //department not found in db - create new one
                                     if (dep1 == null)
                                     {
                                         var newDep = new Department
@@ -80,6 +130,7 @@ namespace IT_Inventory
                                     {
                                         var dep2Name = resultEntry.Properties["division"].Value.ToString();
                                         dep2 = db.Departments.FirstOrDefault(d => d.Name == dep2Name);
+                                        //department not found in db - create new one
                                         if (dep2 == null)
                                         {
                                             var newDep = new Department
@@ -91,9 +142,30 @@ namespace IT_Inventory
                                             dep2 = newDep;
                                         }
                                     }
+                                    //user is in sub-department (group)
+                                    SubDepartment subdep = null;
+                                    if (adCompanyName != null && adCompanyName != adDepName)
+                                    {
+                                        //find a sub-department with the same name and parent department in db
+                                        subdep = db.SubDepartments.FirstOrDefault(s => s.Name == adDepName && s.ParentDepartment.Id == dep1.Id);
+                                        //sub-department not found - create new one
+                                        if (subdep == null)
+                                        {
+                                            var newSubDep = new SubDepartment
+                                            {
+                                                Name = adDepName,
+                                                ParentDepartment = dep1
+                                            };
+                                            db.SubDepartments.Add(newSubDep);
+                                            db.SaveChanges();
+                                            subdep = newSubDep;
+                                        }
+                                    }
+
                                     //index in department
                                     int depIndex;
                                     DateTime birthday;
+                                    //add new item to the list of ad users
                                     adUsers.Add(new Person
                                     {
                                         FullName = resultEntry.Properties["DisplayName"].Value.ToString(),
@@ -114,6 +186,7 @@ namespace IT_Inventory
                                         CreationDate = resultEntry.Properties.Contains("whenCreated")
                                             ? resultEntry.Properties["whenCreated"].Value as DateTime?
                                             : null,
+                                        Office = personOffice,
                                         Dep = dep1,
                                         //index in the first department
                                         Dep1Index = (resultEntry.Properties.Contains("postalCode")
@@ -132,7 +205,7 @@ namespace IT_Inventory
                                             ? depIndex
                                             : 0,
                                         //user's group in department
-                                        Group = resultEntry.Properties["department"].Value.ToString(),
+                                        SubDep = subdep,
                                         //picture in bytes
                                         PhotoBytes = resultEntry.Properties.Contains("thumbnailPhoto")
                                             ? (byte[])resultEntry.Properties["thumbnailPhoto"].Value
@@ -201,6 +274,12 @@ namespace IT_Inventory
                                 existingPerson.CreationDate = user.CreationDate;
                                 modified = true;
                             }
+                            //office changed
+                            if (existingPerson.Office != user.Office)
+                            {
+                                existingPerson.Office = user.Office;
+                                modified = true;
+                            }
                             //the first department changed
                             if (existingPerson.Dep != user.Dep)
                             {
@@ -226,9 +305,9 @@ namespace IT_Inventory
                                 modified = true;
                             }
                             //group changed
-                            if (existingPerson.Group != user.Group)
+                            if (existingPerson.SubDep != user.SubDep)
                             {
-                                existingPerson.Group = user.Group;
+                                existingPerson.SubDep = user.SubDep;
                                 modified = true;
                             }
                             //picture changed
@@ -271,24 +350,6 @@ namespace IT_Inventory
                             db.Entry(nonExistingUser).State = EntityState.Modified;
                             log.AppendLine(nonExistingUser.FullName);
                         }
-
-                        //log.AppendLine("Удалены пользователи:");
-                        //foreach (var id in nonExistingIds)
-                        //{
-                        //    var nonExistingUser = db.Persons.Find(id);
-                        //    if (nonExistingUser == null)
-                        //        continue;
-                        //    foreach (var history in db.Histories
-                        //        .Where(h => h.WhoTook.Id == nonExistingUser.Id || h.WhoGave.Id == nonExistingUser.Id).ToList())
-                        //        db.Histories.Remove(history);
-                        //    foreach (var comp in db.Computers.Where(c => c.Owner.Id == nonExistingUser.Id).ToList())
-                        //    {
-                        //        comp.Owner = null;
-                        //        db.Entry(comp).State = EntityState.Modified;
-                        //    }
-                        //    db.Persons.Remove(nonExistingUser);
-                        //    log.AppendLine(nonExistingUser.FullName);
-                        //}
                     }
 
                     await db.SaveChangesAsync();
@@ -655,6 +716,28 @@ namespace IT_Inventory
             int number;
             return int.TryParse(value, out number);
         }
+
+        public static bool HasStringInData(string value, Computer comp)
+        {
+            if (comp == null || string.IsNullOrEmpty(value))
+                return false;
+            if (comp.ComputerName.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+            if (comp.Owner != null && comp.Owner.FullName.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+            if (comp.Cpu.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+            if (comp.Hdd.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+            if (comp.MotherBoard.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+            if (comp.VideoAdapter.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+            if (comp.Monitor.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+            return false;
+        }
+
         public static bool IsCartridgesOver(int printerId)
         {
             using (var db = new InventoryModel())
@@ -758,7 +841,6 @@ namespace IT_Inventory
                         select printer).OrderBy(p => p.Name).ToList();
             }
         }
-
         public static IEnumerable<Person> GetUsers(int depId)
         {
             using (var db = new InventoryModel())
@@ -767,7 +849,6 @@ namespace IT_Inventory
                 return dep == null ? null : db.Persons.Where(p => p.Dep.Id == depId || p.Dep2.Id == depId).OrderBy(p => p.FullName).ToList();
             }
         }
-
         public static IEnumerable<SelectListItem> SelectOffices(int exceptionId = 0)
         {
             return exceptionId == 0 
